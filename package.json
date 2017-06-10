@@ -1,0 +1,32 @@
+{
+  "name": "artflow",
+  "version": "1.0.0",
+  "description": "3D drawing software",
+  "main": "index.js",
+  "config": {
+    "srcFolder": "src/"
+  },
+  "scripts": {
+    "build": "npm run lint && webpack --progress --config webpack.config.js",
+    "start": "webpack-dev-server --host 0.0.0.0",
+    "lint": "eslint $npm_package_config_srcFolder/**/*.js"
+  },
+  "repository": "git+https://github.com/DavidPeicho/artflow.git",
+  "contributors": [
+    "Aurelien Leandri <aurelien.leandri@gmail.com@gmail.com>",
+    "Chady Dimachkie <chady.dimachkie@epita.fr>",
+    "Sarasvati Moutoucomarapoule <sarasvati.moutoucomarapoule@epita.fr>"
+  ],
+  "author": "David Peicho <david.peicho@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DavidPeicho/artflow/issues"
+  },
+  "homepage": "https://github.com/DavidPeicho/artflow#readme",
+  "devDependencies": {
+    "eslint": "^3.19.0",
+    "three": "^0.85.2",
+    "webpack": "^2.6.1",
+    "webpack-dev-server": "^2.4.5"
+  }
+}
