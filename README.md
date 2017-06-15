@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/DavidPeicho/artflow.svg?branch=master)](https://travis-ci.org/DavidPeicho/artflow)
+
 # Artflow
 
 **ArtFlow** is a frontend VR 3D software, in which you can draw your own world using VR controllers.
@@ -7,7 +9,7 @@
 ## TODO
 
 * Structure
-  * [ ] Add jsformatter
+  * [X] Add jsformatter
   
 * VR
   * [ ] Add VR integration
