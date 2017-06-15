@@ -2,10 +2,12 @@
 
 let THREE = require( 'three' );
 
+let Artflow = require( './artflow' );
+
 let scene, camera, renderer;
 let geometry, material, mesh;
 
-function init() {
+function createScene() {
 
     scene = new THREE.Scene();
 
@@ -25,6 +27,17 @@ function init() {
     renderer = new THREE.WebGLRenderer();
     renderer.setSize( window.innerWidth, window.innerHeight );
 
+}
+
+function init() {
+
+    let WebVR = Artflow.vr.WebVR;
+
+    WebVR.checkAvailability().catch( function ( message ) {
+        document.body.appendChild( WebVR.getMessageContainer( message ) );
+    } );
+
+    createScene();
     document.body.appendChild( renderer.domElement );
 
 }
