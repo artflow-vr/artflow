@@ -9,7 +9,7 @@
   "scripts": {
     "build": "npm run beautify && npm run lint && webpack --progress --config webpack.config.js",
     "dev": "webpack-dev-server --hot --inline",
-    "beautify": "js-beautify src/*.js --replace --config .jsbeautifyrc",
+    "beautify": "js-beautify $npm_package_config_srcFolder/*.js --replace --config .jsbeautifyrc",
     "lint": "eslint $npm_package_config_srcFolder/**/*.js"
   },
   "repository": "git+https://github.com/DavidPeicho/artflow.git",
