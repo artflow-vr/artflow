@@ -7,22 +7,25 @@ let Artflow = require( './artflow' );
 let rootScene, camera, renderer;
 let geometry, material, mesh;
 
+let canvas;
+let canvasPos;
+let mousePos;
+
+let vertices, normals, uvs;
+let i = 0;
+
 let vrEffect;
 let vrControls;
+
+let mouseDown;
+let brush;
 
 function createScene() {
 
     rootScene = new THREE.Scene();
 
-    geometry = new THREE.BoxGeometry( 200, 200, 200 );
-    material = new THREE.MeshBasicMaterial( {
-        color: 0xff0000,
-        wireframe: true
-    } );
-
-    mesh = new THREE.Mesh( geometry, material );
-    rootScene.add( mesh );
-
+    brush = new Artflow.generation.brush(10000, rootScene, "build/brush1.jpg");
+    brush.initBrush();
 }
 
 function resize() {
@@ -35,11 +38,19 @@ function resize() {
 
 function init() {
 
+    mouseDown = false;
+
     let WebVR = Artflow.vr.WebVR;
 
     renderer = new THREE.WebGLRenderer( {
         antialias: true
     } );
+
+    canvas = renderer.domElement;
+    canvasPos = canvas.position;
+    mousePos = new THREE.Vector3();
+
+
     renderer.setSize( window.innerWidth, window.innerHeight );
 
     WebVR.checkAvailability().catch( function ( message ) {
@@ -51,7 +62,6 @@ function init() {
 
     camera = new THREE.PerspectiveCamera( 70,
         window.innerWidth / window.innerHeight, 0.1, 1500 );
-    camera.position.z = 1000;
 
     vrEffect = new Artflow.vr.VREffect( renderer );
     vrControls = new Artflow.controls.VRControls( camera );
@@ -61,13 +71,42 @@ function init() {
 
     // Registers global events
     window.addEventListener( 'resize', resize, false );
+    document.addEventListener('mousedown', onMouseDown, false);
+    document.addEventListener('mouseup', onMouseUp, false);
+
+}
+
+function onMouseDown(event) {
+
+    mouseDown = true;
+
+}
+
+function onMouseUp(event) {
+
+  if (mouseDown) {
+    brush.initBrush();
+    mouseDown = false;
+  }
+}
+
+document.onmousemove = function(e){
+  mousePos.x = e.pageX;
+  mousePos.y = -e.pageY;
+  mousePos.z = 0;
 }
 
 function update() {
 
-    /*mesh.rotation.x += 0.01;
-    mesh.rotation.y += 0.02;*/
-    camera.position.z = 1000;
+    var timer = 1500054205838 * 0.0005;
+
+    camera.position.x = Math.floor(Math.cos( timer ) * 200) + 200;
+    camera.position.y = Math.floor(Math.sin( timer ) * 200) - 200;
+    camera.position.z = 700;
+
+    if (mouseDown) 
+      brush.addPoint(mousePos);
+
 }
 
 function render() {
