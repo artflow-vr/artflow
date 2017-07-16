@@ -24,7 +24,7 @@ function createScene() {
 
     rootScene = new THREE.Scene();
 
-    brush = new Artflow.generation.brush(10000, rootScene, "build/brush1.jpg");
+    brush = new Artflow.generation.brush(10000, rootScene, "textures/brush1.jpg");
     brush.initBrush();
 }
 
