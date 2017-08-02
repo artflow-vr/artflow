@@ -1,25 +1,32 @@
 'use strict';
 
+let ModuleManager = require( './module-manager' );
+
+let viewNamespace = require( '../view/view' );
+let MainView = viewNamespace.MainView;
+let HTMLView = viewNamespace.HTMLView;
+let HTMLTextArea = viewNamespace.HTMLTextArea;
+
+let MiscInfoTable = require( '../utils/info-table' ).misc;
+let VRInfoTable = require( '../utils/info-table' ).vr;
+
 let WebVR = require( '../vr/vr' ).WebVR;
 
-let HTMLUtils = require( '../utils/utils' ).HTMLUtils;
-
-let ModuleManager = require( './module-manager' );
 let Controls = require( '../controls/controls' );
 let VRControls = Controls.VRControls;
 let FPSControls = Controls.FPSControls;
 
 let Control = module.exports;
-ModuleManager.registerSystem( 'control', Control );
+ModuleManager.register( 'control', Control );
 
 Control._controls = null;
 Control._keyMapping = null;
-
-Control._backgroundDiv = null;
+Control._HTMLView = null;
+Control._pointerLocked = false;
 
 Control.init = function() {
 
-    let renderer = ModuleManager.getRenderer();
+    let renderer = MainView.getRenderer();
 
     WebVR.checkAvailability()
             .then( function() {
@@ -38,9 +45,10 @@ Control.init = function() {
 
 };
 
-Control.update = function( delta ) {
+Control.update = function( data ) {
+
     if ( Control._controls !== null )
-        Control._controls.update( delta );
+        Control._controls.update( data.delta );
     //Control.vrControls.update();
 
 };
@@ -86,49 +94,51 @@ Control._mouseDown = function() {
 
 Control._pointLockChange = function( ) {
 
-    let element = document.body;
+    Control._pointerLocked = !Control._pointerLocked;
 
-    // Pointer has been unlocked
-    if ( document.pointerLockElement !== element &&
-        document.mozPointerLockElement !== element ) {
-        Control._backgroundDiv.style.display = 'block';
-        Control._controls.enable( false );
-        return;
-    }
-
-    Control._backgroundDiv.style.display = 'none';
-    Control._controls.enable( true );
+    Control._HTMLView.toggleVisibility( !Control._pointerLocked );
+    Control._controls.enable( Control._pointerLocked );
 
 };
 
 Control._initKeyboardMouse = function() {
 
-    //container.appendChild( error );
-    //document.body.appendChild( container );
-    Control._backgroundDiv = HTMLUtils.createFullScreenDiv();
-    document.body.appendChild( Control._backgroundDiv );
+    Control._controls = null;
+    Control._keyMapping = null;
+
+    let camera = MainView.getCamera();
+
+    let backgroundStyle = {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: '0px',
+        backgroundColor: 'rgba(44, 62, 80, 0.98)'
+    };
+    let messageViewStyle = {
+        position: 'relative',
+        top: '50%'
+    };
+
+    Control._HTMLView = new HTMLView( backgroundStyle );
+    let messageView = new HTMLTextArea( null, messageViewStyle );
+
+    Control._HTMLView.setProp( 'align', 'center' );
 
     let checkPointerLock = 'pointerLockElement' in document ||
                             'mozPointerLockElement' in document ||
                             'webkitPointerLockElement' in document;
 
+    document.body.appendChild( Control._HTMLView.getDOMElement() );
+    Control._HTMLView.addChild( messageView );
+
     if ( !checkPointerLock ) {
-        let displayText = 'your browser does not support pointer locking.';
-        displayText += ' If you do not have any VR device and you still want';
-        displayText += ' to test ArtFlow with your mouse/keyboard, please';
-        displayText += ' tries using a different/newer browser.';
-        console.error( 'Controller: ' + displayText );
-
-        let divMsg = 'pointer locking is not activated. Tries to use';
-        divMsg += 'a different/newer browser.';
-
-        Control._backgroundDiv.appendChild( HTMLUtils.createCenteredDivMsg( divMsg ) );
+        messageView.setMessage( MiscInfoTable.missingPointerLocking );
         return;
     }
 
-    let sucessMsg = 'Click here to begin!';
-    let HTMLButton = HTMLUtils.createCenteredDivMsg( sucessMsg );
-    HTMLButton.onclick = function() {
+    messageView.setMessage( MiscInfoTable.startPointerLocking );
+    messageView.setProp( 'onclick', function() {
 
         let element = document.body;
         element.requestPointerLock = element.requestPointerLock ||
@@ -139,19 +149,16 @@ Control._initKeyboardMouse = function() {
                                     element.webkitExitPointerLock;
         element.requestPointerLock();
 
-        // Hook pointer lock state change events
+        // Hooks pointer lock state change events
         document.addEventListener( 'pointerlockchange',
                                     Control._pointLockChange, false );
         document.addEventListener( 'mozpointerlockchange',
                                     Control._pointLockChange, false );
 
-    };
-    Control._backgroundDiv.appendChild( HTMLButton );
+    } );
 
-    let camera = ModuleManager.getCamera();
     Control._controls = new FPSControls( camera );
     Control._controls.enable( false );
-
     Control._keyMapping = {
         65 /* A */: Control._controls.left.bind( Control._controls ),
         68 /* D */: Control._controls.right.bind( Control._controls ),
