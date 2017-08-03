@@ -9,7 +9,7 @@ function HTMLView( dataStyle ) {
 }
 module.exports = HTMLView;
 
-HTMLView.prototype.addChild = function( htmlView ) {
+HTMLView.prototype.addChild = function ( htmlView ) {
 
     if ( htmlView === undefined || htmlView === null ) {
         let errorMsg = 'addChild() called with a null/undefined value.';
@@ -25,20 +25,20 @@ HTMLView.prototype.addChild = function( htmlView ) {
 
 };
 
-HTMLView.prototype.setProp = function( propID, value ) {
+HTMLView.prototype.setProp = function ( propID, value ) {
 
     this._container[ propID ] = value;
 
 };
 
-HTMLView.prototype.setStyleProp = function( propID, value ) {
+HTMLView.prototype.setStyleProp = function ( propID, value ) {
 
     if ( propID === 'display' ) this._displayStyleValue = value;
     this._container.style[ propID ] = value;
 
 };
 
-HTMLView.prototype.applyDataStyle = function( dataStyle ) {
+HTMLView.prototype.applyDataStyle = function ( dataStyle ) {
 
     for ( let k in dataStyle ) {
         if ( k in this._container.style )
@@ -47,7 +47,7 @@ HTMLView.prototype.applyDataStyle = function( dataStyle ) {
 
 };
 
-HTMLView.prototype.toggleVisibility = function( trigger ) {
+HTMLView.prototype.toggleVisibility = function ( trigger ) {
 
     if ( trigger )
         this._container.style.display = this._displayStyleValue;
@@ -56,7 +56,7 @@ HTMLView.prototype.toggleVisibility = function( trigger ) {
 
 };
 
-HTMLView.prototype.getDOMElement = function( ) {
+HTMLView.prototype.getDOMElement = function () {
 
     return this._container;
 

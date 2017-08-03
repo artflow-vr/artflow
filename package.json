@@ -3,15 +3,12 @@
   "version": "1.0.0",
   "description": "3D drawing software",
   "main": "index.js",
-  "config": {
-    "srcFolder": "src/"
-  },
   "scripts": {
     "build": "npm run beautify && npm run lint && webpack --progress --config webpack.config.js",
     "build-dev": "webpack --progress --config webpack.config.js",
     "dev": "webpack-dev-server --hot --inline",
-    "beautify": "js-beautify $npm_package_config_srcFolder/*.js $npm_package_config_srcFolder/*/*.js --replace --config .jsbeautifyrc",
-    "lint": "eslint $npm_package_config_srcFolder/*.js $npm_package_config_srcFolder/*/*.js"
+    "beautify": "find src -name '*.js' | xargs js-beautify --replace --config .jsbeautifyrc",
+    "lint": "eslint src"
   },
   "repository": "git+https://github.com/DavidPeicho/artflow.git",
   "contributors": [

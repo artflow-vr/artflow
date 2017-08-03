@@ -2,8 +2,8 @@
 
 let vrNamespace = require( './vr/vr' );
 let controlsNamespace = require( './controls/controls' );
-let modulesNamespace = require('./modules/modules');
-let viewNamespace = require('./view/view');
+let modulesNamespace = require( './modules/modules' );
+let viewNamespace = require( './view/view' );
 
 let Artflow = module.exports;
 Artflow.vr = vrNamespace;
