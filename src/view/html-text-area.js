@@ -20,7 +20,7 @@ function HTMLTextArea( message, dataStyle = null, useArtflowDefault = true ) {
 HTMLTextArea.prototype = Object.create( HTMLView.prototype );
 module.exports = HTMLTextArea;
 
-HTMLTextArea.prototype.setMessage = function( message ) {
+HTMLTextArea.prototype.setMessage = function ( message ) {
 
     if ( message === undefined || message === null ) {
         let errorMsg = 'no message provided or has a null value.';
@@ -30,7 +30,7 @@ HTMLTextArea.prototype.setMessage = function( message ) {
 
 };
 
-HTMLTextArea.prototype._useDefaultValues = function() {
+HTMLTextArea.prototype._useDefaultValues = function () {
 
     this._container.style.fontFamily = 'sans-serif';
     this._container.style.fontSize = '16px';

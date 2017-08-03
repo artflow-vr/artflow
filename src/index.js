@@ -9,19 +9,16 @@ let MainView = Artflow.view.MainView;
 
 let clock = null;
 
-let vrEffect;
-let vrControls;
-
 function resize() {
 
-    ModuleManager.resize(window.innerWidth, window.innerHeight);
-    MainView.resize(window.innerWidth, window.innerHeight);
+    ModuleManager.resize( window.innerWidth, window.innerHeight );
+    MainView.resize( window.innerWidth, window.innerHeight );
 
 }
 
 function init() {
 
-    MainView.init(window.innerWidth, window.innerHeight);
+    MainView.init( window.innerWidth, window.innerHeight );
     ModuleManager.init();
 
     let renderer = MainView.getRenderer();
@@ -37,7 +34,7 @@ function init() {
 function update() {
 
     let delta = clock.getDelta();
-    ModuleManager.update(delta);
+    ModuleManager.update( delta );
 
 }
 

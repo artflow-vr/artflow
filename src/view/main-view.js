@@ -11,7 +11,7 @@ MainView._renderer = null;
 MainView._rootScene = null;
 MainView._vrEffect = null;
 
-MainView.init = function( w, h ) {
+MainView.init = function ( w, h ) {
 
     MainView._renderer = new THREE.WebGLRenderer( {
         antialias: true
@@ -28,13 +28,13 @@ MainView.init = function( w, h ) {
 
 };
 
-MainView.render = function() {
+MainView.render = function () {
 
     MainView._vrEffect.render( MainView._rootScene, MainView._camera );
 
 };
 
-MainView.resize = function( w, h ) {
+MainView.resize = function ( w, h ) {
 
     MainView._camera.aspect = w / h;
     MainView._camera.updateProjectionMatrix();
@@ -42,31 +42,31 @@ MainView.resize = function( w, h ) {
 
 };
 
-MainView.getCamera = function() {
+MainView.getCamera = function () {
 
     return MainView._camera;
 
 };
 
-MainView.getRenderer = function() {
+MainView.getRenderer = function () {
 
     return MainView._renderer;
 
 };
 
-MainView.getRootScene = function() {
+MainView.getRootScene = function () {
 
     return MainView._rootScene;
 
 };
 
-MainView.getVREffect = function() {
+MainView.getVREffect = function () {
 
     return MainView._vrEffect;
 
 };
 
-MainView._createInitialScene = function() {
+MainView._createInitialScene = function () {
 
     MainView._rootScene = new THREE.Scene();
     MainView.fog = new THREE.FogExp2( 0x000000, 0.0128 );
@@ -86,4 +86,3 @@ MainView._createInitialScene = function() {
     MainView._renderer.setClearColor( MainView.fog.color, 1 );
 
 };
-
