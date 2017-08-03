@@ -8,44 +8,45 @@ let HTMLView = viewNamespace.HTMLView;
 let HTMLTextArea = viewNamespace.HTMLTextArea;
 
 let MiscInfoTable = require( '../utils/info-table' ).misc;
-let VRInfoTable = require( '../utils/info-table' ).vr;
+//let VRInfoTable = require( '../utils/info-table' ).vr;
 
 let WebVR = require( '../vr/vr' ).WebVR;
 
 let Controls = require( '../controls/controls' );
-let VRControls = Controls.VRControls;
+//let VRControls = Controls.VRControls;
 let FPSControls = Controls.FPSControls;
 
 let Control = module.exports;
 ModuleManager.register( 'control', Control );
 
-Control._controls = null;
-Control._keyMapping = null;
-Control._HTMLView = null;
-Control._pointerLocked = false;
+Control.init = function () {
 
-Control.init = function() {
+    this._controls = null;
+    this._keyMapping = null;
+    this._HTMLView = null;
+    this._pointerLocked = false;
 
     let renderer = MainView.getRenderer();
 
     WebVR.checkAvailability()
-            .then( function() {
-                WebVR.getVRDisplay( function ( display ) {
-                    document.body.appendChild(
-                        WebVR.getButton( display, renderer.domElement )
-                    );
-                } );
-            } )
-            .catch( function( message ) {
-                document.body.appendChild( WebVR.getMessageContainer( message ) );
-                Control._initKeyboardMouse();
+        .then( function () {
+            WebVR.getVRDisplay( function ( display ) {
+                document.body.appendChild(
+                    WebVR.getButton( display, renderer.domElement )
+                );
             } );
+        } )
+        .catch( function ( message ) {
+            document.body.appendChild( WebVR.getMessageContainer(
+                message ) );
+            Control._initKeyboardMouse();
+        } );
 
     //Control.vrControls = new VRControls( camera );
 
 };
 
-Control.update = function( data ) {
+Control.update = function ( data ) {
 
     if ( Control._controls !== null )
         Control._controls.update( data.delta );
@@ -53,7 +54,7 @@ Control.update = function( data ) {
 
 };
 
-Control.resize = function( params ) {
+Control.resize = function ( params ) {
 
     let w = params.w;
     let h = params.h;
@@ -62,7 +63,7 @@ Control.resize = function( params ) {
 
 };
 
-Control._keyDown = function( event ) {
+Control._keyDown = function ( event ) {
 
     let key = event.keyCode;
     if ( key in Control._keyMapping && Control._keyMapping[ key ] !== null )
@@ -70,7 +71,7 @@ Control._keyDown = function( event ) {
 
 };
 
-Control._keyUp = function( event ) {
+Control._keyUp = function ( event ) {
 
     let key = event.keyCode;
     if ( key in Control._keyMapping && Control._keyMapping[ key ] !== null )
@@ -78,21 +79,21 @@ Control._keyUp = function( event ) {
 
 };
 
-Control._mouseMove = function( event ) {
+Control._mouseMove = function ( event ) {
 
     Control._controls.moveView( event );
 
 };
 
-Control._mouseUp = function() {
+Control._mouseUp = function () {
 
 };
 
-Control._mouseDown = function() {
+Control._mouseDown = function () {
 
 };
 
-Control._pointLockChange = function( ) {
+Control._pointLockChange = function () {
 
     Control._pointerLocked = !Control._pointerLocked;
 
@@ -101,12 +102,15 @@ Control._pointLockChange = function( ) {
 
 };
 
-Control._initKeyboardMouse = function() {
-
-    Control._controls = null;
-    Control._keyMapping = null;
+Control._initKeyboardMouse = function () {
 
     let camera = MainView.getCamera();
+
+    this._controls = null;
+    this._keyMapping = null;
+    this._controls = new FPSControls( camera );
+    this._controls.enable( false );
+    this._controls.setFixedHeight( 2.0 );
 
     let backgroundStyle = {
         position: 'absolute',
@@ -120,17 +124,17 @@ Control._initKeyboardMouse = function() {
         top: '50%'
     };
 
-    Control._HTMLView = new HTMLView( backgroundStyle );
+    this._HTMLView = new HTMLView( backgroundStyle );
+    this._HTMLView.setProp( 'align', 'center' );
+
     let messageView = new HTMLTextArea( null, messageViewStyle );
 
-    Control._HTMLView.setProp( 'align', 'center' );
-
     let checkPointerLock = 'pointerLockElement' in document ||
-                            'mozPointerLockElement' in document ||
-                            'webkitPointerLockElement' in document;
+        'mozPointerLockElement' in document ||
+        'webkitPointerLockElement' in document;
 
     document.body.appendChild( Control._HTMLView.getDOMElement() );
-    Control._HTMLView.addChild( messageView );
+    this._HTMLView.addChild( messageView );
 
     if ( !checkPointerLock ) {
         messageView.setMessage( MiscInfoTable.missingPointerLocking );
@@ -138,36 +142,36 @@ Control._initKeyboardMouse = function() {
     }
 
     messageView.setMessage( MiscInfoTable.startPointerLocking );
-    messageView.setProp( 'onclick', function() {
+    messageView.setProp( 'onclick', Control._initPointerLock );
 
-        let element = document.body;
-        element.requestPointerLock = element.requestPointerLock ||
-                                    element.mozRequestPointerLock ||
-                                    element.webkitRequestPointerLock;
-        element.exitPointerLock = element.exitPointerLock ||
-                                    element.mozExitPointerLock ||
-                                    element.webkitExitPointerLock;
-        element.requestPointerLock();
-
-        // Hooks pointer lock state change events
-        document.addEventListener( 'pointerlockchange',
-                                    Control._pointLockChange, false );
-        document.addEventListener( 'mozpointerlockchange',
-                                    Control._pointLockChange, false );
-
-    } );
-
-    Control._controls = new FPSControls( camera );
-    Control._controls.enable( false );
-    Control._keyMapping = {
-        65 /* A */: Control._controls.left.bind( Control._controls ),
-        68 /* D */: Control._controls.right.bind( Control._controls ),
-        83 /* S */: Control._controls.backward.bind( Control._controls ),
-        87 /* W */: Control._controls.forward.bind( Control._controls )
+    this._keyMapping = {
+        65 /* A */: Control._controls.left.bind( this._controls ),
+        68 /* D */: Control._controls.right.bind( this._controls ),
+        83 /* S */: Control._controls.backward.bind( this._controls ),
+        87 /* W */: Control._controls.forward.bind( this._controls )
     };
 
-    document.addEventListener( 'keydown', Control._keyDown, false );
-    document.addEventListener( 'keyup', Control._keyUp, false );
-    document.addEventListener( 'mousemove', Control._mouseMove, false );
+    document.addEventListener( 'keydown', this._keyDown, false );
+    document.addEventListener( 'keyup', this._keyUp, false );
+    document.addEventListener( 'mousemove', this._mouseMove, false );
+
+};
+
+Control._initPointerLock = function () {
+
+    let element = document.body;
+    element.requestPointerLock = element.requestPointerLock ||
+        element.mozRequestPointerLock ||
+        element.webkitRequestPointerLock;
+    element.exitPointerLock = element.exitPointerLock ||
+        element.mozExitPointerLock ||
+        element.webkitExitPointerLock;
+    element.requestPointerLock();
+
+    // Hooks pointer lock state change events
+    document.addEventListener( 'pointerlockchange',
+        Control._pointLockChange, false );
+    document.addEventListener( 'mozpointerlockchange',
+        Control._pointLockChange, false );
 
 };
