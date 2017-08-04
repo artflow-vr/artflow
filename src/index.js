@@ -7,6 +7,7 @@ let ModuleManager = Artflow.modules.ModuleManager;
 
 let MainView = Artflow.view.MainView;
 
+let renderer = null;
 let clock = null;
 
 function resize() {
@@ -18,10 +19,19 @@ function resize() {
 
 function init() {
 
-    MainView.init( window.innerWidth, window.innerHeight );
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    renderer = new THREE.WebGLRenderer( {
+        antialias: true
+    } );
+    renderer.setSize( w, h );
+    renderer.vr.enabled = true;
+    renderer.vr.standing = true;
+
+    MainView.init( w, h, renderer );
     ModuleManager.init();
 
-    let renderer = MainView.getRenderer();
     document.body.appendChild( renderer.domElement );
 
     // Registers global events
@@ -46,8 +56,6 @@ function render() {
 
 function animate() {
 
-    MainView.getVREffect().requestAnimationFrame( animate );
-
     update();
     render();
 
@@ -56,6 +64,6 @@ function animate() {
 window.onload = function () {
 
     init();
-    animate();
+    renderer.animate( animate );
 
 };
