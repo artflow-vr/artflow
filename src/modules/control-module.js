@@ -53,6 +53,7 @@ Control.init = function () {
                 document.body.appendChild(
                     WebVR.getButton( display, renderer.domElement )
                 );
+                renderer.vr.setDevice( display );
             } );
         } )
         .catch( function ( message ) {
