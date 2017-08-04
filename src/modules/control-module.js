@@ -7,8 +7,9 @@ let MainView = viewNamespace.MainView;
 let HTMLView = viewNamespace.HTMLView;
 let HTMLTextArea = viewNamespace.HTMLTextArea;
 
-let MiscInfoTable = require( '../utils/info-table' ).misc;
-//let VRInfoTable = require( '../utils/info-table' ).vr;
+let Utils = require( '../utils/utils' );
+let EventDispatcher = Utils.EventDispatcher;
+let MiscInfoTable = Utils.InfoTable.misc;
 
 let WebVR = require( '../vr/vr' ).WebVR;
 
@@ -18,6 +19,24 @@ let FPSControls = Controls.FPSControls;
 
 let Control = module.exports;
 ModuleManager.register( 'control', Control );
+
+/**
+ * Maps known command event from keyboard, mouse, or
+ * VR Headset controllers to custom Artflow event.
+ * This structure allows to use a single pipeline for all actions.
+ */
+Control._keyboardToAction = {
+    65: 'left', // A
+    68: 'right', // D
+    83: 'backward', // S
+    87: 'forward', // W
+    90: 'forward' // Z
+};
+
+Control._mouseToAction = {
+    0: 'interact', // Left click
+    2: 'teleport' // Right click
+};
 
 Control.init = function () {
 
@@ -40,6 +59,8 @@ Control.init = function () {
             document.body.appendChild( WebVR.getMessageContainer(
                 message ) );
             Control._initKeyboardMouse();
+            Control._registerKeyboardMouseEvents();
+            Control._createEventsHandler();
         } );
 
     //Control.vrControls = new VRControls( camera );
@@ -63,19 +84,16 @@ Control.resize = function ( params ) {
 
 };
 
-Control._keyDown = function ( event ) {
+Control._forwardEvent = function ( controlID, controlList, eventPrefix = null,
+    data = null ) {
 
-    let key = event.keyCode;
-    if ( key in Control._keyMapping && Control._keyMapping[ key ] !== null )
-        Control._keyMapping[ event.keyCode ]( true );
+    if ( !( controlID in controlList ) ) return;
 
-};
-
-Control._keyUp = function ( event ) {
-
-    let key = event.keyCode;
-    if ( key in Control._keyMapping && Control._keyMapping[ key ] !== null )
-        Control._keyMapping[ event.keyCode ]( false );
+    let eventID = controlList[ controlID ];
+    if ( eventPrefix === null )
+        EventDispatcher.dispatch( eventID, data );
+    else
+        EventDispatcher.dispatch( eventID + eventPrefix, data );
 
 };
 
@@ -85,20 +103,47 @@ Control._mouseMove = function ( event ) {
 
 };
 
-Control._mouseUp = function () {
-
-};
-
-Control._mouseDown = function () {
-
-};
-
 Control._pointLockChange = function () {
 
     Control._pointerLocked = !Control._pointerLocked;
 
     Control._HTMLView.toggleVisibility( !Control._pointerLocked );
     Control._controls.enable( Control._pointerLocked );
+
+};
+
+Control._createEventsHandler = function () {
+
+    let self = this;
+
+    //
+    // Handles Left, Right, Up,  Down moves, useful
+    // when VR Controllers has not been detected.
+    //
+    EventDispatcher.register( 'leftDown', function () {
+        self._controls.left( true );
+    } );
+    EventDispatcher.register( 'leftUp', function () {
+        self._controls.left( false );
+    } );
+    EventDispatcher.register( 'rightDown', function () {
+        self._controls.right( true );
+    } );
+    EventDispatcher.register( 'rightUp', function () {
+        self._controls.right( false );
+    } );
+    EventDispatcher.register( 'backwardDown', function () {
+        self._controls.backward( true );
+    } );
+    EventDispatcher.register( 'backwardUp', function () {
+        self._controls.backward( false );
+    } );
+    EventDispatcher.register( 'forwardDown', function () {
+        self._controls.forward( true );
+    } );
+    EventDispatcher.register( 'forwardUp', function () {
+        self._controls.forward( false );
+    } );
 
 };
 
@@ -144,17 +189,33 @@ Control._initKeyboardMouse = function () {
     messageView.setMessage( MiscInfoTable.startPointerLocking );
     messageView.setProp( 'onclick', Control._initPointerLock );
 
-    this._keyMapping = {
-        65 /* A */: Control._controls.left.bind( this._controls ),
-        68 /* D */: Control._controls.right.bind( this._controls ),
-        83 /* S */: Control._controls.backward.bind( this._controls ),
-        87 /* W */: Control._controls.forward.bind( this._controls )
-    };
+};
 
-    document.addEventListener( 'keydown', this._keyDown, false );
-    document.addEventListener( 'keyup', this._keyUp, false );
+Control._registerKeyboardMouseEvents = function () {
+
+    let self = this;
+
+    document.addEventListener( 'mousedown', function ( event ) {
+        self._forwardEvent( event.button, self._mouseToAction,
+            'Down' );
+    }, false );
+    document.addEventListener( 'mouseup', function ( event ) {
+        self._forwardEvent( event.button, self._mouseToAction, 'Up' );
+    }, false );
+
+    document.addEventListener( 'keydown', function ( event ) {
+        self._forwardEvent( event.keyCode, self._keyboardToAction,
+            'Down' );
+    }, false );
+    document.addEventListener( 'keyup', function ( event ) {
+        self._forwardEvent( event.keyCode, self._keyboardToAction,
+            'Up' );
+    }, false );
+
+    // The events below are different, we do not really need
+    // to create a forwarding as it differs from the other devices,
+    // and also because it does not make sense to change the binding.
     document.addEventListener( 'mousemove', this._mouseMove, false );
-
 };
 
 Control._initPointerLock = function () {
