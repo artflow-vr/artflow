@@ -1,6 +1,6 @@
 'use strict';
 
-let THREE = require( 'three' );
+let THREE = window.THREE;
 
 let MainView = module.exports;
 
@@ -13,6 +13,7 @@ MainView.init = function ( w, h, renderer ) {
     this._camera.position.y = 2;
 
     this._rootScene = null;
+
     this._createInitialScene();
 
 };
@@ -27,7 +28,12 @@ MainView.resize = function ( w, h ) {
 
     this._camera.aspect = w / h;
     this._camera.updateProjectionMatrix();
-    this._vrEffect.setSize( window.innerWidth, window.innerHeight );
+
+};
+
+MainView.addToScene = function ( object ) {
+
+    this._rootScene.add( object );
 
 };
 
@@ -58,9 +64,9 @@ MainView.getVREffect = function () {
 MainView._createInitialScene = function () {
 
     this._rootScene = new THREE.Scene();
-    let fog = new THREE.FogExp2( 0x000000, 0.0128 );
+    let fog = new THREE.FogExp2( 0x001c2d, 0.0125 );
 
-    let grid = new THREE.GridHelper( 100, 100, 0xffffff, 0xffffff );
+    let grid = new THREE.GridHelper( 100, 100, 0xbdc3c7, 0xbdc3c7 );
 
     let geometry = new THREE.BoxGeometry( 2, 2, 2 );
     let material = new THREE.MeshBasicMaterial( {
