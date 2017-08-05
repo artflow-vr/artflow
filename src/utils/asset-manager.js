@@ -33,8 +33,6 @@ AssetManager.init = function () {
         blending: THREE.AdditiveBlending
     } );
 
-    console.log( THREE.MeshPhongMaterial );
-
     return this._loadRequiredAssets();
 
 };
