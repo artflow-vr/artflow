@@ -1,15 +1,15 @@
 'use strict';
 
+let THREE = window.THREE;
+
 let ModuleManager = require( './module-manager' );
 
 let View = require( '../view/view' );
 let MainView = View.MainView;
 let HTMLView = View.HTMLView;
 let HTMLTextArea = View.HTMLTextArea;
-let ModelView = View.ModelView;
 
 let Utils = require( '../utils/utils' );
-let AssetManager = Utils.AssetManager;
 let EventDispatcher = Utils.EventDispatcher;
 let MiscInfoTable = Utils.InfoTable.misc;
 
@@ -17,6 +17,7 @@ let WebVR = require( '../vr/vr' ).WebVR;
 
 let Controls = require( '../controls/controls' );
 let FPSControls = Controls.FPSControls;
+let TeleporterController = Controls.TeleporterController;
 
 let Control = module.exports;
 ModuleManager.register( 'control', Control );
@@ -41,14 +42,19 @@ Control._mouseToAction = {
 
 Control.init = function () {
 
+    // This variable stores either the direction of the camera if VR
+    // is not activated, or the direction of the right controller.
+    this._pointerDirection = new THREE.Vector3( 0, 0, -1 );
+
+    this._teleporterController = new TeleporterController( 10 );
+    MainView.addToScene( this._teleporterController.getView().getObject() );
+    MainView.addToScene( this._teleporterController.getSplineLine() );
+
     this._controls = null;
+
     this._pointerLocked = false;
 
     this._HTMLView = null;
-
-    this._teleporterView = new ModelView( AssetManager.get( 'teleporter' ) );
-    this._teleporterView.getObject().scale.set( 4, 4, 4 );
-    MainView.addToScene( this._teleporterView.getObject() );
 
     let renderer = MainView.getRenderer();
 
@@ -77,6 +83,11 @@ Control.update = function ( data ) {
 
     if ( Control._controls !== null )
         Control._controls.update( data.delta );
+
+    // Updates the _pointerDirection value with the camera direction.
+    MainView.getCamera().getWorldDirection( this._pointerDirection );
+    this._teleporterController.update( this._pointerDirection, MainView.getCamera()
+        .position );
 
 };
 
