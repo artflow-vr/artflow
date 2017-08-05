@@ -2,19 +2,20 @@
 
 let ModuleManager = require( './module-manager' );
 
-let viewNamespace = require( '../view/view' );
-let MainView = viewNamespace.MainView;
-let HTMLView = viewNamespace.HTMLView;
-let HTMLTextArea = viewNamespace.HTMLTextArea;
+let View = require( '../view/view' );
+let MainView = View.MainView;
+let HTMLView = View.HTMLView;
+let HTMLTextArea = View.HTMLTextArea;
+let ModelView = View.ModelView;
 
 let Utils = require( '../utils/utils' );
+let AssetManager = Utils.AssetManager;
 let EventDispatcher = Utils.EventDispatcher;
 let MiscInfoTable = Utils.InfoTable.misc;
 
 let WebVR = require( '../vr/vr' ).WebVR;
 
 let Controls = require( '../controls/controls' );
-//let VRControls = Controls.VRControls;
 let FPSControls = Controls.FPSControls;
 
 let Control = module.exports;
@@ -41,9 +42,13 @@ Control._mouseToAction = {
 Control.init = function () {
 
     this._controls = null;
-    this._keyMapping = null;
-    this._HTMLView = null;
     this._pointerLocked = false;
+
+    this._HTMLView = null;
+
+    this._teleporterView = new ModelView( AssetManager.get( 'teleporter' ) );
+    this._teleporterView.getObject().scale.set( 4, 4, 4 );
+    MainView.addToScene( this._teleporterView.getObject() );
 
     let renderer = MainView.getRenderer();
 
@@ -72,7 +77,6 @@ Control.update = function ( data ) {
 
     if ( Control._controls !== null )
         Control._controls.update( data.delta );
-    //Control.vrControls.update();
 
 };
 
