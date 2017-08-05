@@ -1,45 +1,17 @@
 'use strict';
 
-let THREE = require( 'three' );
+window.THREE = require( 'three' );
+let THREE = window.THREE;
 
 let Artflow = require( './artflow' );
 let ModuleManager = Artflow.modules.ModuleManager;
+
+let AssetManager = Artflow.utils.AssetManager;
 
 let MainView = Artflow.view.MainView;
 
 let renderer = null;
 let clock = null;
-
-function resize() {
-
-    ModuleManager.resize( window.innerWidth, window.innerHeight );
-    MainView.resize( window.innerWidth, window.innerHeight );
-
-}
-
-function init() {
-
-    let w = window.innerWidth;
-    let h = window.innerHeight;
-
-    renderer = new THREE.WebGLRenderer( {
-        antialias: true
-    } );
-    renderer.setSize( w, h );
-    renderer.vr.enabled = true;
-    renderer.vr.standing = true;
-
-    MainView.init( w, h, renderer );
-    ModuleManager.init();
-
-    document.body.appendChild( renderer.domElement );
-
-    // Registers global events
-    window.addEventListener( 'resize', resize, false );
-
-    clock = new THREE.Clock();
-
-}
 
 function update() {
 
@@ -54,6 +26,13 @@ function render() {
 
 }
 
+function resize() {
+
+    ModuleManager.resize( window.innerWidth, window.innerHeight );
+    MainView.resize( window.innerWidth, window.innerHeight );
+
+}
+
 function animate() {
 
     update();
@@ -61,9 +40,42 @@ function animate() {
 
 }
 
+function init() {
+
+    clock = new THREE.Clock();
+
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    MainView.init( w, h, renderer );
+    ModuleManager.init();
+
+    // Registers global events
+    window.addEventListener( 'resize', resize, false );
+
+    renderer.animate( animate );
+
+}
+
 window.onload = function () {
 
-    init();
-    renderer.animate( animate );
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    renderer = new THREE.WebGLRenderer( {
+        antialias: true
+    } );
+    renderer.setSize( w, h );
+    renderer.vr.enabled = true;
+    renderer.vr.standing = true;
+    document.body.appendChild( renderer.domElement );
+
+    AssetManager.init()
+        .then( init )
+        .catch( function ( error ) {
+
+            throw Error( error );
+
+        } );
 
 };
