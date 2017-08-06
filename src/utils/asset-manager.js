@@ -18,6 +18,7 @@ AssetManager._texturePath = AssetManager._assetRoot + 'textures/';
  */
 AssetManager.ARTFLOW_MATERIALS = {};
 AssetManager.TELEPORTER = 'teleporter';
+AssetManager.VIVE_CONTROLLER = 'vive-controller';
 
 AssetManager.init = function () {
 
@@ -37,17 +38,19 @@ AssetManager.init = function () {
 
 };
 
-AssetManager.load = function ( assetID, assetPath ) {
+AssetManager.load = function ( assetID, assetPath, fileName ) {
 
     let self = this;
     return new Promise( function ( resolve, reject ) {
 
         if ( assetID in self._assets ) {
-            let warnMsg = 'asset ' + assetID + ' has already been registered';
+            let warnMsg = 'asset ' + assetID +
+                ' has already been registered';
             console.warn( 'AssetManager: ' + warnMsg );
         }
 
-        self._OBJLoader.load( assetPath, function ( object ) {
+        self._OBJLoader.setPath( assetPath );
+        self._OBJLoader.load( fileName, function ( object ) {
 
             self._assets[ assetID ] = object;
 
@@ -69,7 +72,8 @@ AssetManager.load = function ( assetID, assetPath ) {
         }, undefined, function ( threeError ) {
 
             let errorMsg = 'AssetManager: ';
-            errorMsg += 'impossible to load \'' + assetPath + '\'\n';
+            errorMsg += 'impossible to load \'' + assetPath +
+                '\'\n';
             errorMsg += 'THREE: ' + threeError;
             reject( errorMsg );
 
@@ -90,8 +94,13 @@ AssetManager._loadRequiredAssets = function () {
     let promises = [];
 
     promises.push(
-        this.load( AssetManager.TELEPORTER, this._modelPath +
+        this.load( AssetManager.TELEPORTER, this._modelPath,
             'teleporter.obj' )
+    );
+
+    promises.push(
+        this.load( AssetManager.VIVE_CONTROLLER, this._modelPath,
+            'vive-controller.obj' )
     );
 
     return Promise.all( promises );

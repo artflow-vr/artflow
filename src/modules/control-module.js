@@ -12,8 +12,7 @@ let HTMLTextArea = View.HTMLTextArea;
 let Utils = require( '../utils/utils' );
 let EventDispatcher = Utils.EventDispatcher;
 let MiscInfoTable = Utils.InfoTable.misc;
-
-let WebVR = require( '../vr/vr' ).WebVR;
+let AssetManager = Utils.AssetManager;
 
 let Controller = require( '../controller/controller' );
 let FPSControls = Controller.FPSControls;
@@ -21,6 +20,8 @@ let TeleporterController = Controller.TeleporterController;
 
 let Control = module.exports;
 ModuleManager.register( 'control', Control );
+
+Control.vr = false;
 
 /**
  * Maps known command event from keyboard, mouse, or
@@ -45,49 +46,32 @@ Control.init = function () {
     // This variable stores either the direction of the camera if VR
     // is not activated, or the direction of the right controller.
     this._pointerDirection = new THREE.Vector3( 0, 0, -1 );
+    this._decompMatrix = new THREE.Matrix4();
 
-    this._teleporterController = new TeleporterController( );
+    this._teleporterController = new TeleporterController();
     MainView.addToScene( this._teleporterController.getView().getObject() );
 
     this._controls = null;
+    this._vrLeftController = null;
+    this._vrRightController = null;
 
     this._pointerLocked = false;
 
     this._HTMLView = null;
 
-    let renderer = MainView.getRenderer();
+    // If VR is activated, we will registers other events,
+    // display meshes for controllers, etc...
+    if ( Control.vr ) {
+        Control._initVRControllers();
+        Control._registerVREvents();
+        Control.update = Control._updateVR;
+    } else {
+        Control._initKeyboardMouse();
+        Control._registerKeyboardMouseEvents();
+        Control._registerNONVrEvents();
 
-    WebVR.checkAvailability()
-        .then( function () {
-            WebVR.getVRDisplay( function ( display ) {
-                document.body.appendChild(
-                    WebVR.getButton( display, renderer.domElement )
-                );
-                renderer.vr.setDevice( display );
-            } );
-        } )
-        .catch( function ( message ) {
-            document.body.appendChild( WebVR.getMessageContainer(
-                message ) );
-            Control._initKeyboardMouse();
-            Control._registerKeyboardMouseEvents();
-            Control._createEventsHandler();
-        } );
-
-    //Control.vrControls = new VRControls( camera );
-
-};
-
-Control.update = function ( data ) {
-
-    if ( Control._controls !== null )
-        Control._controls.update( data.delta );
-
-    // Updates the _pointerDirection value with the camera direction.
-    MainView.getCamera().getWorldDirection( this._pointerDirection );
-    this._teleporterController.update(
-        this._pointerDirection, MainView.getCamera().position
-    );
+        Control.update = Control._updateNOVR;
+    }
 
 };
 
@@ -100,8 +84,38 @@ Control.resize = function ( params ) {
 
 };
 
+Control._updateVR = function () {
+
+    this._vrLeftController.update();
+    this._vrRightController.update();
+
+    this._vrRightController.getWorldDirection( this._pointerDirection );
+
+    this._pointerDirection.x = -this._pointerDirection.x;
+    this._pointerDirection.y = -this._pointerDirection.y;
+    this._pointerDirection.z = -this._pointerDirection.z;
+
+    this._teleporterController.update(
+        this._pointerDirection, this._vrRightController.getWorldPosition()
+    );
+
+};
+
+Control._updateNOVR = function ( data ) {
+
+    Control._controls.update( data.delta );
+
+    // Updates the _pointerDirection value with the camera direction.
+    MainView.getCamera().getWorldDirection( this._pointerDirection );
+    console.log( MainView.getCamera().position );
+    this._teleporterController.update(
+        this._pointerDirection, MainView.getCamera().position
+    );
+
+};
+
 Control._forwardEvent = function ( controlID, controlList,
-                                    eventPrefix = null, data = null ) {
+    eventPrefix = null, data = null ) {
 
     if ( !( controlID in controlList ) ) return;
 
@@ -128,7 +142,13 @@ Control._pointLockChange = function () {
 
 };
 
-Control._createEventsHandler = function () {
+Control._registerVREvents = function () {
+
+    this._registerEvents();
+
+};
+
+Control._registerNONVrEvents = function () {
 
     let self = this;
 
@@ -160,18 +180,51 @@ Control._createEventsHandler = function () {
     EventDispatcher.register( 'forwardUp', function () {
         self._controls.forward( false );
     } );
+
+    this._registerEvents();
+
+};
+
+Control._registerEvents = function () {
+
+    let self = this;
+    let renderer = MainView.getRenderer();
+
     EventDispatcher.register( 'teleportUp', function () {
         self._teleporterController.enable( false );
         // Teleports the camera at the target position
         let position = self._teleporterController.getTargetPosition();
+
         let camera = MainView.getCamera();
         camera.position.x = position.x;
         camera.position.z = position.z;
+
+        renderer.vr.getCamera( camera );
 
     } );
     EventDispatcher.register( 'teleportDown', function () {
         self._teleporterController.enable( true );
     } );
+
+};
+
+Control._initVRControllers = function () {
+
+    let renderer = MainView.getRenderer();
+    console.log( renderer );
+    let controllerMesh = AssetManager.get( AssetManager.VIVE_CONTROLLER );
+
+    this._vrLeftController = new THREE.ViveController( 0 );
+    this._vrLeftController.standingMatrix = renderer.vr.getStandingMatrix();
+
+    this._vrRightController = new THREE.ViveController( 1 );
+    this._vrRightController.standingMatrix = renderer.vr.getStandingMatrix();
+
+    this._vrLeftController.add( controllerMesh.clone() );
+    this._vrRightController.add( controllerMesh.clone() );
+
+    MainView.addToScene( this._vrRightController );
+    MainView.addToScene( this._vrLeftController );
 
 };
 
