@@ -43,8 +43,7 @@ AssetManager.load = function ( assetID, assetPath ) {
     return new Promise( function ( resolve, reject ) {
 
         if ( assetID in self._assets ) {
-            let warnMsg = 'the asset ' + assetID +
-                ' has beend registered twice!';
+            let warnMsg = 'asset ' + assetID + ' has already been registered';
             console.warn( 'AssetManager: ' + warnMsg );
         }
 
@@ -70,8 +69,7 @@ AssetManager.load = function ( assetID, assetPath ) {
         }, undefined, function ( threeError ) {
 
             let errorMsg = 'AssetManager: ';
-            errorMsg += 'impossible to load \'' + assetPath +
-                '\'\n';
+            errorMsg += 'impossible to load \'' + assetPath + '\'\n';
             errorMsg += 'THREE: ' + threeError;
             reject( errorMsg );
 
