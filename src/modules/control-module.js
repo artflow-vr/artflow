@@ -28,32 +28,28 @@ Control.vr = false;
  * VR Headset controllers to custom Artflow events.
  * This structure allows to use a single pipeline for all actions.
  */
-Control._keyboardToAction = {
-    65: 'left', // A
-    68: 'right', // D
-    83: 'backward', // S
-    87: 'forward', // W
-    90: 'forward' // Z
+Control._mouseToAction = {
+    0: EventDispatcher.EVENTS.interact, // Left click
+    2: EventDispatcher.EVENTS.teleport // Right click
 };
 
-Control._mouseToAction = {
-    0: 'interact', // Left click
-    2: 'teleport' // Right click
+Control._controllerToAction = {
+    thumbpad: EventDispatcher.EVENTS.teleport
 };
 
 Control.init = function () {
 
     // This variable stores either the direction of the camera if VR
-    // is not activated, or the direction of the right controller.
+    // is not activated, or the direction of the controller which pressed
+    // the teleport button.
     this._pointerDirection = new THREE.Vector3( 0, 0, -1 );
-    this._decompMatrix = new THREE.Matrix4();
 
     this._teleporterController = new TeleporterController();
     MainView.addToScene( this._teleporterController.getView().getObject() );
 
-    this._controls = null;
-    this._vrLeftController = null;
-    this._vrRightController = null;
+    this._fpsController = null;
+    this._controllers = null;
+    this._currentController = null;
 
     this._pointerLocked = false;
 
@@ -63,15 +59,14 @@ Control.init = function () {
     // display meshes for controllers, etc...
     if ( Control.vr ) {
         Control._initVRControllers();
-        Control._registerVREvents();
         Control.update = Control._updateVR;
     } else {
         Control._initKeyboardMouse();
         Control._registerKeyboardMouseEvents();
-        Control._registerNONVrEvents();
-
         Control.update = Control._updateNOVR;
     }
+
+    this._registerEvents();
 
 };
 
@@ -80,56 +75,43 @@ Control.resize = function ( params ) {
     let w = params.w;
     let h = params.h;
 
-    Control._controls.resize( w, h );
+    if ( this._fpsController )
+        Control._fpsController.resize( w, h );
 
 };
 
 Control._updateVR = function () {
 
-    this._vrLeftController.update();
-    this._vrRightController.update();
+    this._controllers[ 0 ].update();
+    this._controllers[ 1 ].update();
 
-    this._vrRightController.getWorldDirection( this._pointerDirection );
+    this._currentController.getWorldDirection( this._pointerDirection );
 
     this._pointerDirection.x = -this._pointerDirection.x;
     this._pointerDirection.y = -this._pointerDirection.y;
     this._pointerDirection.z = -this._pointerDirection.z;
 
     this._teleporterController.update(
-        this._pointerDirection, this._vrRightController.getWorldPosition()
+        this._pointerDirection, this._currentController.getWorldPosition()
     );
 
 };
 
 Control._updateNOVR = function ( data ) {
 
-    Control._controls.update( data.delta );
+    Control._fpsController.update( data.delta );
 
     // Updates the _pointerDirection value with the camera direction.
     MainView.getCamera().getWorldDirection( this._pointerDirection );
-    console.log( MainView.getCamera().position );
     this._teleporterController.update(
         this._pointerDirection, MainView.getCamera().position
     );
 
 };
 
-Control._forwardEvent = function ( controlID, controlList,
-    eventPrefix = null, data = null ) {
-
-    if ( !( controlID in controlList ) ) return;
-
-    let eventID = controlList[ controlID ];
-    if ( eventPrefix === null )
-        EventDispatcher.dispatch( eventID, data );
-    else
-        EventDispatcher.dispatch( eventID + eventPrefix, data );
-
-};
-
 Control._mouseMove = function ( event ) {
 
-    Control._controls.moveView( event );
+    Control._fpsController.moveView( event );
 
 };
 
@@ -138,59 +120,21 @@ Control._pointLockChange = function () {
     Control._pointerLocked = !Control._pointerLocked;
 
     Control._HTMLView.toggleVisibility( !Control._pointerLocked );
-    Control._controls.enable( Control._pointerLocked );
+    Control._fpsController.enable( Control._pointerLocked );
 
 };
 
-Control._registerVREvents = function () {
-
-    this._registerEvents();
-
-};
-
-Control._registerNONVrEvents = function () {
-
-    let self = this;
-
-    //
-    // Handles Left, Right, Up,  Down moves, useful
-    // when VR Controllers has not been detected.
-    //
-    EventDispatcher.register( 'leftDown', function () {
-        self._controls.left( true );
-    } );
-    EventDispatcher.register( 'leftUp', function () {
-        self._controls.left( false );
-    } );
-    EventDispatcher.register( 'rightDown', function () {
-        self._controls.right( true );
-    } );
-    EventDispatcher.register( 'rightUp', function () {
-        self._controls.right( false );
-    } );
-    EventDispatcher.register( 'backwardDown', function () {
-        self._controls.backward( true );
-    } );
-    EventDispatcher.register( 'backwardUp', function () {
-        self._controls.backward( false );
-    } );
-    EventDispatcher.register( 'forwardDown', function () {
-        self._controls.forward( true );
-    } );
-    EventDispatcher.register( 'forwardUp', function () {
-        self._controls.forward( false );
-    } );
-
-    this._registerEvents();
-
-};
-
+/**
+ * Registers events common to any control type: mouse, keyboard, controllers...
+ * e.g; teleportUp / teleportDown.
+ */
 Control._registerEvents = function () {
 
     let self = this;
     let renderer = MainView.getRenderer();
 
     EventDispatcher.register( 'teleportUp', function () {
+
         self._teleporterController.enable( false );
         // Teleports the camera at the target position
         let position = self._teleporterController.getTargetPosition();
@@ -202,8 +146,11 @@ Control._registerEvents = function () {
         renderer.vr.getCamera( camera );
 
     } );
+
     EventDispatcher.register( 'teleportDown', function () {
+
         self._teleporterController.enable( true );
+
     } );
 
 };
@@ -211,20 +158,42 @@ Control._registerEvents = function () {
 Control._initVRControllers = function () {
 
     let renderer = MainView.getRenderer();
-    console.log( renderer );
     let controllerMesh = AssetManager.get( AssetManager.VIVE_CONTROLLER );
 
-    this._vrLeftController = new THREE.ViveController( 0 );
-    this._vrLeftController.standingMatrix = renderer.vr.getStandingMatrix();
+    this._controllers[ 0 ] = new THREE.ViveController( 0 );
+    this._controllers[ 0 ].standingMatrix = renderer.vr.getStandingMatrix();
 
-    this._vrRightController = new THREE.ViveController( 1 );
-    this._vrRightController.standingMatrix = renderer.vr.getStandingMatrix();
+    this._controllers[ 1 ] = new THREE.ViveController( 1 );
+    this._controllers[ 1 ].standingMatrix = renderer.vr.getStandingMatrix();
 
-    this._vrLeftController.add( controllerMesh.clone() );
-    this._vrRightController.add( controllerMesh.clone() );
+    this._controllers[ 0 ].add( controllerMesh.clone() );
+    this._controllers[ 1 ].add( controllerMesh.clone() );
 
-    MainView.addToScene( this._vrRightController );
-    MainView.addToScene( this._vrLeftController );
+    MainView.addToScene( this._controller1 );
+    MainView.addToScene( this._controller2 );
+
+};
+
+Control._registerControllerEvents = function () {
+
+    let self = this;
+
+    this._controllers[ 0 ].addEventListener( 'thumbpad', function ( data ) {
+
+        self._currentController = self._controllers[ 0 ];
+
+        let eventID = Control._controllerToAction.thumbpad;
+        EventDispatcher.dispatch( eventID + data.status );
+
+    } );
+    this._controllers[ 1 ].addEventListener( 'thumbpad', function ( data ) {
+
+        self._currentController = self._controllers[ 1 ];
+
+        let eventID = Control._controllerToAction.thumbpad;
+        EventDispatcher.dispatch( eventID + data.status );
+
+    } );
 
 };
 
@@ -232,11 +201,9 @@ Control._initKeyboardMouse = function () {
 
     let camera = MainView.getCamera();
 
-    this._controls = null;
-    this._keyMapping = null;
-    this._controls = new FPSControls( camera );
-    this._controls.enable( false );
-    this._controls.setFixedHeight( 2.0 );
+    this._fpsController = new FPSControls( camera );
+    this._fpsController.enable( false );
+    this._fpsController.setFixedHeight( 1.5 );
 
     let backgroundStyle = {
         position: 'absolute',
@@ -277,26 +244,59 @@ Control._registerKeyboardMouseEvents = function () {
     let self = this;
 
     document.addEventListener( 'mousedown', function ( event ) {
-        self._forwardEvent( event.button, self._mouseToAction,
-            'Down' );
+        let eventID = self._mouseToAction[ event.button ];
+        EventDispatcher.dispatch( eventID + 'Down' );
     }, false );
     document.addEventListener( 'mouseup', function ( event ) {
-        self._forwardEvent( event.button, self._mouseToAction, 'Up' );
-    }, false );
-
-    document.addEventListener( 'keydown', function ( event ) {
-        self._forwardEvent( event.keyCode, self._keyboardToAction,
-            'Down' );
-    }, false );
-    document.addEventListener( 'keyup', function ( event ) {
-        self._forwardEvent( event.keyCode, self._keyboardToAction,
-            'Up' );
+        let eventID = self._mouseToAction[ event.button ];
+        EventDispatcher.dispatch( eventID + 'Up' );
     }, false );
 
     // The events below are different, we do not really need
     // to create a forwarding as it differs from the other devices,
     // and also because it does not make sense to change the binding.
+
+    document.addEventListener( 'keydown', function ( event ) {
+        switch ( event.keyCode ) {
+        case 65:
+            self._fpsController.left( true );
+            break; // A
+        case 68:
+            self._fpsController.right( true );
+            break; // D
+        case 83:
+            self._fpsController.backward( true );
+            break; // S
+        case 87:
+            self._fpsController.forward( true );
+            break; // W
+        case 90:
+            self._fpsController.forward( true );
+            break; // Z
+        }
+    }, false );
+    document.addEventListener( 'keyup', function ( event ) {
+        switch ( event.keyCode ) {
+        case 65:
+            self._fpsController.left( false );
+            break; // A
+        case 68:
+            self._fpsController.right( false );
+            break; // D
+        case 83:
+            self._fpsController.backward( false );
+            break; // S
+        case 87:
+            self._fpsController.forward( false );
+            break; // W
+        case 90:
+            self._fpsController.forward( false );
+            break; // Z
+        }
+    }, false );
+
     document.addEventListener( 'mousemove', this._mouseMove, false );
+
 };
 
 Control._initPointerLock = function () {

@@ -7,7 +7,6 @@
 let THREE = window.THREE;
 
 let Utils = require( '../utils/utils' );
-let EventDispatcher = Utils.EventDispatcher;
 
 THREE.ViveController = function ( id ) {
 
@@ -68,82 +67,74 @@ THREE.ViveController = function ( id ) {
     this.update = function () {
 
         gamepad = findGamepad( id );
-
-        if ( gamepad !== undefined && gamepad.pose !== undefined ) {
-
-            if ( gamepad.pose === null ) return; // No user action yet
-
-            //  Position and orientation.
-
-            let pose = gamepad.pose;
-
-            if ( pose.position !== null ) {
-                scope.position.fromArray( pose.position );
-            }
-            if ( pose.orientation !== null ) scope.quaternion.fromArray(
-                pose.orientation );
-            scope.matrix.compose( scope.position, scope.quaternion,
-                scope.scale );
-            scope.matrix.multiplyMatrices( scope.standingMatrix, scope.matrix );
-            scope.matrixWorldNeedsUpdate = true;
-            scope.visible = true;
-
-            //  Thumbpad and Buttons.
-
-            if ( axes[ 0 ] !== gamepad.axes[ 0 ] || axes[ 1 ] !==
-                gamepad.axes[ 1 ] ) {
-
-                axes[ 0 ] = gamepad.axes[ 0 ]; //  X axis: -1 = Left, +1 = Right.
-                axes[ 1 ] = gamepad.axes[ 1 ]; //  Y axis: -1 = Bottom, +1 = Top.
-                scope.dispatchEvent( {
-                    type: 'axischanged',
-                    axes: axes
-                } );
-
-            }
-
-            if ( thumbpadIsPressed !== gamepad.buttons[ 0 ].pressed ) {
-
-                thumbpadIsPressed = gamepad.buttons[ 0 ].pressed;
-                //scope.dispatchEvent( { type: thumbpadIsPressed ? 'thumbpaddown' : 'thumbpadup' } );
-
-                if ( thumbpadIsPressed )
-                    EventDispatcher.dispatch( 'teleportDown' );
-                else
-                    EventDispatcher.dispatch( 'teleportUp' );
-
-            }
-
-            if ( triggerIsPressed !== gamepad.buttons[ 1 ].pressed ) {
-
-                triggerIsPressed = gamepad.buttons[ 1 ].pressed;
-                scope.dispatchEvent( {
-                    type: triggerIsPressed ? 'triggerdown' : 'triggerup'
-                } );
-
-            }
-
-            if ( gripsArePressed !== gamepad.buttons[ 2 ].pressed ) {
-
-                gripsArePressed = gamepad.buttons[ 2 ].pressed;
-                scope.dispatchEvent( {
-                    type: gripsArePressed ? 'gripsdown' : 'gripsup'
-                } );
-
-            }
-
-            if ( menuIsPressed !== gamepad.buttons[ 3 ].pressed ) {
-
-                menuIsPressed = gamepad.buttons[ 3 ].pressed;
-                scope.dispatchEvent( {
-                    type: menuIsPressed ? 'menudown' : 'menuup'
-                } );
-
-            }
-
-        } else {
-
+        if ( gamepad === undefined || gamepad.pose === undefined ) {
             scope.visible = false;
+            return;
+        }
+
+        if ( gamepad.pose === null ) return; // No user action yet
+
+        //  Position and orientation.
+        let pose = gamepad.pose;
+
+        if ( pose.position !== null )
+            scope.position.fromArray( pose.position );
+
+        if ( pose.orientation !== null )
+            scope.quaternion.fromArray( pose.orientation );
+
+        scope.matrix.compose( scope.position, scope.quaternion, scope.scale );
+        scope.matrix.multiplyMatrices( scope.standingMatrix, scope.matrix );
+        scope.matrixWorldNeedsUpdate = true;
+        scope.visible = true;
+
+        // Sensitive Thumbpad
+        if ( axes[ 0 ] !== gamepad.axes[ 0 ] ||
+            axes[ 1 ] !== gamepad.axes[ 1 ] ) {
+
+            axes[ 0 ] = gamepad.axes[ 0 ]; //  X axis: -1 = Left, +1 = Right.
+            axes[ 1 ] = gamepad.axes[ 1 ]; //  Y axis: -1 = Bottom, +1 = Top.
+            scope.dispatchEvent( {
+                type: 'axischanged',
+                axes: axes
+            } );
+
+        }
+
+        // Thumpad pressed
+        if ( thumbpadIsPressed !== gamepad.buttons[ 0 ].pressed ) {
+            thumbpadIsPressed = gamepad.buttons[ 0 ].pressed;
+            scope.dispatchEvent( {
+                type: 'thumbpad',
+                status: triggerIsPressed ? 'Down' : 'Up'
+            } );
+
+        }
+
+        if ( triggerIsPressed !== gamepad.buttons[ 1 ].pressed ) {
+
+            triggerIsPressed = gamepad.buttons[ 1 ].pressed;
+            scope.dispatchEvent( {
+                type: triggerIsPressed ? 'triggerdown' : 'triggerup'
+            } );
+
+        }
+
+        if ( gripsArePressed !== gamepad.buttons[ 2 ].pressed ) {
+
+            gripsArePressed = gamepad.buttons[ 2 ].pressed;
+            scope.dispatchEvent( {
+                type: gripsArePressed ? 'gripsdown' : 'gripsup'
+            } );
+
+        }
+
+        if ( menuIsPressed !== gamepad.buttons[ 3 ].pressed ) {
+
+            menuIsPressed = gamepad.buttons[ 3 ].pressed;
+            scope.dispatchEvent( {
+                type: menuIsPressed ? 'menudown' : 'menuup'
+            } );
 
         }
 
