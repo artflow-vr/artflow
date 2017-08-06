@@ -2,6 +2,15 @@
 
 let HTMLView = require( './html-view' );
 
+/**
+ * Simple text-area view based on the HTMLView wrapper.
+ * By default, it uses Artflow css, but it can be changed by hand.
+ *
+ * @constructor
+ *
+ * @param  {Object} dataStyle css inital style. Be careful, the name of the keys
+ * have to match name of css properties, e.g 'position' or 'backgroundColor'.
+ */
 function HTMLTextArea( message, dataStyle = null, useArtflowDefault = true ) {
 
     HTMLView.call( this );
@@ -13,13 +22,18 @@ function HTMLTextArea( message, dataStyle = null, useArtflowDefault = true ) {
         this._useDefaultValues();
 
     // Applies the selected style after applying default values.
-    // Using HTMLView constructor would override the user given style.
+    // Use HTMLView constructor would override the user given style.
     if ( dataStyle ) this.applyDataStyle( dataStyle );
 
 }
 HTMLTextArea.prototype = Object.create( HTMLView.prototype );
-module.exports = HTMLTextArea;
+HTMLTextArea.prototype.constructor = HTMLTextArea;
 
+/**
+ * Sets the content of view of the given message.
+ *
+ * @param  {string} message String displayed in the HTML box.
+ */
 HTMLTextArea.prototype.setMessage = function ( message ) {
 
     if ( message === undefined || message === null ) {
@@ -29,6 +43,7 @@ HTMLTextArea.prototype.setMessage = function ( message ) {
     this._container.innerHTML = message;
 
 };
+
 
 HTMLTextArea.prototype._useDefaultValues = function () {
 
@@ -42,3 +57,5 @@ HTMLTextArea.prototype._useDefaultValues = function () {
     this._container.style.display = 'inline-block';
 
 };
+
+module.exports = HTMLTextArea;
