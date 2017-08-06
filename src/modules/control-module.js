@@ -15,16 +15,16 @@ let MiscInfoTable = Utils.InfoTable.misc;
 
 let WebVR = require( '../vr/vr' ).WebVR;
 
-let Controls = require( '../controls/controls' );
-let FPSControls = Controls.FPSControls;
-let TeleporterController = Controls.TeleporterController;
+let Controller = require( '../controller/controller' );
+let FPSControls = Controller.FPSControls;
+let TeleporterController = Controller.TeleporterController;
 
 let Control = module.exports;
 ModuleManager.register( 'control', Control );
 
 /**
  * Maps known command event from keyboard, mouse, or
- * VR Headset controllers to custom Artflow event.
+ * VR Headset controllers to custom Artflow events.
  * This structure allows to use a single pipeline for all actions.
  */
 Control._keyboardToAction = {
@@ -46,9 +46,8 @@ Control.init = function () {
     // is not activated, or the direction of the right controller.
     this._pointerDirection = new THREE.Vector3( 0, 0, -1 );
 
-    this._teleporterController = new TeleporterController( 10 );
+    this._teleporterController = new TeleporterController( );
     MainView.addToScene( this._teleporterController.getView().getObject() );
-    MainView.addToScene( this._teleporterController.getSplineLine() );
 
     this._controls = null;
 
@@ -86,8 +85,9 @@ Control.update = function ( data ) {
 
     // Updates the _pointerDirection value with the camera direction.
     MainView.getCamera().getWorldDirection( this._pointerDirection );
-    this._teleporterController.update( this._pointerDirection, MainView.getCamera()
-        .position );
+    this._teleporterController.update(
+        this._pointerDirection, MainView.getCamera().position
+    );
 
 };
 
@@ -100,8 +100,8 @@ Control.resize = function ( params ) {
 
 };
 
-Control._forwardEvent = function ( controlID, controlList, eventPrefix = null,
-    data = null ) {
+Control._forwardEvent = function ( controlID, controlList,
+                                    eventPrefix = null, data = null ) {
 
     if ( !( controlID in controlList ) ) return;
 
@@ -159,6 +159,18 @@ Control._createEventsHandler = function () {
     } );
     EventDispatcher.register( 'forwardUp', function () {
         self._controls.forward( false );
+    } );
+    EventDispatcher.register( 'teleportUp', function () {
+        self._teleporterController.enable( false );
+        // Teleports the camera at the target position
+        let position = self._teleporterController.getTargetPosition();
+        let camera = MainView.getCamera();
+        camera.position.x = position.x;
+        camera.position.z = position.z;
+
+    } );
+    EventDispatcher.register( 'teleportDown', function () {
+        self._teleporterController.enable( true );
     } );
 
 };

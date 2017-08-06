@@ -4,6 +4,14 @@ let THREE = window.THREE;
 
 let MainView = module.exports;
 
+/**
+ * This Object contains data related to THREE.JS. It represents the entry
+ * point of the world, regarding the rendering.
+ *
+ * @param  {number} w The width of the element to render in.
+ * @param  {number} h The height of the element to render in.
+ * @param  {THREE.WebGLRenderer} renderer THREE.JS renderer
+ */
 MainView.init = function ( w, h, renderer ) {
 
     this._renderer = renderer;
@@ -18,12 +26,18 @@ MainView.init = function ( w, h, renderer ) {
 
 };
 
+/**
+ * In charge of rendering the THREE.JS root scene.
+ */
 MainView.render = function () {
 
     this._renderer.render( this._rootScene, this._camera );
 
 };
 
+/**
+ * Handles the resizing of the scene.
+ */
 MainView.resize = function ( w, h ) {
 
     this._camera.aspect = w / h;
@@ -55,12 +69,6 @@ MainView.getRootScene = function () {
 
 };
 
-MainView.getVREffect = function () {
-
-    return this._vrEffect;
-
-};
-
 MainView._createInitialScene = function () {
 
     this._rootScene = new THREE.Scene();
@@ -75,9 +83,9 @@ MainView._createInitialScene = function () {
     } );
     let mesh = new THREE.Mesh( geometry, material );
 
+    this._renderer.setClearColor( fog.color, 1 );
+
     this._rootScene.add( grid );
     this._rootScene.add( mesh );
-
-    this._renderer.setClearColor( fog.color, 1 );
 
 };
