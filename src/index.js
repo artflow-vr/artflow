@@ -5,10 +5,13 @@ let THREE = window.THREE;
 
 let Artflow = require( './artflow' );
 let ModuleManager = Artflow.modules.ModuleManager;
+let ControlModule = Artflow.modules.ControlModule;
 
 let AssetManager = Artflow.utils.AssetManager;
 
 let MainView = Artflow.view.MainView;
+
+let WebVR = Artflow.vr.WebVR;
 
 let renderer = null;
 let clock = null;
@@ -30,6 +33,8 @@ function resize() {
 
     ModuleManager.resize( window.innerWidth, window.innerHeight );
     MainView.resize( window.innerWidth, window.innerHeight );
+
+    renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
 
@@ -65,13 +70,41 @@ window.onload = function () {
     renderer = new THREE.WebGLRenderer( {
         antialias: true
     } );
+    renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( w, h );
-    renderer.vr.enabled = true;
-    renderer.vr.standing = true;
     document.body.appendChild( renderer.domElement );
 
     AssetManager.init()
-        .then( init )
+        .then( function () {
+
+            WebVR.checkAvailability()
+                .then( function () {
+                    WebVR.getVRDisplay( function ( display ) {
+
+                        document.body.appendChild(
+                            WebVR.getButton( display,
+                                renderer.domElement )
+                        );
+                        renderer.vr.enabled = true;
+                        renderer.vr.standing = true;
+                        renderer.vr.setDevice( display );
+
+                        ControlModule.vr = true;
+                        init();
+
+                    } );
+
+                } )
+                .catch( function ( message ) {
+
+                    document.body.appendChild(
+                        WebVR.getMessageContainer( message )
+                    );
+                    init();
+
+                } );
+
+        } )
         .catch( function ( error ) {
 
             throw Error( error );

@@ -16,9 +16,7 @@ MainView.init = function ( w, h, renderer ) {
 
     this._renderer = renderer;
 
-    this._camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 1500 );
-    this._camera.position.z = 2;
-    this._camera.position.y = 2;
+    this._camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 10 );
 
     this._rootScene = null;
 
@@ -76,16 +74,25 @@ MainView._createInitialScene = function () {
 
     let grid = new THREE.GridHelper( 100, 100, 0xbdc3c7, 0xbdc3c7 );
 
-    let geometry = new THREE.BoxGeometry( 2, 2, 2 );
-    let material = new THREE.MeshBasicMaterial( {
+    let geometry = new THREE.BoxGeometry( 1, 1, 1 );
+    let centerCube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
+        color: 0x000000,
+        wireframe: false
+    } ) );
+    let mesh2 = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
         color: 0xff0000,
         wireframe: true
-    } );
-    let mesh = new THREE.Mesh( geometry, material );
+    } ) );
 
     this._renderer.setClearColor( fog.color, 1 );
 
+    centerCube.position.x = 0;
+    centerCube.position.y = 0.5;
+    centerCube.position.z = 0;
+    mesh2.position.x += 2;
+
     this._rootScene.add( grid );
-    this._rootScene.add( mesh );
+    this._rootScene.add( centerCube );
+    this._rootScene.add( mesh2 );
 
 };
