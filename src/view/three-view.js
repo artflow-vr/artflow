@@ -10,7 +10,7 @@ let THREE = window.THREE;
  */
 function THREEView() {
 
-     this._object = new THREE.Group();
+    this._object = new THREE.Group();
 
 }
 /**
@@ -38,7 +38,8 @@ THREEView.prototype.applyMaterial = function ( material ) {
 
     this._object.traverse( function ( child ) {
 
-        if ( child instanceof THREE.Mesh ) child.material = material;
+        if ( child instanceof THREE.Mesh ) child.material =
+            material;
 
     } );
 
@@ -67,7 +68,8 @@ THREEView.prototype.setVisible = function ( trigger ) {
 
     this._object.traverse( function ( child ) {
 
-        //if ( child instanceof THREE.Object3D ) child.visible = trigger;
+        if ( child instanceof THREE.Object3D ) child.visible =
+            trigger;
 
     } );
 

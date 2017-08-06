@@ -35,5 +35,9 @@ The [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html)
   * [X] Add jsformatter
   
 * VR
-  * [ ] Add VR integration
-  * [ ] Add VR motion
+  * [X] Add VR integration
+  * [X] Add VR motion
+  * [ ] Change teleporter obj to be at good scale
+  * [ ] Find a way to force VR camera to be telported. Otherwise, move the
+  entire world according to the teleportation.
+  * [ ] Refactor ControlModule beginning messy with the two pipelines.

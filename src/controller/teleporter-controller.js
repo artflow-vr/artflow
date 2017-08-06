@@ -19,7 +19,7 @@ function TeleporterControl( nbPoints, velocity ) {
 
     AbstractController.call( this );
 
-    this._nbPoints = nbPoints ? nbPoints : 5;
+    this._nbPoints = nbPoints ? nbPoints : 10;
     this._nbSub = 5;
 
     this._mesh = AssetManager.get( AssetManager.TELEPORTER );
@@ -28,7 +28,10 @@ function TeleporterControl( nbPoints, velocity ) {
     this._splineLine = new THREE.Line(
         this._splineGeometry,
         new THREE.LineDashedMaterial( {
-            color: 0X27ae60, dashSize: 0.2, gapSize: 0.4, linewidth: 2
+            color: 0X27ae60,
+            dashSize: 0.2,
+            gapSize: 0.4,
+            linewidth: 2
         } )
     );
     this._spline = new THREE.CatmullRomCurve3( new Array( this._nbPoints ) );
@@ -78,7 +81,7 @@ TeleporterControl.prototype.update = function ( direction, initPos ) {
  *
  * @param  {boolean} trigger True to turn visible, False otherwise.
  */
-TeleporterControl.prototype.enable = function( trigger ) {
+TeleporterControl.prototype.enable = function ( trigger ) {
 
     this._view.setVisible( trigger );
     this.enabled = trigger;
@@ -88,7 +91,7 @@ TeleporterControl.prototype.enable = function( trigger ) {
 /**
  * Returns the position at wich the target is located.
  */
-TeleporterControl.prototype.getTargetPosition = function() {
+TeleporterControl.prototype.getTargetPosition = function () {
 
     return this._mesh.position;
 
