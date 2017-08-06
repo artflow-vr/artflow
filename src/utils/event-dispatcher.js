@@ -2,6 +2,13 @@
 
 let EventDispatcher = module.exports;
 
+EventDispatcher.EVENTS = {
+
+    interact: 'interact',
+    teleport: 'teleport'
+
+};
+
 EventDispatcher._events = {};
 
 EventDispatcher.register = function ( eventID, callback ) {
