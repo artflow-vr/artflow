@@ -4,10 +4,6 @@
  * Original file can be found at https://github.com/mrdoob/three.js/blob/dev/examples/js/vr/ViveController.js
  */
 
-let THREE = window.THREE;
-
-let Utils = require( '../utils/utils' );
-
 THREE.ViveController = function ( id ) {
 
     THREE.Object3D.call( this );

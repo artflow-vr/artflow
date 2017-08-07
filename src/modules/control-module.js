@@ -2,6 +2,9 @@
 
 let THREE = window.THREE;
 
+// ViveController is auto-added to the THREE namespace.
+require( '../../vendor/ViveController' );
+
 let ModuleManager = require( './module-manager' );
 
 let View = require( '../view/view' );
