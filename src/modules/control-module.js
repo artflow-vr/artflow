@@ -59,6 +59,7 @@ Control.init = function () {
     // display meshes for controllers, etc...
     if ( Control.vr ) {
         Control._initVRControllers();
+        Control._registerControllerEvents();
         Control.update = Control._updateVR;
     } else {
         Control._initKeyboardMouse();
@@ -85,6 +86,8 @@ Control._updateVR = function () {
     this._controllers[ 0 ].update();
     this._controllers[ 1 ].update();
 
+    if ( this._currentController === null ) return;
+
     this._currentController.getWorldDirection( this._pointerDirection );
 
     this._pointerDirection.x = -this._pointerDirection.x;
@@ -104,7 +107,7 @@ Control._updateNOVR = function ( data ) {
     // Updates the _pointerDirection value with the camera direction.
     MainView.getCamera().getWorldDirection( this._pointerDirection );
     this._teleporterController.update(
-        this._pointerDirection, MainView.getCamera().position
+        this._pointerDirection, MainView.getCamera().getWorldPosition()
     );
 
 };
@@ -131,35 +134,48 @@ Control._pointLockChange = function () {
 Control._registerEvents = function () {
 
     let self = this;
-    let renderer = MainView.getRenderer();
 
-    EventDispatcher.register( 'teleportUp', function () {
+    let teleportUp = EventDispatcher.EVENTS.teleport + 'Up';
+    let teleportDown = EventDispatcher.EVENTS.teleport + 'Down';
+
+    EventDispatcher.register( teleportUp, function () {
 
         self._teleporterController.enable( false );
-        // Teleports the camera at the target position
+
+        // It is really painful to keep track of offset on camera to apply on
+        // controllers, teleporter mesh, etc...
+        // That's why we decided that, instead to move the camera in the world,
+        // we could move the world arround the camera.
         let position = self._teleporterController.getTargetPosition();
+        let direction = new THREE.Vector3();
 
-        let camera = MainView.getCamera();
-        camera.position.x = position.x;
-        camera.position.z = position.z;
+        direction.subVectors( MainView.getCamera().getWorldPosition(),
+            position );
 
-        renderer.vr.getCamera( camera );
+        MainView.getGroup().position.x += direction.x;
+        MainView.getGroup().position.z += direction.z;
+
+        self._currentController = null;
 
     } );
 
-    EventDispatcher.register( 'teleportDown', function () {
-
+    EventDispatcher.register( teleportDown, function () {
         self._teleporterController.enable( true );
 
     } );
 
 };
 
+/**
+ * Creates both controllers, assign them the Vive Controller mesh, and adds
+ * them to the scene.
+ */
 Control._initVRControllers = function () {
 
     let renderer = MainView.getRenderer();
     let controllerMesh = AssetManager.get( AssetManager.VIVE_CONTROLLER );
 
+    this._controllers = new Array( 2 );
     this._controllers[ 0 ] = new THREE.ViveController( 0 );
     this._controllers[ 0 ].standingMatrix = renderer.vr.getStandingMatrix();
 
@@ -169,8 +185,8 @@ Control._initVRControllers = function () {
     this._controllers[ 0 ].add( controllerMesh.clone() );
     this._controllers[ 1 ].add( controllerMesh.clone() );
 
-    MainView.addToScene( this._controller1 );
-    MainView.addToScene( this._controller2 );
+    MainView.addToScene( this._controllers[ 0 ] );
+    MainView.addToScene( this._controllers[ 1 ] );
 
 };
 
@@ -181,17 +197,15 @@ Control._registerControllerEvents = function () {
     this._controllers[ 0 ].addEventListener( 'thumbpad', function ( data ) {
 
         self._currentController = self._controllers[ 0 ];
-
-        let eventID = Control._controllerToAction.thumbpad;
-        EventDispatcher.dispatch( eventID + data.status );
+        let eventID = Control._controllerToAction.thumbpad + data.status;
+        EventDispatcher.dispatch( eventID );
 
     } );
     this._controllers[ 1 ].addEventListener( 'thumbpad', function ( data ) {
 
         self._currentController = self._controllers[ 1 ];
-
-        let eventID = Control._controllerToAction.thumbpad;
-        EventDispatcher.dispatch( eventID + data.status );
+        let eventID = Control._controllerToAction.thumbpad + data.status;
+        EventDispatcher.dispatch( eventID );
 
     } );
 

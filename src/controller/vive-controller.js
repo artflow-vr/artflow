@@ -106,7 +106,7 @@ THREE.ViveController = function ( id ) {
             thumbpadIsPressed = gamepad.buttons[ 0 ].pressed;
             scope.dispatchEvent( {
                 type: 'thumbpad',
-                status: triggerIsPressed ? 'Down' : 'Up'
+                status: thumbpadIsPressed ? 'Down' : 'Up'
             } );
 
         }
