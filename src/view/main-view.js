@@ -16,12 +16,15 @@ MainView.init = function ( w, h, renderer ) {
 
     this._renderer = renderer;
 
-    this._camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 10 );
+    this._camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 100 );
 
-    this._rootScene = null;
-
+    // The _group variable allows us to modify the position of
+    // the world according to camera teleportation.
+    this._group = new THREE.Group();
     this._createInitialScene();
 
+    this._rootScene = new THREE.Scene();
+    this._rootScene.add( this._group );
 };
 
 /**
@@ -43,6 +46,24 @@ MainView.resize = function ( w, h ) {
 
 };
 
+/**
+ * Adds a given THREE.Object3D to a special group. This group is affected by
+ * the camera moves and teleportation.
+ *
+ * @param  {THREE.Object3D} object Object to add to the scene.
+ */
+MainView.addToMovingGroup = function ( object ) {
+
+    this._group.add( object );
+
+};
+
+/**
+ * Adds a given THREE.Object3D to the root scene. Root scene objects are not
+ * affected by teleportation or camera moves.
+ *
+ * @param  {THREE.Object3D} object Object to add to the scene.
+ */
 MainView.addToScene = function ( object ) {
 
     this._rootScene.add( object );
@@ -61,15 +82,14 @@ MainView.getRenderer = function () {
 
 };
 
-MainView.getRootScene = function () {
+MainView.getGroup = function () {
 
-    return this._rootScene;
+    return this._group;
 
 };
 
 MainView._createInitialScene = function () {
 
-    this._rootScene = new THREE.Scene();
     let fog = new THREE.FogExp2( 0x001c2d, 0.0125 );
 
     let grid = new THREE.GridHelper( 100, 100, 0xbdc3c7, 0xbdc3c7 );
@@ -79,20 +99,18 @@ MainView._createInitialScene = function () {
         color: 0x000000,
         wireframe: false
     } ) );
-    let mesh2 = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
+    let xAxisCube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
         color: 0xff0000,
         wireframe: true
     } ) );
 
     this._renderer.setClearColor( fog.color, 1 );
 
-    centerCube.position.x = 0;
-    centerCube.position.y = 0.5;
-    centerCube.position.z = 0;
-    mesh2.position.x += 2;
+    centerCube.translateY( 0.5 );
+    xAxisCube.translateX( 2 );
 
-    this._rootScene.add( grid );
-    this._rootScene.add( centerCube );
-    this._rootScene.add( mesh2 );
+    this._group.add( grid );
+    this._group.add( centerCube );
+    this._group.add( xAxisCube );
 
 };
