@@ -2,6 +2,9 @@
 
 let THREE = window.THREE;
 
+let AssetManager = require( '../utils/asset-manager' );
+
+
 let MainView = module.exports;
 
 /**
@@ -25,6 +28,11 @@ MainView.init = function ( w, h, renderer ) {
 
     this._rootScene = new THREE.Scene();
     this._rootScene.add( this._group );
+
+    // Adds default cubemap as background of the scene
+    let cubemap = AssetManager.assets.textures[ AssetManager.DEFAULT_CBMAP ];
+    this._rootScene.background = cubemap;
+
 };
 
 /**
@@ -90,7 +98,7 @@ MainView.getGroup = function () {
 
 MainView._createInitialScene = function () {
 
-    let fog = new THREE.FogExp2( 0x001c2d, 0.0125 );
+    //let fog = new THREE.FogExp2( 0x001c2d, 0.0125 );
 
     let grid = new THREE.GridHelper( 100, 100, 0xbdc3c7, 0xbdc3c7 );
 
@@ -104,7 +112,7 @@ MainView._createInitialScene = function () {
         wireframe: true
     } ) );
 
-    this._renderer.setClearColor( fog.color, 1 );
+    //this._renderer.setClearColor( fog.color, 1 );
 
     centerCube.translateY( 0.5 );
     xAxisCube.translateX( 2 );

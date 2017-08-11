@@ -10,6 +10,7 @@ let AssetManager = module.exports;
 AssetManager._assetRoot = 'assets/';
 AssetManager._modelPath = AssetManager._assetRoot + 'models/';
 AssetManager._texturePath = AssetManager._assetRoot + 'textures/';
+AssetManager._cubemapPath = AssetManager._texturePath + 'cubemap/';
 
 /**
  * Creates some constants containing ArtFlow mandatory assets.
@@ -19,10 +20,13 @@ AssetManager._texturePath = AssetManager._assetRoot + 'textures/';
 AssetManager.ARTFLOW_MATERIALS = {};
 AssetManager.TELEPORTER = 'teleporter';
 AssetManager.VIVE_CONTROLLER = 'vive-controller';
+AssetManager.DEFAULT_CBMAP = 'cubemap';
 
 AssetManager.init = function () {
 
-    this._assets = {};
+    this.assets = {
+        textures: {}
+    };
     this._OBJLoader = new THREE.OBJLoader();
 
     this.ARTFLOW_MATERIALS[ this.TELEPORTER ] = new THREE.MeshLambertMaterial( {
@@ -43,16 +47,15 @@ AssetManager.load = function ( assetID, assetPath, fileName ) {
     let self = this;
     return new Promise( function ( resolve, reject ) {
 
-        if ( assetID in self._assets ) {
-            let warnMsg = 'asset ' + assetID +
-                ' has already been registered';
+        if ( assetID in self.assets ) {
+            let warnMsg = 'asset ' + assetID + ' has already been registered';
             console.warn( 'AssetManager: ' + warnMsg );
         }
 
         self._OBJLoader.setPath( assetPath );
         self._OBJLoader.load( fileName, function ( object ) {
 
-            self._assets[ assetID ] = object;
+            self.assets[ assetID ] = object;
 
             // Assigns default material, if the registered asset
             // is part of ArtFlow mandatory asset.
@@ -83,9 +86,48 @@ AssetManager.load = function ( assetID, assetPath, fileName ) {
 
 };
 
+AssetManager.loadCubemap = function( assetID, rootPath, fileName, format ) {
+
+    let self = this;
+    return new Promise( function ( resolve, reject ) {
+
+        if ( assetID in self.assets ) {
+            let warnMsg = 'asset ' + assetID + ' has already been registered';
+            console.warn( 'AssetManager: ' + warnMsg );
+        }
+
+        let path = fileName;
+
+        let urls = [
+			path + '-px.' + format, path + '-nx.' + format,
+			path + '-py.' + format, path + '-ny.' + format,
+			path + '-pz.' + format, path + '-nz.' + format
+        ];
+
+        let cubeLoader = new THREE.CubeTextureLoader();
+        cubeLoader.setPath( rootPath );
+
+        let cube = cubeLoader.load( urls, function( data ) {
+
+            self.assets.textures[ assetID ] = data;
+            resolve();
+
+        }, null, function() {
+
+            let errorMsg = 'AssetManager: ';
+            errorMsg += 'impossible to load \'' + fileName + '\'\n';
+            reject( errorMsg );
+
+        } );
+        cube.format = THREE.RGBFormat;
+
+    } );
+
+};
+
 AssetManager.get = function ( assetID ) {
 
-    return this._assets[ assetID ];
+    return this.assets[ assetID ];
 
 };
 
@@ -101,6 +143,11 @@ AssetManager._loadRequiredAssets = function () {
     promises.push(
         this.load( AssetManager.VIVE_CONTROLLER, this._modelPath,
             'vive-controller.obj' )
+    );
+
+    promises.push(
+        this.loadCubemap( AssetManager.DEFAULT_CBMAP, this._cubemapPath,
+            'nightsky', 'png' )
     );
 
     return Promise.all( promises );
