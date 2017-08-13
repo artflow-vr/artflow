@@ -5,8 +5,6 @@ let THREE = window.THREE;
 // ViveController is auto-added to the THREE namespace.
 require( '../../vendor/ViveController' );
 
-let ModuleManager = require( './module-manager' );
-
 let View = require( '../view/view' );
 let MainView = View.MainView;
 let HTMLView = View.HTMLView;
@@ -22,7 +20,6 @@ let FPSControls = Controller.FPSControls;
 let TeleporterController = Controller.TeleporterController;
 
 let Control = module.exports;
-ModuleManager.register( 'control', Control );
 
 Control.vr = false;
 

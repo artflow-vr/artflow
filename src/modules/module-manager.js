@@ -1,11 +1,18 @@
 'use strict';
 
 let ModuleManager = module.exports;
-let modules = {};
 
-ModuleManager.register = function ( id, mod ) {
+let _modules = {};
 
-    modules[ id ] = mod;
+ModuleManager.register = function ( moduleID, mod ) {
+
+    if ( moduleID in _modules ) {
+        let errorMsg = 'you already registered the module \'' + moduleID +
+            '\'';
+        throw Error( 'ToolModule: ' + errorMsg );
+    }
+
+    _modules[ moduleID ] = mod;
 
 };
 
@@ -34,8 +41,8 @@ ModuleManager.resize = function ( w, h ) {
 
 ModuleManager._exec = function ( callbackID, extraParams ) {
 
-    for ( let k in modules ) {
-        let m = modules[ k ];
+    for ( let k in _modules ) {
+        let m = _modules[ k ];
         if ( callbackID in m ) m[ callbackID ]( extraParams );
     }
 
