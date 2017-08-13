@@ -48,7 +48,8 @@ AssetManager.load = function ( assetID, assetPath, fileName ) {
     return new Promise( function ( resolve, reject ) {
 
         if ( assetID in self.assets ) {
-            let warnMsg = 'asset ' + assetID + ' has already been registered';
+            let warnMsg = 'asset ' + assetID +
+                ' has already been registered';
             console.warn( 'AssetManager: ' + warnMsg );
         }
 
@@ -86,36 +87,38 @@ AssetManager.load = function ( assetID, assetPath, fileName ) {
 
 };
 
-AssetManager.loadCubemap = function( assetID, rootPath, fileName, format ) {
+AssetManager.loadCubemap = function ( assetID, rootPath, fileName, format ) {
 
     let self = this;
     return new Promise( function ( resolve, reject ) {
 
         if ( assetID in self.assets ) {
-            let warnMsg = 'asset ' + assetID + ' has already been registered';
+            let warnMsg = 'asset ' + assetID +
+                ' has already been registered';
             console.warn( 'AssetManager: ' + warnMsg );
         }
 
         let path = fileName;
 
         let urls = [
-			path + '-px.' + format, path + '-nx.' + format,
-			path + '-py.' + format, path + '-ny.' + format,
-			path + '-pz.' + format, path + '-nz.' + format
+            path + '-px.' + format, path + '-nx.' + format,
+            path + '-py.' + format, path + '-ny.' + format,
+            path + '-pz.' + format, path + '-nz.' + format
         ];
 
         let cubeLoader = new THREE.CubeTextureLoader();
         cubeLoader.setPath( rootPath );
 
-        let cube = cubeLoader.load( urls, function( data ) {
+        let cube = cubeLoader.load( urls, function ( data ) {
 
             self.assets.textures[ assetID ] = data;
             resolve();
 
-        }, null, function() {
+        }, null, function () {
 
             let errorMsg = 'AssetManager: ';
-            errorMsg += 'impossible to load \'' + fileName + '\'\n';
+            errorMsg += 'impossible to load \'' + fileName +
+                '\'\n';
             reject( errorMsg );
 
         } );
