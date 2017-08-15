@@ -22,6 +22,14 @@ EventDispatcher.register = function ( eventID, callback ) {
 
 };
 
+EventDispatcher.registerFamily = function ( eventID, callbacks ) {
+
+    EventDispatcher.register( eventID, callbacks.use );
+    EventDispatcher.register( eventID + 'Up', callbacks.up );
+    EventDispatcher.register( eventID + 'Down', callbacks.down );
+
+};
+
 EventDispatcher.dispatch = function ( eventID, data ) {
 
     let events = this._events[ eventID ];

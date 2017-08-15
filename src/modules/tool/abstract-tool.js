@@ -36,6 +36,12 @@ Tool.prototype.setOptionsIfUndef = function ( options ) {
 
 };
 
+Tool.prototype.setVisible = function ( trigger ) {
+
+    this.view.setVisible( trigger );
+
+};
+
 
 Tool.prototype._update = function ( delta ) {
 

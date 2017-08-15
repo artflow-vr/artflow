@@ -2,9 +2,11 @@
 
 let THREE = window.THREE;
 
-let AssetManager = require( '../utils/asset-manager' );
+let AbstractTool = require( './abstract-tool' );
 
-let AbstractController = require( './abstract-controller' );
+let AssetManager = require( '../../utils/asset-manager' );
+
+let MainView = require( '../../view/main-view' );
 
 /**
  * A HTCVive-like Teleporter. When visible, it creates a parabola according
@@ -15,12 +17,14 @@ let AbstractController = require( './abstract-controller' );
  * @param  {number} nbPoints The number of points to add to the spline. The
  * higher the value is, the greater it will impact performance.
  */
-function TeleporterControl( nbPoints, velocity ) {
+function TeleporterTool( options ) {
 
-    AbstractController.call( this );
-
-    this._nbPoints = nbPoints || 10;
-    this._nbSub = 5;
+    AbstractTool.call( this, options );
+    this.setOptionsIfUndef( {
+        velocity: 8.0,
+        nbPoints: 10,
+        nbSub: 5
+    } );
 
     this._mesh = AssetManager.get( AssetManager.TELEPORTER );
 
@@ -34,25 +38,23 @@ function TeleporterControl( nbPoints, velocity ) {
             linewidth: 2
         } )
     );
-    this._spline = new THREE.CatmullRomCurve3( new Array( this._nbPoints ) );
+    this._spline = new THREE.CatmullRomCurve3( new Array( this.options.nbPoints ) );
 
-    this.velocity = velocity || 8.0;
-
-    for ( let i = 0; i < this._nbPoints; ++i )
+    for ( let i = 0; i < this.options.nbPoints; ++i )
         this._spline.points[ i ] = new THREE.Vector3( 0, 0, 0 );
 
-    for ( let i = 0; i < this._spline.points.length * this._nbSub; ++i )
+    for ( let i = 0; i < this._spline.points.length * this.options.nbSub; ++i )
         this._splineGeometry.vertices[ i ] = new THREE.Vector3( 0, 0, 0 );
 
-    this._view.addTHREEObject( this._mesh );
-    this._view.addTHREEObject( this._splineLine );
+    this.view.addTHREEObject( this._mesh );
+    this.view.addTHREEObject( this._splineLine );
 
 }
-TeleporterControl.prototype = Object.create( AbstractController.prototype );
-TeleporterControl.prototype.constructor = TeleporterControl;
+TeleporterTool.prototype = Object.create( AbstractTool.prototype );
+TeleporterTool.prototype.constructor = TeleporterTool;
 
-TeleporterControl.GRAVITY_CONST = -9.81;
-TeleporterControl.HALF_GRAVITY_CONST = TeleporterControl.GRAVITY_CONST / 2.0;
+TeleporterTool.GRAVITY_CONST = -9.81;
+TeleporterTool.HALF_GRAVITY_CONST = TeleporterTool.GRAVITY_CONST / 2.0;
 
 /**
  * Updates teleporter position and spline.
@@ -61,37 +63,46 @@ TeleporterControl.HALF_GRAVITY_CONST = TeleporterControl.GRAVITY_CONST / 2.0;
  * to describe the trajectory parabola.
  * @param  {THREE.Vector3} initPos Initial position of the trajectory parabola.
  */
-TeleporterControl.prototype.update = function ( direction, initPos ) {
+TeleporterTool.prototype.use = function ( data ) {
 
-    if ( !this.enabled ) return;
+    let dirScale = data.rotation.clone().multiplyScalar( this.options.velocity );
+    let hitTime = this._findIntersectionTime( dirScale.y, data.position.y );
 
-    let dirScale = direction.clone().multiplyScalar( this.velocity );
-    let hitTime = this._findIntersectionTime( dirScale.y, initPos.y );
+    this._updateSpline( dirScale, data.position, hitTime );
 
-    this._updateSpline( dirScale, initPos, hitTime );
-
-    this._setToHitPoint( dirScale, initPos, hitTime, this._view );
+    this._setToHitPoint( dirScale, data.position, hitTime, this._view );
 
 };
 
-/**
- * Turns the teleporter visible/invisible according to the given value.
- * If the teleporter is not visible, it will not be updated
- * for performance reasons.
- *
- * @param  {boolean} trigger True to turn visible, False otherwise.
- */
-TeleporterControl.prototype.enable = function ( trigger ) {
+TeleporterTool.prototype.trigger = function () {
 
-    this._view.setVisible( trigger );
-    this.enabled = trigger;
+    this.enabled = true;
+    this.dynamic = true;
+    this.setVisible( true );
 
 };
+
+TeleporterTool.prototype.release = function () {
+
+    let direction = new THREE.Vector3();
+    let position = this.getTargetPosition();
+
+    direction.subVectors( MainView.getCamera().getWorldPosition(), position );
+
+    MainView.getGroup().position.x += direction.x;
+    MainView.getGroup().position.z += direction.z;
+
+    this.enabled = false;
+    this.dynamic = false;
+    this.setVisible( false );
+
+};
+
 
 /**
  * Returns the position at wich the target is located.
  */
-TeleporterControl.prototype.getTargetPosition = function () {
+TeleporterTool.prototype.getTargetPosition = function () {
 
     return this._mesh.position;
 
@@ -105,7 +116,7 @@ TeleporterControl.prototype.getTargetPosition = function () {
  * @param  {} p Initial position of the parabola trajectory.
  * @param  {} time Time 't' at which an object will hit the ground.
  */
-TeleporterControl.prototype._setToHitPoint = function ( v, p, time ) {
+TeleporterTool.prototype._setToHitPoint = function ( v, p, time ) {
 
     this._mesh.position.x = v.x * time + p.x;
     // For now, we only support on ground teleportation, it is safe
@@ -122,13 +133,13 @@ TeleporterControl.prototype._setToHitPoint = function ( v, p, time ) {
  * @param  {Float} vy Initial y-velocity of the parabola trajectory.
  * @param  {Float} py Initial y-position of the parabola trajectory.
  */
-TeleporterControl.prototype._findIntersectionTime = function ( vy, py ) {
+TeleporterTool.prototype._findIntersectionTime = function ( vy, py ) {
 
     // Using Newton's second law of motion, we have something of the form:
     // 0.5 * g * t^2 + Vy0 * t + Oy0 = 0.
-    let delta = vy * vy - 4 * TeleporterControl.HALF_GRAVITY_CONST * py;
+    let delta = vy * vy - 4 * TeleporterTool.HALF_GRAVITY_CONST * py;
     let sqrtDelta = Math.sqrt( delta );
-    return ( -vy - sqrtDelta ) / TeleporterControl.GRAVITY_CONST;
+    return ( -vy - sqrtDelta ) / TeleporterTool.GRAVITY_CONST;
 
 };
 
@@ -140,18 +151,18 @@ TeleporterControl.prototype._findIntersectionTime = function ( vy, py ) {
  * @param  {} p Initial position of the parabola trajectory.
  * @param  {} time Time 't' at which an object will hit the ground.
  */
-TeleporterControl.prototype._updateSpline = function ( v, p, time ) {
+TeleporterTool.prototype._updateSpline = function ( v, p, time ) {
 
-    let step = time / this._nbPoints;
+    let step = time / this.options.nbPoints;
     let t = 0.0;
 
     // Updates spline raw data with Newton's second law.
-    for ( let i = 0; i < this._nbPoints; ++i ) {
+    for ( let i = 0; i < this.options.nbPoints; ++i ) {
         t += step;
 
         this._spline.points[ i ].x = v.x * t + p.x;
         this._spline.points[ i ].y = (
-            TeleporterControl.HALF_GRAVITY_CONST * t * t + v.y * t + p.y
+            TeleporterTool.HALF_GRAVITY_CONST * t * t + v.y * t + p.y
         );
         this._spline.points[ i ].z = v.z * t + p.z;
     }
@@ -159,8 +170,9 @@ TeleporterControl.prototype._updateSpline = function ( v, p, time ) {
     // Updates geometry with spline vertices
     let position = null;
     let index = null;
-    for ( let i = 0; i < this._spline.points.length * this._nbSub; ++i ) {
-        index = i / ( this._nbPoints * this._nbSub );
+    for ( let i = 0; i < this._spline.points.length * this.options.nbSub; ++
+        i ) {
+        index = i / ( this.options.nbPoints * this.options.nbSub );
         position = this._spline.getPoint( index );
         this._splineGeometry.vertices[ i ].x = position.x;
         this._splineGeometry.vertices[ i ].y = position.y;
@@ -173,4 +185,4 @@ TeleporterControl.prototype._updateSpline = function ( v, p, time ) {
 
 };
 
-module.exports = TeleporterControl;
+module.exports = TeleporterTool;
