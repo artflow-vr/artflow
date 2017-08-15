@@ -5,10 +5,7 @@ let THREE = window.THREE;
 // ViveController is auto-added to the THREE namespace.
 require( '../../vendor/ViveController' );
 
-let View = require( '../view/view' );
-let MainView = View.MainView;
-let HTMLView = View.HTMLView;
-let HTMLTextArea = View.HTMLTextArea;
+let MainView = require( '../view/main-view' );
 
 let Utils = require( '../utils/utils' );
 let EventDispatcher = Utils.EventDispatcher;
@@ -17,7 +14,6 @@ let AssetManager = Utils.AssetManager;
 
 let Controller = require( '../controller/controller' );
 let FPSControls = Controller.FPSControls;
-let TeleporterController = Controller.TeleporterController;
 
 let Control = module.exports;
 
@@ -34,7 +30,8 @@ Control._mouseToAction = {
 };
 
 Control._controllerToAction = {
-    thumbpad: EventDispatcher.EVENTS.teleport
+    thumbpad: EventDispatcher.EVENTS.teleport,
+    trigger: EventDispatcher.EVENTS.interact
 };
 
 Control.init = function () {
@@ -47,14 +44,11 @@ Control.init = function () {
     this._controller0Direction = new THREE.Vector3( 0, 0, -1 );
     this._controller1Direction = new THREE.Vector3( 0, 0, -1 );
 
-    this._teleporterController = new TeleporterController();
-    MainView.addToScene( this._teleporterController.getView().getObject() );
-
     this._fpsController = null;
     this._controllers = null;
     this._currentController = null;
 
-    this._mousedown = false;
+    this._mouseUseEvent = null;
     this._pointerLocked = false;
 
     this._HTMLView = null;
@@ -70,8 +64,6 @@ Control.init = function () {
         Control._registerKeyboardMouseEvents();
         Control.update = Control._updateNOVR;
     }
-
-    this._registerEvents();
 
 };
 
@@ -90,18 +82,6 @@ Control._updateVR = function () {
     this._controllers[ 0 ].update();
     this._controllers[ 1 ].update();
 
-    if ( this._currentController === null ) return;
-
-    this._currentController.getWorldDirection( this._pointerDirection );
-
-    this._pointerDirection.x = -this._pointerDirection.x;
-    this._pointerDirection.y = -this._pointerDirection.y;
-    this._pointerDirection.z = -this._pointerDirection.z;
-
-    this._teleporterController.update(
-        this._pointerDirection, this._currentController.getWorldPosition()
-    );
-
 };
 
 Control._updateNOVR = function ( data ) {
@@ -110,10 +90,6 @@ Control._updateNOVR = function ( data ) {
 
     // Updates the _pointerDirection value with the camera direction.
     MainView.getCamera().getWorldDirection( this._pointerDirection );
-    this._teleporterController.update(
-        this._pointerDirection, MainView.getCamera().getWorldPosition()
-    );
-
     // Emulates the interact events without controllers
     this._mousePosition.x = 0;
     this._mousePosition.y = 0;
@@ -121,66 +97,17 @@ Control._updateNOVR = function ( data ) {
     this._mousePosition.copy( this._pointerDirection );
     this._mousePosition.multiplyScalar( 5.0 );
 
-    if ( this._mousedown ) {
-        EventDispatcher.dispatch( EventDispatcher.EVENTS.interact, {
+    if ( this._mouseUseEvent ) {
+        let position = this._mousePosition;
+        if ( this._mouseUseEvent === EventDispatcher.EVENTS.teleport )
+            position = MainView.getCamera().getWorldPosition();
+
+        EventDispatcher.dispatch( this._mouseUseEvent, {
             controllerID: 0,
-            position: this._mousePosition
+            position: position,
+            rotation: this._pointerDirection
         } );
     }
-
-};
-
-Control._mouseMove = function ( event ) {
-
-    Control._fpsController.moveView( event );
-
-};
-
-Control._pointLockChange = function () {
-
-    Control._pointerLocked = !Control._pointerLocked;
-
-    Control._HTMLView.toggleVisibility( !Control._pointerLocked );
-    Control._fpsController.enable( Control._pointerLocked );
-
-};
-
-/**
- * Registers events common to any control type: mouse, keyboard, controllers...
- * e.g; teleportUp / teleportDown.
- */
-Control._registerEvents = function () {
-
-    let self = this;
-
-    let teleportUp = EventDispatcher.EVENTS.teleport + 'Up';
-    let teleportDown = EventDispatcher.EVENTS.teleport + 'Down';
-
-    EventDispatcher.register( teleportUp, function () {
-
-        self._teleporterController.enable( false );
-
-        // It is really painful to keep track of offset on camera to apply on
-        // controllers, teleporter mesh, etc...
-        // That's why we decided that, instead to move the camera in the world,
-        // we could move the world arround the camera.
-        let position = self._teleporterController.getTargetPosition();
-        let direction = new THREE.Vector3();
-
-        direction.subVectors( MainView.getCamera().getWorldPosition(),
-            position );
-
-        MainView.getGroup().position.x += direction.x;
-        MainView.getGroup().position.z += direction.z;
-
-        self._currentController = null;
-
-    } );
-
-    EventDispatcher.register( teleportDown, function () {
-        self._teleporterController.enable( true );
-
-    } );
 
 };
 
@@ -212,24 +139,29 @@ Control._registerControllerEvents = function () {
 
     let self = this;
 
-    this._controllers[ 0 ].addEventListener( 'thumbpad', function ( data ) {
+    let registerEventForController = function ( cID, evt ) {
 
-        self._currentController = self._controllers[ 0 ];
-        let eventID = Control._controllerToAction.thumbpad + data.status;
-        EventDispatcher.dispatch( eventID, {
-            controllerID: 0
+        this._controllers[ cID ].addEventListener( evt, function ( data ) {
+
+            let eventID = Control._controllerToAction[ evt ];
+            if ( data.status )
+                eventID += data.status;
+
+            self._currentController = self._controllers[ cID ];
+
+            EventDispatcher.dispatch( eventID, {
+                controllerID: cID
+            } );
+
         } );
 
-    } );
-    this._controllers[ 1 ].addEventListener( 'thumbpad', function ( data ) {
+    };
 
-        self._currentController = self._controllers[ 1 ];
-        let eventID = Control._controllerToAction.thumbpad + data.status;
-        EventDispatcher.dispatch( eventID, {
-            controllerID: 0
-        } );
+    registerEventForController( 0, 'thumbpad' );
+    registerEventForController( 1, 'thumbpad' );
 
-    } );
+    registerEventForController( 0, 'trigger' );
+    registerEventForController( 1, 'trigger' );
 
 };
 
@@ -241,37 +173,42 @@ Control._initKeyboardMouse = function () {
     this._fpsController.enable( false );
     this._fpsController.setFixedHeight( 1.5 );
 
-    let backgroundStyle = {
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        top: '0px',
-        backgroundColor: 'rgba(44, 62, 80, 0.98)'
-    };
-    let messageViewStyle = {
-        position: 'relative',
-        top: '50%'
-    };
-
-    this._HTMLView = new HTMLView( backgroundStyle );
-    this._HTMLView.setProp( 'align', 'center' );
-
-    let messageView = new HTMLTextArea( null, messageViewStyle );
-
     let checkPointerLock = 'pointerLockElement' in document ||
         'mozPointerLockElement' in document ||
         'webkitPointerLockElement' in document;
 
-    document.body.appendChild( Control._HTMLView.getDOMElement() );
-    this._HTMLView.addChild( messageView );
-
+    let clickView = MainView.clickView;
     if ( !checkPointerLock ) {
-        messageView.setMessage( MiscInfoTable.missingPointerLocking );
+        clickView.setMessage( MiscInfoTable.missingPointerLocking );
         return;
     }
 
-    messageView.setMessage( MiscInfoTable.startPointerLocking );
-    messageView.setProp( 'onclick', Control._initPointerLock );
+    // Hooks pointer lock state change events
+    let pointLockEvent = function () {
+
+        Control._pointerLocked = !Control._pointerLocked;
+
+        MainView.backgroundView.toggleVisibility( !Control._pointerLocked );
+        Control._fpsController.enable( Control._pointerLocked );
+
+    };
+    document.addEventListener( 'pointerlockchange', pointLockEvent, false );
+    document.addEventListener( 'mozpointerlockchange', pointLockEvent,
+        false );
+
+    clickView.setMessage( MiscInfoTable.startPointerLocking );
+    clickView.setProp( 'onclick', function () {
+
+        let element = document.body;
+        element.requestPointerLock = element.requestPointerLock ||
+            element.mozRequestPointerLock ||
+            element.webkitRequestPointerLock;
+        element.exitPointerLock = element.exitPointerLock ||
+            element.mozExitPointerLock ||
+            element.webkitExitPointerLock;
+        element.requestPointerLock();
+
+    } );
 
 };
 
@@ -281,16 +218,15 @@ Control._registerKeyboardMouseEvents = function () {
 
     document.addEventListener( 'mousedown', function ( event ) {
         let eventID = self._mouseToAction[ event.button ];
-        if ( eventID === EventDispatcher.EVENTS.interact )
-            self._mousedown = true;
+        self._mouseUseEvent = eventID;
         EventDispatcher.dispatch( eventID + 'Down', {
             controllerID: 0
         } );
     }, false );
     document.addEventListener( 'mouseup', function ( event ) {
         let eventID = self._mouseToAction[ event.button ];
-        if ( eventID === EventDispatcher.EVENTS.interact )
-            self._mousedown = false;
+        self._mousedown = false;
+        self._mouseUseEvent = null;
         EventDispatcher.dispatch( eventID + 'Up', {
             controllerID: 0
         } );
@@ -299,7 +235,6 @@ Control._registerKeyboardMouseEvents = function () {
     // The events below are different, we do not really need
     // to create a forwarding as it differs from the other devices,
     // and also because it does not make sense to change the binding.
-
     document.addEventListener( 'keydown', function ( event ) {
         switch ( event.keyCode ) {
         case 65:
@@ -339,25 +274,10 @@ Control._registerKeyboardMouseEvents = function () {
         }
     }, false );
 
-    document.addEventListener( 'mousemove', this._mouseMove, false );
+    document.addEventListener( 'mousemove', function () {
 
-};
+        Control._fpsController.moveView( event );
 
-Control._initPointerLock = function () {
-
-    let element = document.body;
-    element.requestPointerLock = element.requestPointerLock ||
-        element.mozRequestPointerLock ||
-        element.webkitRequestPointerLock;
-    element.exitPointerLock = element.exitPointerLock ||
-        element.mozExitPointerLock ||
-        element.webkitExitPointerLock;
-    element.requestPointerLock();
-
-    // Hooks pointer lock state change events
-    document.addEventListener( 'pointerlockchange',
-        Control._pointLockChange, false );
-    document.addEventListener( 'mozpointerlockchange',
-        Control._pointLockChange, false );
+    }, false );
 
 };

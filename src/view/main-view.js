@@ -4,6 +4,10 @@ let THREE = window.THREE;
 
 let AssetManager = require( '../utils/asset-manager' );
 
+let HTMLView = require( './html-view' );
+let HTMLTextArea = require( './html-text-area' );
+
+let MiscInfoTable = require( '../utils/info-table' ).misc;
 
 let MainView = module.exports;
 
@@ -32,6 +36,10 @@ MainView.init = function ( w, h, renderer ) {
     // Adds default cubemap as background of the scene
     let cubemap = AssetManager.assets.textures[ AssetManager.DEFAULT_CBMAP ];
     this._rootScene.background = cubemap;
+
+    this.backgroundView = null;
+    this.clickView = null;
+    this._createHTMLBackground();
 
 };
 
@@ -120,5 +128,34 @@ MainView._createInitialScene = function () {
     this._group.add( grid );
     this._group.add( centerCube );
     this._group.add( xAxisCube );
+
+};
+
+MainView._createHTMLBackground = function () {
+
+    let backgroundStyle = {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: '0px',
+        backgroundColor: 'rgba(44, 62, 80, 0.98)'
+    };
+    let messageViewStyle = {
+        position: 'relative',
+        top: '50%'
+    };
+
+    let backgroundView = new HTMLView( backgroundStyle );
+    backgroundView.setProp( 'align', 'center' );
+
+    let messageView = new HTMLTextArea( null, messageViewStyle );
+    messageView.setMessage( MiscInfoTable.startPointerLocking );
+
+    backgroundView.addChild( messageView );
+
+    this.backgroundView = backgroundView;
+    this.clickView = messageView;
+
+    document.body.appendChild( this.backgroundView.getDOMElement() );
 
 };

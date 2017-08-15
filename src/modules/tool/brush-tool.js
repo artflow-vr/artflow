@@ -28,8 +28,8 @@ BrushTool.prototype.update = function ( delta ) {
 
 BrushTool.prototype.use = function ( data ) {
 
-    if ( data.position )
-        this._brushModel.addPoint( data.position );
+    this._brushModel.addPoint( data.position );
+
 };
 
 BrushTool.prototype.trigger = function () {

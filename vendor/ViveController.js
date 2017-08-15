@@ -115,6 +115,11 @@ THREE.ViveController = function ( id ) {
             } );
 
         }
+        if ( gamepad.buttons[ 1 ].pressed ) {
+            scope.dispatchEvent( {
+                type: 'trigger'
+            } );
+        }
 
         if ( gripsArePressed !== gamepad.buttons[ 2 ].pressed ) {
 

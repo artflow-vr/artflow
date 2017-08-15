@@ -13,11 +13,14 @@ let ToolModule = module.exports;
 // These tools are not instanciated, they represent only a blueprint.
 let _tools = {};
 
+let _instance = {};
+
 // Contains the tool for each controller. Whenever the user is not in VR,
 // only one tool is accessible at a time.
 let _selected = new Array( 2 );
 
-// let _operations = [];
+let _teleporterTool = null;
+
 
 ToolModule.register = function ( toolID, tool ) {
 
@@ -34,49 +37,64 @@ ToolModule.init = function () {
 
     this._registerBasicTools();
 
+    _teleporterTool = _instance.teleporter;
+
     // TODO: We have to instanciate the tools according to what the user
     // selected. We should keep track of instanciated tool, to avoid
     // making useless instanciation.
-    _selected[ 0 ] = new _tools.Brush();
+    _selected[ 0 ] = _instance.brush0;
     _selected[ 1 ] = null;
 
-    MainView.addToMovingGroup( _selected[ 0 ].view.getObject() );
+    EventDispatcher.registerFamily( 'interact', {
+        use: function ( data ) {
 
-    EventDispatcher.register( 'interactDown', function ( data ) {
+            if ( _selected[ data.controllerID ].useChild )
+                _selected[ data.controllerID ].useChild( data );
 
-        if ( _selected[ data.controllerID ].triggerChild )
-            _selected[ data.controllerID ].triggerChild( data );
+        },
+        down: function ( data ) {
 
+            if ( _selected[ data.controllerID ].triggerChild )
+                _selected[ data.controllerID ].triggerChild(
+                    data );
+
+        },
+        up: function ( data ) {
+
+            if ( _selected[ data.controllerID ].releaseChild )
+                _selected[ data.controllerID ].releaseChild(
+                    data );
+
+        }
     } );
 
-    EventDispatcher.register( 'interactUp', function ( data ) {
-
-        if ( _selected[ data.controllerID ].releaseChild )
-            _selected[ data.controllerID ].releaseChild( data );
-
-    } );
-
-    EventDispatcher.register( 'interact', function ( data ) {
-
-        if ( _selected[ data.controllerID ].useChild )
-            _selected[ data.controllerID ].useChild( data );
-
+    EventDispatcher.registerFamily( EventDispatcher.EVENTS.teleport, {
+        use: _teleporterTool.use.bind( _teleporterTool ),
+        down: _teleporterTool.trigger.bind( _teleporterTool ),
+        up: _teleporterTool.release.bind( _teleporterTool )
     } );
 
 };
 
 ToolModule.update = function ( delta ) {
 
-    if ( _selected[ 0 ] && _selected[ 0 ].updateChild )
-        _selected[ 0 ].updateChild( delta );
-
-    if ( _selected[ 1 ] && _selected[ 1 ].updateChild )
-        _selected[ 1 ].updateChild( delta );
+    let tool = null;
+    for ( let toolID in _instance ) {
+        tool = _instance[ toolID ];
+        if ( tool.update ) tool.update( delta );
+    }
 
 };
 
 ToolModule._registerBasicTools = function () {
 
     this.register( 'Brush', Tool.BrushTool );
+    this.register( 'Teleporter', Tool.TeleporterTool );
+
+    _instance.brush0 = new _tools.Brush();
+    _instance.teleporter = new _tools.Teleporter();
+
+    MainView.addToMovingGroup( _instance.brush0.view.getObject() );
+    MainView.addToScene( _instance.teleporter.view.getObject() );
 
 };
