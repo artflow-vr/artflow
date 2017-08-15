@@ -43,6 +43,9 @@ Control.init = function () {
     // is not activated, or the direction of the controller which pressed
     // the teleport button.
     this._pointerDirection = new THREE.Vector3( 0, 0, -1 );
+    this._mousePosition = new THREE.Vector3( 0, 0, 0 );
+    this._controller0Direction = new THREE.Vector3( 0, 0, -1 );
+    this._controller1Direction = new THREE.Vector3( 0, 0, -1 );
 
     this._teleporterController = new TeleporterController();
     MainView.addToScene( this._teleporterController.getView().getObject() );
@@ -51,6 +54,7 @@ Control.init = function () {
     this._controllers = null;
     this._currentController = null;
 
+    this._mousedown = false;
     this._pointerLocked = false;
 
     this._HTMLView = null;
@@ -109,6 +113,20 @@ Control._updateNOVR = function ( data ) {
     this._teleporterController.update(
         this._pointerDirection, MainView.getCamera().getWorldPosition()
     );
+
+    // Emulates the interact events without controllers
+    this._mousePosition.x = 0;
+    this._mousePosition.y = 0;
+    this._mousePosition.z = 0;
+    this._mousePosition.copy( this._pointerDirection );
+    this._mousePosition.multiplyScalar( 5.0 );
+
+    if ( this._mousedown ) {
+        EventDispatcher.dispatch( EventDispatcher.EVENTS.interact, {
+            controllerID: 0,
+            position: this._mousePosition
+        } );
+    }
 
 };
 
@@ -198,14 +216,18 @@ Control._registerControllerEvents = function () {
 
         self._currentController = self._controllers[ 0 ];
         let eventID = Control._controllerToAction.thumbpad + data.status;
-        EventDispatcher.dispatch( eventID );
+        EventDispatcher.dispatch( eventID, {
+            controllerID: 0
+        } );
 
     } );
     this._controllers[ 1 ].addEventListener( 'thumbpad', function ( data ) {
 
         self._currentController = self._controllers[ 1 ];
         let eventID = Control._controllerToAction.thumbpad + data.status;
-        EventDispatcher.dispatch( eventID );
+        EventDispatcher.dispatch( eventID, {
+            controllerID: 0
+        } );
 
     } );
 
@@ -259,11 +281,19 @@ Control._registerKeyboardMouseEvents = function () {
 
     document.addEventListener( 'mousedown', function ( event ) {
         let eventID = self._mouseToAction[ event.button ];
-        EventDispatcher.dispatch( eventID + 'Down' );
+        if ( eventID === EventDispatcher.EVENTS.interact )
+            self._mousedown = true;
+        EventDispatcher.dispatch( eventID + 'Down', {
+            controllerID: 0
+        } );
     }, false );
     document.addEventListener( 'mouseup', function ( event ) {
         let eventID = self._mouseToAction[ event.button ];
-        EventDispatcher.dispatch( eventID + 'Up' );
+        if ( eventID === EventDispatcher.EVENTS.interact )
+            self._mousedown = false;
+        EventDispatcher.dispatch( eventID + 'Up', {
+            controllerID: 0
+        } );
     }, false );
 
     // The events below are different, we do not really need
