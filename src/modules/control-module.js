@@ -63,17 +63,8 @@ Control.init = function () {
         Control._initKeyboardMouse();
         Control._registerKeyboardMouseEvents();
         Control.update = Control._updateNOVR;
+        MainView.getCamera().position.y = 1.5;
     }
-
-};
-
-Control.resize = function ( params ) {
-
-    let w = params.w;
-    let h = params.h;
-
-    if ( this._fpsController )
-        Control._fpsController.resize( w, h );
 
 };
 
@@ -90,17 +81,19 @@ Control._updateNOVR = function ( data ) {
 
     // Updates the _pointerDirection value with the camera direction.
     MainView.getCamera().getWorldDirection( this._pointerDirection );
-    // Emulates the interact events without controllers
-    this._mousePosition.x = 0;
-    this._mousePosition.y = 0;
-    this._mousePosition.z = 0;
-    this._mousePosition.copy( this._pointerDirection );
-    this._mousePosition.multiplyScalar( 5.0 );
 
     if ( this._mouseUseEvent ) {
-        let position = this._mousePosition;
-        if ( this._mouseUseEvent === EventDispatcher.EVENTS.teleport )
-            position = MainView.getCamera().getWorldPosition();
+        let position = MainView.getCamera().position;
+        if ( this._mouseUseEvent === EventDispatcher.EVENTS.interact ) {
+            this._mousePosition.x = 0;
+            this._mousePosition.z = 0;
+            this._mousePosition.copy( this._pointerDirection );
+            this._mousePosition.multiplyScalar( 5.0 );
+            this._mousePosition.x -= MainView.getGroup().position.x;
+            this._mousePosition.z -= MainView.getGroup().position.z;
+
+            position = this._mousePosition;
+        }
 
         EventDispatcher.dispatch( this._mouseUseEvent, {
             controllerID: 0,
@@ -169,9 +162,9 @@ Control._initKeyboardMouse = function () {
 
     let camera = MainView.getCamera();
 
-    this._fpsController = new FPSControls( camera );
-    this._fpsController.enable( false );
-    this._fpsController.setFixedHeight( 1.5 );
+    this._fpsController = new FPSControls( camera, MainView.getGroup() );
+    this._fpsController.fixedHeight = true;
+    this._fpsController.enabled = false;
 
     let checkPointerLock = 'pointerLockElement' in document ||
         'mozPointerLockElement' in document ||
@@ -189,7 +182,7 @@ Control._initKeyboardMouse = function () {
         Control._pointerLocked = !Control._pointerLocked;
 
         MainView.backgroundView.toggleVisibility( !Control._pointerLocked );
-        Control._fpsController.enable( Control._pointerLocked );
+        Control._fpsController.enabled = Control._pointerLocked;
 
     };
     document.addEventListener( 'pointerlockchange', pointLockEvent, false );
@@ -238,38 +231,38 @@ Control._registerKeyboardMouseEvents = function () {
     document.addEventListener( 'keydown', function ( event ) {
         switch ( event.keyCode ) {
         case 65:
-            self._fpsController.left( true );
+            self._fpsController.left = true;
             break; // A
         case 68:
-            self._fpsController.right( true );
+            self._fpsController.right = true;
             break; // D
         case 83:
-            self._fpsController.backward( true );
+            self._fpsController.backward = true;
             break; // S
         case 87:
-            self._fpsController.forward( true );
+            self._fpsController.forward = true;
             break; // W
         case 90:
-            self._fpsController.forward( true );
+            self._fpsController.forward = true;
             break; // Z
         }
     }, false );
     document.addEventListener( 'keyup', function ( event ) {
         switch ( event.keyCode ) {
         case 65:
-            self._fpsController.left( false );
+            self._fpsController.left = false;
             break; // A
         case 68:
-            self._fpsController.right( false );
+            self._fpsController.right = false;
             break; // D
         case 83:
-            self._fpsController.backward( false );
+            self._fpsController.backward = false;
             break; // S
         case 87:
-            self._fpsController.forward( false );
+            self._fpsController.forward = false;
             break; // W
         case 90:
-            self._fpsController.forward( false );
+            self._fpsController.forward = false;
             break; // Z
         }
     }, false );

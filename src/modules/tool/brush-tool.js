@@ -20,9 +20,8 @@ function BrushTool( options ) {
 BrushTool.prototype = Object.create( AbstractTool.prototype );
 BrushTool.prototype.constructor = BrushTool;
 
-BrushTool.prototype.update = function ( delta ) {
+BrushTool.prototype.update = function () {
 
-    console.log( delta );
 
 };
 

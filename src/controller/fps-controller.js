@@ -9,39 +9,42 @@
 
 let THREE = require( 'three' );
 
-function FPSControls( camera ) {
-
-    this.object = camera;
-    this.target = new THREE.Vector3( 0, 0, 0 );
+function FPSControls( camera, movingWorld ) {
 
     this.enabled = true;
 
-    this.movementSpeed = 1.0;
+    this.object = camera;
+
+    this.forward = false;
+    this.backward = false;
+    this.left = false;
+    this.right = false;
+
+    this.movementSpeed = 5.0;
     this.lookSpeed = 5.0;
 
-    this.fixedHeight = null;
+    this.fixedHeight = false;
 
-    this.verticalMin = 0;
-    this.verticalMax = Math.PI;
+    this._movingWorld = movingWorld;
+    this._target = new THREE.Vector3( 0, 0, 0 );
 
-    this.mouseX = 0;
-    this.mouseY = 0;
+    this._forwardDir = new THREE.Vector3( 0, 0, 0 );
+    this._rightDir = new THREE.Vector3( 0, 0, 0 );
 
-    this.lat = 0;
-    this.lon = 0;
-    this.phi = 0;
-    this.theta = 0;
+    this._mouseX = 0;
+    this._mouseY = 0;
 
-    this.moveForward = false;
-    this.moveBackward = false;
-    this.moveLeft = false;
-    this.moveRight = false;
-
-    this.viewHalfX = window.innerWidth / 2;
-    this.viewHalfY = window.innerHeight / 2;
+    this._lat = 0;
+    this._lon = 0;
+    this._phi = 0;
+    this._theta = 0;
 
 }
 module.exports = FPSControls;
+
+FPSControls.VERICAL_MIN = 0;
+FPSControls.VERICAL_MAX = Math.PI;
+FPSControls.UP_DIR = new THREE.Vector3( 0, 1, 0 );
 
 FPSControls.prototype.update = function ( delta ) {
 
@@ -49,98 +52,53 @@ FPSControls.prototype.update = function ( delta ) {
 
     let actualMoveSpeed = delta * this.movementSpeed;
     let actualLookSpeed = delta * this.lookSpeed;
-    let verticalLookRatio = Math.PI / ( this.verticalMax - this.verticalMin );
 
-    this.lon += this.mouseX * actualLookSpeed;
-    this.lat -= this.mouseY * actualLookSpeed * verticalLookRatio;
+    this._lon += this._mouseX * actualLookSpeed;
+    this._lat -= this._mouseY * actualLookSpeed;
 
-    this.lat = Math.max( -85, Math.min( 85, this.lat ) );
-    this.phi = THREE.Math.degToRad( 90 - this.lat );
-    this.theta = THREE.Math.degToRad( this.lon );
+    this._lat = Math.max( -85, Math.min( 85, this._lat ) );
+    this._phi = THREE.Math.degToRad( 90 - this._lat );
+    this._theta = THREE.Math.degToRad( this._lon );
 
-    this.phi = THREE.Math.mapLinear( this.phi, 0, Math.PI, this.verticalMin,
-        this.verticalMax );
+    this._phi = THREE.Math.mapLinear( this._phi, 0, Math.PI,
+        FPSControls.VERICAL_MIN,
+        FPSControls.VERICAL_MAX );
 
-    let targetPosition = this.target,
-        position = this.object.position;
+    this._target.x = 100 * Math.sin( this._phi ) * Math.cos( this._theta );
+    this._target.y = 100 * Math.cos( this._phi );
+    this._target.z = 100 * Math.sin( this._phi ) * Math.sin( this._theta );
 
-    if ( this.moveForward ) this.object.translateZ( -actualMoveSpeed );
-    if ( this.moveBackward ) this.object.translateZ( actualMoveSpeed );
+    this.object.lookAt( this._target );
+    this.object.getWorldDirection( this._forwardDir );
 
-    if ( this.moveLeft ) this.object.translateX( -actualMoveSpeed );
-    if ( this.moveRight ) this.object.translateX( actualMoveSpeed );
+    this._rightDir.crossVectors( FPSControls.UP_DIR, this._forwardDir );
 
-    if ( this.moveUp ) this.object.translateY( actualMoveSpeed );
-    if ( this.moveDown ) this.object.translateY( -actualMoveSpeed );
+    if ( this.forward )
+        this._movingWorld.translateOnAxis( this._forwardDir, -
+            actualMoveSpeed );
+    if ( this.backward )
+        this._movingWorld.translateOnAxis( this._forwardDir,
+            actualMoveSpeed );
 
-    targetPosition.x = position.x + 100 *
-        Math.sin( this.phi ) *
-        Math.cos( this.theta );
-    targetPosition.y = position.y + 100 *
-        Math.cos( this.phi );
-    targetPosition.z = position.z + 100 *
-        Math.sin( this.phi ) *
-        Math.sin( this.theta );
+    if ( this.left )
+        this._movingWorld.translateOnAxis( this._rightDir, -actualMoveSpeed );
+    if ( this.right )
+        this._movingWorld.translateOnAxis( this._rightDir, actualMoveSpeed );
 
-    this.object.lookAt( targetPosition );
+    if ( this.fixedHeight ) this._movingWorld.position.y = 0;
 
-    if ( this.fixedHeight !== null ) this.object.position.y = this.fixedHeight;
-
-    this.mouseX = 0;
-    this.mouseY = 0;
-
-};
-
-FPSControls.prototype.resize = function ( w, h ) {
-
-    this.viewHalfX = w / 2;
-    this.viewHalfY = h / 2;
+    this._mouseX = 0;
+    this._mouseY = 0;
 
 };
 
 FPSControls.prototype.moveView = function ( event ) {
 
-    this.mouseX = event.movementX ||
+    this._mouseX = event.movementX ||
         event.mozMovementX ||
         event.webkitMovementX || 0;
-    this.mouseY = event.movementY ||
+    this._mouseY = event.movementY ||
         event.mozMovementY ||
         event.webkitMovementY || 0;
-
-};
-
-FPSControls.prototype.forward = function ( trigger ) {
-
-    this.moveForward = trigger;
-
-};
-
-FPSControls.prototype.backward = function ( trigger ) {
-
-    this.moveBackward = trigger;
-
-};
-
-FPSControls.prototype.left = function ( trigger ) {
-
-    this.moveLeft = trigger;
-
-};
-
-FPSControls.prototype.right = function ( trigger ) {
-
-    this.moveRight = trigger;
-
-};
-
-FPSControls.prototype.enable = function ( trigger ) {
-
-    this.enabled = trigger;
-
-};
-
-FPSControls.prototype.setFixedHeight = function ( value ) {
-
-    this.fixedHeight = value;
 
 };
