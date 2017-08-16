@@ -31,7 +31,9 @@ Control._mouseToAction = {
 
 Control._controllerToAction = {
     thumbpad: EventDispatcher.EVENTS.teleport,
-    trigger: EventDispatcher.EVENTS.interact
+    trigger: EventDispatcher.EVENTS.interact,
+    triggerdown: EventDispatcher.EVENTS.interact + 'Down',
+    triggerup: EventDispatcher.EVENTS.interact + 'Up'
 };
 
 Control.init = function () {
@@ -40,11 +42,22 @@ Control.init = function () {
     // is not activated, or the direction of the controller which pressed
     // the teleport button.
     this._pointerDirection = new THREE.Vector3( 0, 0, -1 );
-    this._mousePosition = new THREE.Vector3( 0, 0, 0 );
-    this._controller0Direction = new THREE.Vector3( 0, 0, -1 );
-    this._controller1Direction = new THREE.Vector3( 0, 0, -1 );
 
-    this._mouseQuaternion = new THREE.Quaternion();
+    this._controllerTransform = new Array( 2 );
+    this._controllerTransform[ 0 ] = {
+        position: {
+            local: new THREE.Vector3( 0, 0, 0 ),
+            world: new THREE.Vector3( 0, 0, 0 )
+        },
+        orientation: new THREE.Quaternion()
+    };
+    this._controllerTransform[ 1 ] = {
+        position: {
+            local: new THREE.Vector3( 0, 0, 0 ),
+            world: new THREE.Vector3( 0, 0, 0 )
+        },
+        orientation: new THREE.Quaternion()
+    };
 
     this._fpsController = null;
     this._controllers = null;
@@ -66,6 +79,7 @@ Control.init = function () {
         Control._registerKeyboardMouseEvents();
         Control.update = Control._updateNOVR;
         MainView.getCamera().position.y = 1.5;
+        MainView.backgroundView.toggleVisibility( true );
     }
 
 };
@@ -75,37 +89,60 @@ Control._updateVR = function () {
     this._controllers[ 0 ].update();
     this._controllers[ 1 ].update();
 
+    // Keeps track of controllers orientation
+    // relative to the world origin.
+    this._controllers[ 0 ].getWorldQuaternion(
+        this._controllerTransform[ 0 ].orientation
+    );
+    this._controllers[ 1 ].getWorldQuaternion(
+        this._controllerTransform[ 1 ].orientation
+    );
+
+    // Keeps track of controllers position
+    // relative to the world origin.
+    let position0 = this._controllerTransform[ 0 ].position;
+    let position1 = this._controllerTransform[ 1 ].position;
+
+    this._controllers[ 0 ].getWorldPosition( position0.local );
+    position0.world.copy( position0.local );
+    position0.world.x -= MainView.getGroup().position.x;
+    position0.world.z -= MainView.getGroup().position.z;
+
+    this._controllers[ 1 ].getWorldPosition( position1.local );
+    position1.world.copy( position1.local );
+    position1.world.x -= MainView.getGroup().position.x;
+    position1.world.z -= MainView.getGroup().position.z;
+
 };
 
 Control._updateNOVR = function ( data ) {
 
     Control._fpsController.update( data.delta );
 
-    // Updates the _pointerDirection value with the camera direction.
-    MainView.getCamera().getWorldDirection( this._pointerDirection );
-
     if ( this._mouseUseEvent ) {
-        let position = MainView.getCamera().position;
-        let orientation = this._pointerDirection;
+        // Updates the _pointerDirection value with the camera direction.
+        let orientation = this._controllerTransform[ 0 ].orientation;
+        MainView.getCamera().getWorldQuaternion( orientation );
 
+        let position = this._controllerTransform[ 0 ].position;
         if ( this._mouseUseEvent === EventDispatcher.EVENTS.interact ) {
-            this._mousePosition.x = 0;
-            this._mousePosition.z = 0;
-            this._mousePosition.copy( this._pointerDirection );
-            this._mousePosition.multiplyScalar( 5.0 );
-            this._mousePosition.x -= MainView.getGroup().position.x;
-            this._mousePosition.z -= MainView.getGroup().position.z;
-
-            position = this._mousePosition;
-
-            this._mouseQuaternion.setFromAxisAngle( this._fpsController.rightDir,
-                Math.PI / 2 );
-            orientation = this._mouseQuaternion;
+            MainView.getCamera().getWorldDirection( this._pointerDirection );
+            position.local.copy( this._pointerDirection );
+            position.local.multiplyScalar( 5.0 );
+        } else {
+            MainView.getCamera().getWorldPosition( position.local );
         }
+
+        position.world.copy( position.local );
+        position.world.x -= MainView.getGroup().position.x;
+        position.world.z -= MainView.getGroup().position.z;
 
         EventDispatcher.dispatch( this._mouseUseEvent, {
             controllerID: 0,
-            position: position,
+            position: {
+                local: position.local,
+                world: position.world
+            },
             orientation: orientation
         } );
     }
@@ -142,7 +179,7 @@ Control._registerControllerEvents = function () {
 
     let registerEventForController = function ( cID, evt ) {
 
-        this._controllers[ cID ].addEventListener( evt, function ( data ) {
+        self._controllers[ cID ].addEventListener( evt, function ( data ) {
 
             let eventID = Control._controllerToAction[ evt ];
             if ( data.status )
@@ -151,7 +188,11 @@ Control._registerControllerEvents = function () {
             self._currentController = self._controllers[ cID ];
 
             EventDispatcher.dispatch( eventID, {
-                controllerID: cID
+                controllerID: cID,
+                position: self._controllerTransform[
+                    cID ].position,
+                orientation: self._controllerTransform[
+                    cID ].orientation
             } );
 
         } );
@@ -163,6 +204,10 @@ Control._registerControllerEvents = function () {
 
     registerEventForController( 0, 'trigger' );
     registerEventForController( 1, 'trigger' );
+    registerEventForController( 0, 'triggerup' );
+    registerEventForController( 1, 'triggerup' );
+    registerEventForController( 0, 'triggerdown' );
+    registerEventForController( 1, 'triggerdown' );
 
 };
 

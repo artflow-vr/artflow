@@ -48,7 +48,7 @@ Tool.prototype._update = function ( delta ) {
     if ( !this.enabled || !this.dynamic )
         return;
 
-    this.update( delta );
+    if ( this.update ) this.update( delta );
 
 };
 
@@ -57,7 +57,7 @@ Tool.prototype._use = function ( data ) {
     if ( !this.enabled )
         return;
 
-    this.use( data );
+    if ( this.use ) this.use( data );
 
 };
 
@@ -65,6 +65,8 @@ Tool.prototype._trigger = function ( data ) {
 
     if ( !this.enabled )
         return undefined;
+
+    if ( !this.trigger ) return undefined;
 
     return this.trigger( data );
 
@@ -74,6 +76,8 @@ Tool.prototype._release = function ( data ) {
 
     if ( !this.enabled )
         return undefined;
+
+    if ( !this.release ) return undefined;
 
     return this.release( data );
 

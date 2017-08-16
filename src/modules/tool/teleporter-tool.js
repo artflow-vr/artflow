@@ -28,6 +28,8 @@ function TeleporterTool( options ) {
 
     this._mesh = AssetManager.get( AssetManager.TELEPORTER );
 
+    this._direction = new THREE.Vector3( 0, 0, -1 );
+
     this._splineGeometry = new THREE.Geometry();
     this._splineLine = new THREE.Line(
         this._splineGeometry,
@@ -65,12 +67,19 @@ TeleporterTool.HALF_GRAVITY_CONST = TeleporterTool.GRAVITY_CONST / 2.0;
  */
 TeleporterTool.prototype.use = function ( data ) {
 
-    let dirScale = data.orientation.clone().multiplyScalar( this.options.velocity );
-    let hitTime = this._findIntersectionTime( dirScale.y, data.position.y );
+    let localPos = data.position.local;
 
-    this._updateSpline( dirScale, data.position, hitTime );
+    this._direction.x = 0;
+    this._direction.y = 0;
+    this._direction.z = -1;
+    this._direction.applyQuaternion( data.orientation );
 
-    this._setToHitPoint( dirScale, data.position, hitTime, this._view );
+    this._direction.multiplyScalar( this.options.velocity );
+    let hitTime = this._findIntersectionTime( this._direction.y, localPos.y );
+
+    this._updateSpline( this._direction, localPos, hitTime );
+
+    this._setToHitPoint( this._direction, localPos, hitTime, this._view );
 
 };
 

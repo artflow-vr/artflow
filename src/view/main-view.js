@@ -19,7 +19,7 @@ let MainView = module.exports;
  * @param  {number} h The height of the element to render in.
  * @param  {THREE.WebGLRenderer} renderer THREE.JS renderer
  */
-MainView.init = function ( w, h, renderer ) {
+MainView.init = function ( w, h, renderer, vr ) {
 
     this._renderer = renderer;
 
@@ -28,14 +28,20 @@ MainView.init = function ( w, h, renderer ) {
     // The _group variable allows us to modify the position of
     // the world according to camera teleportation.
     this._group = new THREE.Group();
-    this._createInitialScene();
+    this._createInitialScene( vr );
 
     this._rootScene = new THREE.Scene();
     this._rootScene.add( this._group );
 
     // Adds default cubemap as background of the scene
-    let cubemap = AssetManager.assets.textures[ AssetManager.DEFAULT_CBMAP ];
-    this._rootScene.background = cubemap;
+    // TODO: Update the THREE.JS version with the update handling background
+    // on both eyes.
+    if ( !vr ) {
+        let cubemap = AssetManager.assets.textures[ AssetManager.DEFAULT_CBMAP ];
+        this._rootScene.background = cubemap;
+    } else {
+        this._rootScene.background = 0xcccccc;
+    }
 
     this._createLightning();
 
@@ -106,11 +112,11 @@ MainView.getGroup = function () {
 
 };
 
-MainView._createInitialScene = function () {
+MainView._createInitialScene = function ( vr ) {
 
-    //let fog = new THREE.FogExp2( 0x001c2d, 0.0125 );
+    if ( vr ) return;
 
-    let grid = new THREE.GridHelper( 5, 5, 0xbdc3c7, 0xbdc3c7 );
+    let grid = new THREE.GridHelper( 10, 10, 0xbdc3c7, 0xbdc3c7 );
 
     let geometry = new THREE.BoxGeometry( 1, 1, 1 );
     let centerCube = new THREE.Mesh( geometry, new THREE.MeshStandardMaterial( {
@@ -124,8 +130,6 @@ MainView._createInitialScene = function () {
         wireframe: true
     } ) );
 
-    //this._renderer.setClearColor( fog.color, 1 );
-
     centerCube.translateY( 0.5 );
     xAxisCube.translateX( 2 );
 
@@ -133,16 +137,15 @@ MainView._createInitialScene = function () {
     this._group.add( centerCube );
     this._group.add( xAxisCube );
 
-
 };
 
 MainView._createLightning = function () {
 
     // Creates the lightning
-    let hemLight = new THREE.HemisphereLight( 0X2C3E50, 0xFFFFFF, 0.5 );
+    let hemLight = new THREE.HemisphereLight( 0X000000, 0x2C3E50, 1.0 );
     this._rootScene.add( hemLight );
 
-    let dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    let dirLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
     dirLight.position.set( 100, 100, 100 );
     this._rootScene.add( dirLight );
 
@@ -174,5 +177,7 @@ MainView._createHTMLBackground = function () {
     this.clickView = messageView;
 
     document.body.appendChild( this.backgroundView.getDOMElement() );
+
+    this.backgroundView.toggleVisibility( false );
 
 };
