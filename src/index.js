@@ -52,7 +52,7 @@ function init() {
     let w = window.innerWidth;
     let h = window.innerHeight;
 
-    MainView.init( w, h, renderer );
+    MainView.init( w, h, renderer, ControlModule.vr );
     ModuleManager.init();
 
     // Registers global events

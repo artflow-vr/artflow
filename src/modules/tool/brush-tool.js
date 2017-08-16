@@ -11,7 +11,7 @@ function BrushTool( options ) {
     AbstractTool.call( this, options );
     this.setOptionsIfUndef( {
         maxSpread: 50,
-        brushThickness: 0.5
+        brushThickness: 0.1
     } );
 
     this._verticesCount = 0;
@@ -23,6 +23,8 @@ function BrushTool( options ) {
     this._normals = null;
     this._uvs = null;
     this._axisLock = new THREE.Vector3( 0, 0, -1 );
+    this._pointA = new THREE.Vector3( 0, 0, 0 );
+    this._pointB = new THREE.Vector3( 0, 0, 0 );
 
     if ( this.options.texture ) {
         let tex = options.texture;
@@ -42,7 +44,7 @@ function BrushTool( options ) {
             color: 0xff0000,
             side: THREE.DoubleSide,
             metalness: 0.0,
-            roughness: 1.0
+            roughness: 0.9
         } );
     }
 
@@ -51,13 +53,12 @@ BrushTool.prototype = Object.create( AbstractTool.prototype );
 BrushTool.prototype.constructor = BrushTool;
 
 BrushTool.prototype.update = function () {
-
-
+    // TODO: Fills with dynamic brushes
 };
 
 BrushTool.prototype.use = function ( data ) {
 
-    this._addPoint( data.position, data.orientation );
+    this._addPoint( data.position.world, data.orientation );
 
 };
 
@@ -86,14 +87,12 @@ BrushTool.prototype.trigger = function () {
     mesh.uvs = this._uvs;
     mesh.normals = this._normals;
 
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
     this.view.addTHREEObject( mesh );
 
     return new AddCommand( this.view, mesh );
-
-};
-
-BrushTool.prototype.release = function () {
-
 
 };
 
@@ -101,15 +100,6 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation ) {
 
     let uvCount = 0;
     for ( let i = 0; i < this._verticesCount / 2; i++ ) {
-        /*this._uvs[ uvCount++ ] = 0;
-        this._uvs[ uvCount++ ] = 0;
-        this._uvs[ uvCount++ ] = 0;
-        this._uvs[ uvCount++ ] = 1;
-        this._uvs[ uvCount++ ] = 1;
-        this._uvs[ uvCount++ ] = 0;
-        this._uvs[ uvCount++ ] = 1;
-        this._uvs[ uvCount++ ] = 1;*/
-
         let iMod = i % this._maxSpread;
 
         this._uvs[ uvCount++ ] = iMod / ( this._maxSpread - 1 );
@@ -117,26 +107,30 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation ) {
 
         this._uvs[ uvCount++ ] = iMod / ( this._maxSpread - 1 );
         this._uvs[ uvCount++ ] = 1;
-
     }
 
-    let dir = this._axisLock.clone();
-    dir.applyQuaternion( orientation );
+    this._axisLock.x = 1.0;
+    this._axisLock.y = 0.0;
+    this._axisLock.z = 0.0;
+    this._axisLock.applyQuaternion( orientation );
+    this._axisLock.multiplyScalar( this.options.brushThickness / 2.0 );
 
-    let a = new THREE.Vector3( pointCoords.x, pointCoords.y, pointCoords.z );
-    a.add( dir );
-    this._vertices[ this._verticesCount++ ] = a.x;
-    this._vertices[ this._verticesCount++ ] = a.y;
-    this._vertices[ this._verticesCount++ ] = a.z;
+    this._pointA.x = pointCoords.x;
+    this._pointA.y = pointCoords.y;
+    this._pointA.z = pointCoords.z;
+    this._pointA.sub( this._axisLock );
 
-    let b = new THREE.Vector3(
-        this.options.brushThickness + pointCoords.x, pointCoords.y,
-        pointCoords.z
-    );
-    b.add( dir );
-    this._vertices[ this._verticesCount++ ] = b.x;
-    this._vertices[ this._verticesCount++ ] = b.y;
-    this._vertices[ this._verticesCount++ ] = b.z;
+    this._vertices[ this._verticesCount++ ] = this._pointA.x;
+    this._vertices[ this._verticesCount++ ] = this._pointA.y;
+    this._vertices[ this._verticesCount++ ] = this._pointA.z;
+
+    this._pointB.x = pointCoords.x;
+    this._pointB.y = pointCoords.y;
+    this._pointB.z = pointCoords.z;
+    this._pointB.add( this._axisLock );
+    this._vertices[ this._verticesCount++ ] = this._pointB.x;
+    this._vertices[ this._verticesCount++ ] = this._pointB.y;
+    this._vertices[ this._verticesCount++ ] = this._pointB.z;
 
     if ( this._verticesCount >= 3 * 4 ) {
         let v0 = new THREE.Vector3( this._vertices[ this._verticesCount - 9 -
@@ -145,7 +139,7 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation ) {
         let v1 = new THREE.Vector3( this._vertices[ this._verticesCount - 6 -
                 3 ], this._vertices[ this._verticesCount - 6 - 2 ],
             this._vertices[ this._verticesCount - 6 - 1 ] );
-        let v2 = a;
+        let v2 = this._pointA;
 
         let v0Subv1 = v0.sub( v1 );
         let v2Subv1 = v2.sub( v1 );

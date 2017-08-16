@@ -49,17 +49,10 @@ ToolModule.init = function () {
     EventDispatcher.registerFamily( 'interact', {
         use: function ( data ) {
 
-            if ( !_selected[ data.controllerID ].useChild )
-                return;
-
             _selected[ data.controllerID ].useChild( data );
-
 
         },
         down: function ( data ) {
-
-            if ( !_selected[ data.controllerID ].triggerChild )
-                return;
 
             let cmd = _selected[ data.controllerID ].triggerChild(
                 data );
@@ -72,9 +65,6 @@ ToolModule.init = function () {
 
         },
         up: function ( data ) {
-
-            if ( !_selected[ data.controllerID ].releaseChild )
-                return;
 
             _selected[ data.controllerID ].releaseChild( data );
 
