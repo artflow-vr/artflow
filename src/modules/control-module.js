@@ -44,6 +44,8 @@ Control.init = function () {
     this._controller0Direction = new THREE.Vector3( 0, 0, -1 );
     this._controller1Direction = new THREE.Vector3( 0, 0, -1 );
 
+    this._mouseQuaternion = new THREE.Quaternion();
+
     this._fpsController = null;
     this._controllers = null;
     this._currentController = null;
@@ -84,6 +86,8 @@ Control._updateNOVR = function ( data ) {
 
     if ( this._mouseUseEvent ) {
         let position = MainView.getCamera().position;
+        let orientation = this._pointerDirection;
+
         if ( this._mouseUseEvent === EventDispatcher.EVENTS.interact ) {
             this._mousePosition.x = 0;
             this._mousePosition.z = 0;
@@ -93,12 +97,16 @@ Control._updateNOVR = function ( data ) {
             this._mousePosition.z -= MainView.getGroup().position.z;
 
             position = this._mousePosition;
+
+            this._mouseQuaternion.setFromAxisAngle( this._fpsController.rightDir,
+                Math.PI / 2 );
+            orientation = this._mouseQuaternion;
         }
 
         EventDispatcher.dispatch( this._mouseUseEvent, {
             controllerID: 0,
             position: position,
-            rotation: this._pointerDirection
+            orientation: orientation
         } );
     }
 
@@ -230,6 +238,12 @@ Control._registerKeyboardMouseEvents = function () {
     // and also because it does not make sense to change the binding.
     document.addEventListener( 'keydown', function ( event ) {
         switch ( event.keyCode ) {
+        case 49: // TODO: To remove (only for debug)
+            EventDispatcher.dispatch( EventDispatcher.EVENTS.undo );
+            break;
+        case 50: // TODO: To remove (only for debug)
+            EventDispatcher.dispatch( EventDispatcher.EVENTS.redo );
+            break;
         case 65:
             self._fpsController.left = true;
             break; // A

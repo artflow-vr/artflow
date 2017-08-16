@@ -10,22 +10,22 @@ let THREE = window.THREE;
  */
 function THREEView() {
 
-    this._object = new THREE.Group();
+    this.object = new THREE.Group();
 
 }
 /**
  * Adds a THREE.JS Object3D to the group contained in this instance.
  *
- * @param  {THREE.Object3D} object object to add to the group.
+ * @param  {THREE.Object3D} obj object to add to the group.
  */
-THREEView.prototype.addTHREEObject = function ( object ) {
+THREEView.prototype.addTHREEObject = function ( obj ) {
 
-    if ( !( object instanceof THREE.Object3D ) ) {
+    if ( !( obj instanceof THREE.Object3D ) ) {
         let errorMsg = 'addTHREEObject() was not given a THREE.JS object.';
         throw Error( 'THREEView: ' + errorMsg );
     }
 
-    this._object.add( object );
+    this.object.add( obj );
 
 };
 
@@ -36,7 +36,7 @@ THREEView.prototype.addTHREEObject = function ( object ) {
  */
 THREEView.prototype.applyMaterial = function ( material ) {
 
-    this._object.traverse( function ( child ) {
+    this.object.traverse( function ( child ) {
 
         if ( child instanceof THREE.Mesh ) child.material =
             material;
@@ -53,9 +53,9 @@ THREEView.prototype.applyMaterial = function ( material ) {
  */
 THREEView.prototype.setPos = function ( position ) {
 
-    this._object.position.x = position.x;
-    this._object.position.y = position.y;
-    this._object.position.z = position.z;
+    this.object.position.x = position.x;
+    this.object.position.y = position.y;
+    this.object.position.z = position.z;
 
 };
 
@@ -66,7 +66,7 @@ THREEView.prototype.setPos = function ( position ) {
  */
 THREEView.prototype.setVisible = function ( trigger ) {
 
-    this._object.traverse( function ( child ) {
+    this.object.traverse( function ( child ) {
 
         if ( child instanceof THREE.Object3D ) child.visible =
             trigger;
@@ -80,7 +80,7 @@ THREEView.prototype.setVisible = function ( trigger ) {
  */
 THREEView.prototype.getObject = function () {
 
-    return this._object;
+    return this.object;
 
 };
 

@@ -12,15 +12,15 @@ let ToolModule = module.exports;
 // Contains every tool: brush, water, etc...
 // These tools are not instanciated, they represent only a blueprint.
 let _tools = {};
-
 let _instance = {};
 
 // Contains the tool for each controller. Whenever the user is not in VR,
 // only one tool is accessible at a time.
 let _selected = new Array( 2 );
-
 let _teleporterTool = null;
 
+let undoStack = [];
+let redoStack = [];
 
 ToolModule.register = function ( toolID, tool ) {
 
@@ -45,33 +45,67 @@ ToolModule.init = function () {
     _selected[ 0 ] = _instance.brush0;
     _selected[ 1 ] = null;
 
+    // Registers trigger event for any tool
     EventDispatcher.registerFamily( 'interact', {
         use: function ( data ) {
 
-            if ( _selected[ data.controllerID ].useChild )
-                _selected[ data.controllerID ].useChild( data );
+            if ( !_selected[ data.controllerID ].useChild )
+                return;
+
+            _selected[ data.controllerID ].useChild( data );
+
 
         },
         down: function ( data ) {
 
-            if ( _selected[ data.controllerID ].triggerChild )
-                _selected[ data.controllerID ].triggerChild(
-                    data );
+            if ( !_selected[ data.controllerID ].triggerChild )
+                return;
+
+            let cmd = _selected[ data.controllerID ].triggerChild(
+                data );
+            if ( cmd ) undoStack.push( cmd );
+
+            for ( let i = redoStack.length - 1; i >= 0; --i ) {
+                let c = redoStack.pop();
+                if ( c.clear ) c.clear();
+            }
 
         },
         up: function ( data ) {
 
-            if ( _selected[ data.controllerID ].releaseChild )
-                _selected[ data.controllerID ].releaseChild(
-                    data );
+            if ( !_selected[ data.controllerID ].releaseChild )
+                return;
+
+            _selected[ data.controllerID ].releaseChild( data );
 
         }
     } );
 
+    // Registers event for teleportation
     EventDispatcher.registerFamily( EventDispatcher.EVENTS.teleport, {
         use: _teleporterTool.use.bind( _teleporterTool ),
         down: _teleporterTool.trigger.bind( _teleporterTool ),
         up: _teleporterTool.release.bind( _teleporterTool )
+    } );
+
+    EventDispatcher.register( EventDispatcher.EVENTS.undo, function () {
+
+        if ( undoStack.length === 0 ) return;
+
+        let cmd = undoStack.pop();
+        cmd.undo();
+        redoStack.push( cmd );
+
+    } );
+
+    EventDispatcher.register( EventDispatcher.EVENTS.redo, function () {
+
+        if ( redoStack.length === 0 ) return;
+
+        let cmd = redoStack.pop();
+        cmd.redo();
+        undoStack.push( cmd );
+
     } );
 
 };

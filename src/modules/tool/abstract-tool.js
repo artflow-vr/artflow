@@ -64,18 +64,18 @@ Tool.prototype._use = function ( data ) {
 Tool.prototype._trigger = function ( data ) {
 
     if ( !this.enabled )
-        return;
+        return undefined;
 
-    this.trigger( data );
+    return this.trigger( data );
 
 };
 
 Tool.prototype._release = function ( data ) {
 
     if ( !this.enabled )
-        return;
+        return undefined;
 
-    this.release( data );
+    return this.release( data );
 
 };
 

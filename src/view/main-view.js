@@ -37,6 +37,8 @@ MainView.init = function ( w, h, renderer ) {
     let cubemap = AssetManager.assets.textures[ AssetManager.DEFAULT_CBMAP ];
     this._rootScene.background = cubemap;
 
+    this._createLightning();
+
     this.backgroundView = null;
     this.clickView = null;
     this._createHTMLBackground();
@@ -108,12 +110,14 @@ MainView._createInitialScene = function () {
 
     //let fog = new THREE.FogExp2( 0x001c2d, 0.0125 );
 
-    let grid = new THREE.GridHelper( 100, 100, 0xbdc3c7, 0xbdc3c7 );
+    let grid = new THREE.GridHelper( 5, 5, 0xbdc3c7, 0xbdc3c7 );
 
     let geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    let centerCube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
-        color: 0x000000,
-        wireframe: false
+    let centerCube = new THREE.Mesh( geometry, new THREE.MeshStandardMaterial( {
+        color: 0x95a5a6,
+        wireframe: false,
+        metalness: 0.0,
+        roughness: 1.0
     } ) );
     let xAxisCube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
         color: 0xff0000,
@@ -128,6 +132,19 @@ MainView._createInitialScene = function () {
     this._group.add( grid );
     this._group.add( centerCube );
     this._group.add( xAxisCube );
+
+
+};
+
+MainView._createLightning = function () {
+
+    // Creates the lightning
+    let hemLight = new THREE.HemisphereLight( 0X2C3E50, 0xFFFFFF, 0.5 );
+    this._rootScene.add( hemLight );
+
+    let dirLight = new THREE.DirectionalLight( 0xffffff, 1 );
+    dirLight.position.set( 100, 100, 100 );
+    this._rootScene.add( dirLight );
 
 };
 

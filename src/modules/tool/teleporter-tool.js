@@ -65,7 +65,7 @@ TeleporterTool.HALF_GRAVITY_CONST = TeleporterTool.GRAVITY_CONST / 2.0;
  */
 TeleporterTool.prototype.use = function ( data ) {
 
-    let dirScale = data.rotation.clone().multiplyScalar( this.options.velocity );
+    let dirScale = data.orientation.clone().multiplyScalar( this.options.velocity );
     let hitTime = this._findIntersectionTime( dirScale.y, data.position.y );
 
     this._updateSpline( dirScale, data.position, hitTime );

@@ -5,7 +5,9 @@ let EventDispatcher = module.exports;
 EventDispatcher.EVENTS = {
 
     interact: 'interact',
-    teleport: 'teleport'
+    teleport: 'teleport',
+    undo: 'undo',
+    redo: 'redo'
 
 };
 
