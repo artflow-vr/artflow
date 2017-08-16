@@ -149,6 +149,9 @@ MainView._createLightning = function () {
     dirLight.position.set( 100, 100, 100 );
     this._rootScene.add( dirLight );
 
+    let ambLight = new THREE.AmbientLight( 0xf0f0f0 );
+    this._rootScene.add( ambLight );
+
 };
 
 MainView._createHTMLBackground = function () {
