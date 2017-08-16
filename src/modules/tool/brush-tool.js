@@ -11,12 +11,13 @@ function BrushTool( options ) {
     AbstractTool.call( this, options );
     this.setOptionsIfUndef( {
         maxSpread: 50,
-        brushThickness: 0.1
+        brushThickness: 0.5
     } );
 
     this._verticesCount = 0;
     this._normalsCount = 0;
     this._vboLimit = 10000;
+    this._maxSpread = 10;
     this._material = null;
     this._geometry = null;
     this._vertices = null;
