@@ -6,6 +6,7 @@ let MainView = require( '../view/main-view' );
 
 let Utils = require( '../utils/utils' );
 let EventDispatcher = Utils.EventDispatcher;
+let AssetManager = Utils.AssetManager;
 
 let ToolModule = module.exports;
 
@@ -115,7 +116,10 @@ ToolModule._registerBasicTools = function () {
     this.register( 'Brush', Tool.BrushTool );
     this.register( 'Teleporter', Tool.TeleporterTool );
 
-    _instance.brush0 = new _tools.Brush();
+    _instance.brush0 = new _tools.Brush( {
+        texture: AssetManager.assets.texture.brush1
+    } );
+
     _instance.teleporter = new _tools.Teleporter();
 
     MainView.addToMovingGroup( _instance.brush0.view.getObject() );

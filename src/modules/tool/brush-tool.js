@@ -27,7 +27,8 @@ function BrushTool( options ) {
     this._pointB = new THREE.Vector3( 0, 0, 0 );
 
     if ( this.options.texture ) {
-        let tex = options.texture;
+
+        let tex = this.options.texture;
         tex.wrapS = THREE.RepeatWrapping;
         tex.wrapT = THREE.RepeatWrapping;
 
@@ -37,7 +38,7 @@ function BrushTool( options ) {
             transparent: true,
             depthTest: false,
             metalness: 0.0,
-            roughness: 1.0
+            roughness: 0.9
         } );
     } else {
         this._material = new THREE.MeshStandardMaterial( {

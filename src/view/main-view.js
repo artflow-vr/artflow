@@ -37,7 +37,7 @@ MainView.init = function ( w, h, renderer, vr ) {
     // TODO: Update the THREE.JS version with the update handling background
     // on both eyes.
     if ( !vr ) {
-        let cubemap = AssetManager.assets.textures[ AssetManager.DEFAULT_CBMAP ];
+        let cubemap = AssetManager.assets.cubemap.cubemap;
         this._rootScene.background = cubemap;
     } else {
         this._rootScene.background = 0xcccccc;

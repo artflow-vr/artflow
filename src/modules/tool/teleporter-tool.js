@@ -26,7 +26,13 @@ function TeleporterTool( options ) {
         nbSub: 5
     } );
 
-    this._mesh = AssetManager.get( AssetManager.TELEPORTER );
+    this._mesh = AssetManager.assets.model.teleporter;
+    this._mesh.traverse( function ( child ) {
+
+        if ( child instanceof THREE.Mesh )
+            child.material = TeleporterTool.MATERIAL;
+
+    } );
 
     this._direction = new THREE.Vector3( 0, 0, -1 );
 
@@ -57,6 +63,14 @@ TeleporterTool.prototype.constructor = TeleporterTool;
 
 TeleporterTool.GRAVITY_CONST = -9.81;
 TeleporterTool.HALF_GRAVITY_CONST = TeleporterTool.GRAVITY_CONST / 2.0;
+TeleporterTool.MATERIAL = new THREE.MeshLambertMaterial( {
+    color: new THREE.Color( 0X27ae60 ),
+    emissive: 0X27ae60,
+    emissiveIntensity: 1.0,
+    transparent: true,
+    opacity: 0.9,
+    blending: THREE.AdditiveBlending
+} );
 
 /**
  * Updates teleporter position and spline.
