@@ -29,7 +29,7 @@ function FPSControls( camera, movingWorld ) {
     this._target = new THREE.Vector3( 0, 0, 0 );
 
     this._forwardDir = new THREE.Vector3( 0, 0, 0 );
-    this._rightDir = new THREE.Vector3( 0, 0, 0 );
+    this.rightDir = new THREE.Vector3( 0, 0, 0 );
 
     this._mouseX = 0;
     this._mouseY = 0;
@@ -71,7 +71,7 @@ FPSControls.prototype.update = function ( delta ) {
     this.object.lookAt( this._target );
     this.object.getWorldDirection( this._forwardDir );
 
-    this._rightDir.crossVectors( FPSControls.UP_DIR, this._forwardDir );
+    this.rightDir.crossVectors( FPSControls.UP_DIR, this._forwardDir );
 
     if ( this.forward )
         this._movingWorld.translateOnAxis( this._forwardDir, -
@@ -81,9 +81,9 @@ FPSControls.prototype.update = function ( delta ) {
             actualMoveSpeed );
 
     if ( this.left )
-        this._movingWorld.translateOnAxis( this._rightDir, -actualMoveSpeed );
+        this._movingWorld.translateOnAxis( this.rightDir, -actualMoveSpeed );
     if ( this.right )
-        this._movingWorld.translateOnAxis( this._rightDir, actualMoveSpeed );
+        this._movingWorld.translateOnAxis( this.rightDir, actualMoveSpeed );
 
     if ( this.fixedHeight ) this._movingWorld.position.y = 0;
 
