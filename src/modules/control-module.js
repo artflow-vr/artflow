@@ -326,7 +326,7 @@ Control._registerKeyboardMouseEvents = function () {
         }
     }, false );
 
-    document.addEventListener( 'mousemove', function () {
+    document.addEventListener( 'mousemove', function ( event ) {
 
         Control._fpsController.moveView( event );
 
