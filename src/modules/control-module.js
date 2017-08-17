@@ -120,30 +120,14 @@ Control._updateNOVR = function ( data ) {
     Control._fpsController.update( data.delta );
 
     if ( this._mouseUseEvent ) {
-        // Updates the _pointerDirection value with the camera direction.
-        let orientation = this._controllerTransform[ 0 ].orientation;
-        MainView.getCamera().getWorldQuaternion( orientation );
 
-        let position = this._controllerTransform[ 0 ].position;
-        if ( this._mouseUseEvent === EventDispatcher.EVENTS.interact ) {
-            MainView.getCamera().getWorldDirection( this._pointerDirection );
-            position.local.copy( this._pointerDirection );
-            position.local.multiplyScalar( 5.0 );
-        } else {
-            MainView.getCamera().getWorldPosition( position.local );
-        }
-
-        position.world.copy( position.local );
-        position.world.x -= MainView.getGroup().position.x;
-        position.world.z -= MainView.getGroup().position.z;
+        this._computeMouseOrientation();
+        this._computeMouseLocalWorldPosition();
 
         EventDispatcher.dispatch( this._mouseUseEvent, {
             controllerID: 0,
-            position: {
-                local: position.local,
-                world: position.world
-            },
-            orientation: orientation
+            position: this._controllerTransform[ 0 ].position,
+            orientation: this._controllerTransform[ 0 ].orientation
         } );
     }
 
@@ -189,10 +173,8 @@ Control._registerControllerEvents = function () {
 
             EventDispatcher.dispatch( eventID, {
                 controllerID: cID,
-                position: self._controllerTransform[
-                    cID ].position,
-                orientation: self._controllerTransform[
-                    cID ].orientation
+                position: self._controllerTransform[ cID ].position,
+                orientation: self._controllerTransform[ cID ].orientation
             } );
 
         } );
@@ -263,19 +245,39 @@ Control._registerKeyboardMouseEvents = function () {
     let self = this;
 
     document.addEventListener( 'mousedown', function ( event ) {
+
         let eventID = self._mouseToAction[ event.button ];
         self._mouseUseEvent = eventID;
+
+        // Refreshes mouse position / orientation before
+        // sending the event.
+        self._computeMouseOrientation();
+        self._computeMouseLocalWorldPosition();
+
         EventDispatcher.dispatch( eventID + 'Down', {
-            controllerID: 0
+            controllerID: 0,
+            position: self._controllerTransform[ 0 ].position,
+            orientation: self._controllerTransform[ 0 ].orientation
         } );
+
     }, false );
     document.addEventListener( 'mouseup', function ( event ) {
+
         let eventID = self._mouseToAction[ event.button ];
         self._mousedown = false;
         self._mouseUseEvent = null;
+
+        // Refreshes mouse position / orientation before
+        // sending the event.
+        self._computeMouseOrientation();
+        self._computeMouseLocalWorldPosition();
+
         EventDispatcher.dispatch( eventID + 'Up', {
-            controllerID: 0
+            controllerID: 0,
+            position: self._controllerTransform[ 0 ].position,
+            orientation: self._controllerTransform[ 0 ].orientation
         } );
+
     }, false );
 
     // The events below are different, we do not really need
@@ -331,5 +333,29 @@ Control._registerKeyboardMouseEvents = function () {
         Control._fpsController.moveView( event );
 
     }, false );
+
+};
+
+Control._computeMouseOrientation = function() {
+
+    let orientation = this._controllerTransform[ 0 ].orientation;
+    MainView.getCamera().getWorldQuaternion( orientation );
+
+};
+
+Control._computeMouseLocalWorldPosition = function() {
+
+    let position = this._controllerTransform[ 0 ].position;
+    if ( this._mouseUseEvent === EventDispatcher.EVENTS.interact ) {
+        MainView.getCamera().getWorldDirection( this._pointerDirection );
+        position.local.copy( this._pointerDirection );
+        position.local.multiplyScalar( 5.0 );
+    } else {
+        MainView.getCamera().getWorldPosition( position.local );
+    }
+
+    position.world.copy( position.local );
+    position.world.x -= MainView.getGroup().position.x;
+    position.world.z -= MainView.getGroup().position.z;
 
 };
