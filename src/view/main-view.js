@@ -43,7 +43,7 @@ MainView.init = function ( w, h, renderer, vr ) {
         this._rootScene.background = 0xcccccc;
     }
 
-    this._createLightning();
+    this._createLighting();
 
     this.backgroundView = null;
     this.clickView = null;
@@ -139,7 +139,7 @@ MainView._createInitialScene = function ( vr ) {
 
 };
 
-MainView._createLightning = function () {
+MainView._createLighting = function () {
 
     // Creates the lightning
     let hemLight = new THREE.HemisphereLight( 0X000000, 0x2C3E50, 1.0 );
