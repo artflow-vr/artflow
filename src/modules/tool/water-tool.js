@@ -22,6 +22,8 @@ function WaterTool( options ) {
     uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
 
     let geometry = new THREE.PlaneGeometry( 2, 2 );
+    geometry.rotateZ( - Math.PI / 4 );
+
     let material = new THREE.ShaderMaterial( {
         uniforms: uniforms,
         vertexShader: WaterShader.vertex,
@@ -34,6 +36,8 @@ function WaterTool( options ) {
         }
     } );
     let plane = new THREE.Mesh( geometry, material );
+    plane.translateY( 1.2 );
+
     this.view.addTHREEObject( plane );
     // END DEBUG
 
@@ -42,7 +46,7 @@ WaterTool.prototype = Object.create( AbstractTool.prototype );
 WaterTool.prototype.constructor = WaterTool;
 
 WaterTool.prototype.update = function () {
-    uniforms.uTime.value += 1 / 60;
+    uniforms.uTime.value += 0.001;
 };
 
 WaterTool.prototype.trigger = function () { };
