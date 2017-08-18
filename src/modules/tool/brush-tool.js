@@ -77,7 +77,7 @@ BrushTool.prototype.use = function ( data ) {
 
 BrushTool.prototype.release = function ( data ) {
 
-    this._addLastPoint( data.position.world, data.orientation );
+    //this._addLastPoint( data.position.world, data.orientation );
 
 };
 
@@ -207,21 +207,23 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation ) {
     if ( this._lastPoint.distanceTo( pointCoords ) < this._delta )
         return;
 
-    let iMod = ( this._uvCount / 4 ) % ( this._maxSpread + this._maxSpreadAdjust );
+    let max = this._verticesCount / 6;
 
-    if ( this._uvCount / 4 > this._maxSpread / 2 )
-        this._maxSpreadAdjust += 2;
+    let uv = 0;
+    for ( let i = 0; i <= max; i++ )  {
 
-    this._uvs[ this._uvCount++ ] = iMod / ( this._maxSpread + this._maxSpreadAdjust - 1 );
-    this._uvs[ this._uvCount++ ] = 0;
+        this._uvs[ uv++ ] = i / ( max );
+        this._uvs[ uv++ ] = 0;
 
-    this._uvs[ this._uvCount++ ] = iMod / ( this._maxSpread + this._maxSpreadAdjust - 1 );
-    this._uvs[ this._uvCount++ ] = 1;
+        this._uvs[ uv++ ] = i / ( max );
+        this._uvs[ uv++ ] = 1;
+    }
 
     this._processPoint( pointCoords.clone(), orientation, this._verticesCount, this._normalsCount );
 
     this._verticesCount += 6;
     this._normalsCount += 6;
+    this._uvCount += 4;
 
     this._geometry.attributes.normal.needsUpdate = true;
     this._geometry.attributes.position.needsUpdate = true;
