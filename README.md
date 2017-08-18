@@ -78,4 +78,3 @@ ToolModule.register('MyNiceTool', toolDescription);
 #### Brushes
 * [ ] Add pressure
 * [ ] Add strokes system
-* [ ] Change events in tools
