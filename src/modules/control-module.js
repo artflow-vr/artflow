@@ -256,11 +256,6 @@ Control._registerKeyboardMouseEvents = function () {
         let eventID = self._mouseToAction[ event.button ];
         self._mouseUseEvent = eventID;
 
-        // Refreshes mouse position / orientation before
-        // sending the event.
-        self._computeMouseOrientation();
-        self._computeMouseLocalWorldPosition();
-
         EventDispatcher.dispatch( eventID + 'Down', {
             controllerID: 0,
             position: self._controllerTransform[ 0 ].position,
@@ -273,11 +268,6 @@ Control._registerKeyboardMouseEvents = function () {
         let eventID = self._mouseToAction[ event.button ];
         self._mousedown = false;
         self._mouseUseEvent = null;
-
-        // Refreshes mouse position / orientation before
-        // sending the event.
-        self._computeMouseOrientation();
-        self._computeMouseLocalWorldPosition();
 
         EventDispatcher.dispatch( eventID + 'Up', {
             controllerID: 0,
