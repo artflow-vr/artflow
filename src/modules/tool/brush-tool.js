@@ -77,7 +77,6 @@ BrushTool.prototype.use = function ( data ) {
 
 BrushTool.prototype.release = function ( data ) {
 
-
     this._addLastPoint( data.position.world, data.orientation );
 
 };
@@ -101,6 +100,7 @@ BrushTool.prototype.trigger = function () {
     this._normalsCount = 0;
     this._uvCount = 0;
     this._maxSpreadAdjust = 0;
+    this._lastPoint = new THREE.Vector3( -99999, -9999, -99999 );
 
     let mesh = new THREE.Mesh( this._geometry, this._material );
     mesh.drawMode = THREE.TriangleStripDrawMode;
@@ -189,8 +189,7 @@ BrushTool.prototype._addLastPoint = function ( pointCoords, orientation ) {
 
     }
 
-    let point = pointCoords.clone();
-    this._processPoint( point, orientation, this._verticesCount, this._normalsCount );
+    this._processPoint( pointCoords.clone(), orientation, this._verticesCount, this._normalsCount );
 
     this._verticesCount += 6;
     this._normalsCount += 6;
@@ -200,8 +199,6 @@ BrushTool.prototype._addLastPoint = function ( pointCoords, orientation ) {
     this._geometry.attributes.uv.needsUpdate = true;
 
     this._geometry.setDrawRange( 0, this._verticesCount / 3 );
-
-    this._lastPoint = pointCoords.clone();
 
 };
 
