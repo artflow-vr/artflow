@@ -18,10 +18,13 @@ let _instance = {};
 // Contains the tool for each controller. Whenever the user is not in VR,
 // only one tool is accessible at a time.
 let _selected = new Array( 2 );
+<<<<<<< HEAD
 
 // General tools should be accessible every time, even if they are not
 // currently selected.
 let _generalTools = [];
+=======
+>>>>>>> water: shader: add water shader derived from Three.js shaders
 
 let undoStack = [];
 let redoStack = [];
@@ -173,6 +176,9 @@ ToolModule._registerBasicTools = function () {
     this.register( 'Brush', Tool.BrushTool );
     this.register( 'Particle', Tool.ParticleTool );
     this.register( 'Teleporter', Tool.TeleporterTool );
+    this.register( 'Water', Tool.WaterTool );
+
+    _instance.teleporter = new _tools.Teleporter();
 
     this._instanciate( 'brush0', 'Brush', {
         texture: AssetManager.assets.texture.brush1
