@@ -32,3 +32,9 @@ The [webpack-dev-server](https://webpack.github.io/docs/webpack-dev-server.html)
 ## Three.js Code Reuse
 
 **ArtFlow** is built upon a [Model-view-controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller), where views are Three.js *Object3D*, or our custom wrapper over Three.js *Object3D*. Basically, you can reuse every controller in your Three.js projects, such as the teleporter, or the brush, by changing only one or two lines of code.
+
+### TODO
+
+#### Brushes
+* [ ] Add pressure
+* [ ] Add strokes system
