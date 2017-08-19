@@ -13,12 +13,19 @@ module.exports = {
     ),
 
     vertex: [
+        'attribute vec4 tangent;',
+
         'varying vec3 vNormal;',
+        'varying vec3 vTangent;',
+        'varying vec3 vBinormal;',
         'varying vec2 vUv;',
 
         'varying vec3 vViewPosition;',
 
         'varying vec3 worldNormal;',
+        'varying vec3 test;',
+
+        'const vec3 down = vec3(0.0, -1.0, 0.0);',
 
         'void main() {',
 
@@ -26,8 +33,11 @@ module.exports = {
 
             'vViewPosition = -mvPosition.xyz;',
 
-            'vNormal = normalize( normalMatrix * normal );',
-            'worldNormal = normal;',
+            'vNormal = normalize(normalMatrix * normal );',
+            '//vec3 worldNormal = normalize((modelMatrix * vec4(normal, 1.0)).xyz);',
+            'vTangent = normalize(normalMatrix * tangent.xyz);',
+            'vBinormal = normalize(cross(vNormal, vTangent) * tangent.w);',
+            'test = normalize(normalMatrix * down);',
             'vUv = uv;',
 
             'gl_Position = projectionMatrix * mvPosition;',
@@ -41,11 +51,13 @@ module.exports = {
         '#define USE_NORMALMAP',
 
         'varying vec3 vNormal;',
+        'varying vec3 vTangent;',
+        'varying vec3 vBinormal;',
         'varying vec2 vUv;',
 
         'varying vec3 vViewPosition;',
 
-        'varying vec3 worldNormal;',
+        'varying vec3 test;',
 
         'const vec3 down = vec3(0.0, -1.0, 0.0);',
 
@@ -60,16 +72,15 @@ module.exports = {
             THREE.ShaderChunk.normal_flip,
             THREE.ShaderChunk.normal_fragment,
 
-            'float v = dot(worldNormal, down);',
-            'vec2 slideUV = vUv + vec2(v) * uTime;',
-            '//vec2 dir = (worldNormal + down).xz;',
-            '//vec2 slideUV = vUv + dir * uTime;',
+            'float uSlide = dot(vTangent, test);',
+            'float vSlide = dot(vBinormal, test);',
+            'vec2 slideUV = vUv + vec2(-uSlide, -vSlide) * uTime;',
 
             '//#if NUM_DIR_LIGHTS > 0',
             '//for( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {',
 
-            '//gl_FragColor = vec4(worldNormal, 1.0);',
             'gl_FragColor = vec4(texture2D( normalMap, slideUV ).xyz, 0.65);',
+            '//gl_FragColor = vec4(vTangent, 1.0);',
 
             THREE.ShaderChunk.linear_to_gamma_fragment,
 
