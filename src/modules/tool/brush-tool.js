@@ -11,7 +11,8 @@ function BrushTool( options ) {
     AbstractTool.call( this, options );
     this.setOptionsIfUndef( {
         maxSpread: 20,
-        brushThickness: 0.5
+        brushThickness: 0.5,
+        mouseController: true
     } );
 
     this._verticesCount = 0;
@@ -174,16 +175,19 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation ) {
         return;
 
     let max = this._verticesCount / 6;
-    if ( this.options.maxSpread > 0 )
+    if ( this.options.maxSpread > 0 && max === this.options.maxSpread )
         max = this.options.maxSpread;
 
     let uv = 0;
     for ( let i = 0; i <= max; i++ )  {
 
-        this._uvs[ uv++ ] = i / ( max );
+        let pressure = i;
+        if ( !this.options.mouseController )
+            pressure = 0.5; // Gamepad Pressure
+        this._uvs[ uv++ ] = pressure / ( max );
         this._uvs[ uv++ ] = 0;
 
-        this._uvs[ uv++ ] = i / ( max );
+        this._uvs[ uv++ ] = pressure / ( max );
         this._uvs[ uv++ ] = 1;
     }
 
