@@ -75,12 +75,6 @@ BrushTool.prototype.use = function ( data ) {
 
 };
 
-BrushTool.prototype.release = function ( data ) {
-
-    //this._addLastPoint( data.position.world, data.orientation );
-
-};
-
 BrushTool.prototype.trigger = function () {
 
     this._geometry = new THREE.BufferGeometry();
@@ -172,33 +166,6 @@ BrushTool.prototype._processPoint = function ( pointCoords, orientation, vertice
 
         this._geometry.normalizeNormals();
     }
-
-};
-
-BrushTool.prototype._addLastPoint = function ( pointCoords, orientation ) {
-
-    for ( let uv = this._uvCount - 8; uv < this._uvCount + 4; uv ) {
-
-        let iMod = uv;
-
-        this._uvs[ uv++ ] = iMod / ( this._uvCount - 1 );
-        this._uvs[ uv++ ] = 0;
-
-        this._uvs[ uv++ ] = iMod / ( this._uvCount - 1 );
-        this._uvs[ uv++ ] = 1;
-
-    }
-
-    this._processPoint( pointCoords.clone(), orientation, this._verticesCount, this._normalsCount );
-
-    this._verticesCount += 6;
-    this._normalsCount += 6;
-
-    this._geometry.attributes.normal.needsUpdate = true;
-    this._geometry.attributes.position.needsUpdate = true;
-    this._geometry.attributes.uv.needsUpdate = true;
-
-    this._geometry.setDrawRange( 0, this._verticesCount / 3 );
 
 };
 
