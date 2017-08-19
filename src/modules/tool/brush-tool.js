@@ -10,7 +10,7 @@ function BrushTool( options ) {
 
     AbstractTool.call( this, options );
     this.setOptionsIfUndef( {
-        maxSpread: 50,
+        maxSpread: 20,
         brushThickness: 0.5
     } );
 
@@ -18,8 +18,6 @@ function BrushTool( options ) {
     this._normalsCount = 0;
     this._uvCount = 0;
     this._vboLimit = 10000;
-    this._maxSpread = 10;
-    this._maxSpreadAdjust = 0;
     this._material = null;
     this._geometry = null;
     this._vertices = null;
@@ -29,7 +27,7 @@ function BrushTool( options ) {
     this._axisLock = new THREE.Vector3( 0, 0, -1 );
     this._pointA = new THREE.Vector3( 0, 0, 0 );
     this._pointB = new THREE.Vector3( 0, 0, 0 );
-    this._lastPoint = new THREE.Vector3( -99999, -9999, -99999 );
+    this._lastPoint = new THREE.Vector3( Number.NEGATIVE_INFINITY );
 
     if ( this.options.texture ) {
 
@@ -76,6 +74,7 @@ BrushTool.prototype.use = function ( data ) {
 };
 
 BrushTool.prototype.trigger = function () {
+    console.log( 'triggered' );
 
     this._geometry = new THREE.BufferGeometry();
     this._vertices = new Float32Array( this._vboLimit * 3 * 3 );
@@ -93,8 +92,8 @@ BrushTool.prototype.trigger = function () {
     this._verticesCount = 0;
     this._normalsCount = 0;
     this._uvCount = 0;
-    this._maxSpreadAdjust = 0;
-    this._lastPoint = new THREE.Vector3( -99999, -9999, -99999 );
+
+    this._lastPoint = new THREE.Vector3( Number.NEGATIVE_INFINITY );
 
     let mesh = new THREE.Mesh( this._geometry, this._material );
     mesh.drawMode = THREE.TriangleStripDrawMode;
@@ -171,10 +170,12 @@ BrushTool.prototype._processPoint = function ( pointCoords, orientation, vertice
 
 BrushTool.prototype._addPoint = function ( pointCoords, orientation ) {
 
-    if ( this._lastPoint.distanceTo( pointCoords ) < this._delta )
+    if ( this._lastPoint.distanceTo( pointCoords ) < this._delta || this._verticesCount / 6 > this.options.maxSpread )
         return;
 
     let max = this._verticesCount / 6;
+    if ( this.options.maxSpread > 0 )
+        max = this.options.maxSpread;
 
     let uv = 0;
     for ( let i = 0; i <= max; i++ )  {
