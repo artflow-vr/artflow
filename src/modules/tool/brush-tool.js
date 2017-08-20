@@ -112,16 +112,20 @@ BrushTool.prototype.trigger = function () {
 
 };
 
-BrushTool.prototype._processPoint = function ( pointCoords, orientation, verticesCount_, normalsCount_ ) {
+BrushTool.prototype._processPoint = function ( pointCoords, orientation, verticesCount_, normalsCount_, pressure ) {
 
-    let verticesCount = verticesCount_.clone();
-    let normalsCount = normalsCount_.clone();
+    let verticesCount = verticesCount_;
+    let normalsCount = normalsCount_;
 
     this._axisLock.x = 1.0;
     this._axisLock.y = 0.0;
     this._axisLock.z = 0.0;
     this._axisLock.applyQuaternion( orientation );
-    this._axisLock.multiplyScalar( this.options.brushThickness / 2.0 );
+
+    let thickness = this.options.brushThickness / 2.0;
+    if ( !this.options.texture )
+        thickness *= pressure;
+    this._axisLock.multiplyScalar( thickness );
 
     this._pointA.x = pointCoords.x;
     this._pointA.y = pointCoords.y;
@@ -202,7 +206,7 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureVal
     this._geometry.attributes.position.needsUpdate = true;
     this._geometry.attributes.uv.needsUpdate = true;
 
-    this._geometry.setDrawRange( 0, this._verticesCount / 3 );
+    this._geometry.setDrawRange( 4, this._verticesCount / 3 - 4 );
 
     this._lastPoint = pointCoords.clone();
 };
