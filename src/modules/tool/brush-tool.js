@@ -11,7 +11,7 @@ function BrushTool( options ) {
     AbstractTool.call( this, options );
     this.setOptionsIfUndef( {
         maxSpread: 20,
-        brushThickness: 0.1,
+        brushThickness: 0.5,
         mouseController: true
     } );
 
@@ -114,8 +114,8 @@ BrushTool.prototype.trigger = function () {
 
 BrushTool.prototype._processPoint = function ( pointCoords, orientation, verticesCount_, normalsCount_ ) {
 
-    let verticesCount = verticesCount_;
-    let normalsCount = normalsCount_;
+    let verticesCount = verticesCount_.clone();
+    let normalsCount = normalsCount_.clone();
 
     this._axisLock.x = 1.0;
     this._axisLock.y = 0.0;
@@ -185,10 +185,10 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureVal
         let pressure = pressureValue;
         //if ( !this.options.mouseController )
         //pressure = pressureValue; // Gamepad Pressure
-        this._uvs[ uv++ ] = pressure / ( max - 1 );
+        this._uvs[ uv++ ] = pressure;
         this._uvs[ uv++ ] = 0;
 
-        this._uvs[ uv++ ] = pressure / ( max - 1 );
+        this._uvs[ uv++ ] = pressure;
         this._uvs[ uv++ ] = 1;
     }
 
@@ -202,7 +202,7 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureVal
     this._geometry.attributes.position.needsUpdate = true;
     this._geometry.attributes.uv.needsUpdate = true;
 
-    this._geometry.setDrawRange( 4, this._verticesCount / 3 - 4 );
+    this._geometry.setDrawRange( 0, this._verticesCount / 3 );
 
     this._lastPoint = pointCoords.clone();
 };
