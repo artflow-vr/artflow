@@ -194,7 +194,7 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureVal
     this._uvs[ this.uv++ ] = pressure;
     this._uvs[ this.uv++ ] = 1;
 
-    this._processPoint( pointCoords.clone(), orientation, this._verticesCount, this._normalsCount );
+    this._processPoint( pointCoords.clone(), orientation, this._verticesCount, this._normalsCount, pressure );
 
     this._verticesCount += 6;
     this._normalsCount += 6;
