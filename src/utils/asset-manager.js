@@ -125,6 +125,10 @@ AssetManager._loadRequiredAssets = function () {
             AssetManager.CUBEMAP, this._cubemapPath, 'cubemap' )
     );
     promises.push(
+        this.load( 'floor', '.jpg',
+            AssetManager.TEXTURE, this._texturePath )
+    );
+    promises.push(
         this.load( 'brush2', '.png',
             AssetManager.TEXTURE, this._texturePath, 'brush1' )
     );

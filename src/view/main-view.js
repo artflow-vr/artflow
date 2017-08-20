@@ -116,7 +116,13 @@ MainView._createInitialScene = function ( vr ) {
 
     if ( vr ) return;
 
-    let grid = new THREE.GridHelper( 10, 10, 0xbdc3c7, 0xbdc3c7 );
+    let floorTex = AssetManager.assets.texture.floor;
+    let floor = new THREE.Mesh( new THREE.PlaneGeometry( 6, 6 ),
+        new THREE.MeshLambertMaterial( {
+            map: floorTex
+        } )
+    );
+    floor.rotateX( -Math.PI / 2 );
 
     let geometry = new THREE.BoxGeometry( 1, 1, 1 );
     let centerCube = new THREE.Mesh( geometry, new THREE.MeshStandardMaterial( {
@@ -133,7 +139,7 @@ MainView._createInitialScene = function ( vr ) {
     centerCube.translateY( 0.5 );
     xAxisCube.translateX( 2 );
 
-    this._group.add( grid );
+    this._group.add( floor );
     this._group.add( centerCube );
     this._group.add( xAxisCube );
 
