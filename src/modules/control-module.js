@@ -2,9 +2,6 @@
 
 let THREE = window.THREE;
 
-// ViveController is auto-added to the THREE namespace.
-require( '../../vendor/ViveController' );
-
 let MainView = require( '../view/main-view' );
 
 let Utils = require( '../utils/utils' );
@@ -14,6 +11,7 @@ let AssetManager = Utils.AssetManager;
 
 let Controller = require( '../controller/controller' );
 let FPSControls = Controller.FPSControls;
+let ViveController = Controller.ViveController;
 
 let Control = module.exports;
 
@@ -149,10 +147,10 @@ Control._initVRControllers = function () {
     let controllerMesh = AssetManager.assets.model[ 'vive-controller' ];
 
     this._controllers = new Array( 2 );
-    this._controllers[ 0 ] = new THREE.ViveController( 0 );
+    this._controllers[ 0 ] = new ViveController( 0 );
     this._controllers[ 0 ].standingMatrix = renderer.vr.getStandingMatrix();
 
-    this._controllers[ 1 ] = new THREE.ViveController( 1 );
+    this._controllers[ 1 ] = new ViveController( 1 );
     this._controllers[ 1 ].standingMatrix = renderer.vr.getStandingMatrix();
 
     this._controllers[ 0 ].add( controllerMesh.clone() );

@@ -11,8 +11,8 @@ function BrushTool( options ) {
     AbstractTool.call( this, options );
     this.setOptionsIfUndef( {
         maxSpread: 20,
-        brushThickness: 0.5,
-        enablePressure: false
+        brushThickness: 0.1,
+        enablePressure: true
     } );
 
     this._verticesCount = 0;
@@ -30,7 +30,9 @@ function BrushTool( options ) {
     this._pointA = new THREE.Vector3( 0, 0, 0 );
     this._pointB = new THREE.Vector3( 0, 0, 0 );
     this._lastPoint = new THREE.Vector3( Number.NEGATIVE_INFINITY );
+    this._lastPressure = 0.0;
 
+    this.options.texture = null;
     if ( this.options.texture ) {
 
         let tex = this.options.texture;
@@ -76,7 +78,7 @@ BrushTool.prototype.use = function ( data ) {
 
 };
 
-BrushTool.prototype.trigger = function () {
+BrushTool.prototype.trigger = function ( ) {
 
     this._geometry = new THREE.BufferGeometry();
     this._vertices = new Float32Array( this._vboLimit * 3 * 3 );
@@ -124,9 +126,15 @@ BrushTool.prototype._processPoint = function ( pointCoords, orientation, vertice
     this._axisLock.z = 0.0;
     this._axisLock.applyQuaternion( orientation );
 
+    let pressureValue = pressure >= 0.8 ? 0.8 : pressure;
     let thickness = this.options.brushThickness / 2.0;
-    if ( this.options.enablePressure )
-        thickness *= Math.log( pressure + 1 );
+    if ( this.options.enablePressure ) {
+        let test = 1.0 - Math.abs( this._lastPressure - pressureValue );
+        thickness *= pressureValue * test * test;
+        this._lastPressure = pressureValue;
+    }
+        //thickness *= ( pressure * pressure * pressure * pressure );
+
     this._axisLock.multiplyScalar( thickness );
 
     this._pointA.x = pointCoords.x;
@@ -179,7 +187,6 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureVal
 
     if ( this._lastPoint.distanceTo( pointCoords ) < this._delta )
         return;
-
 
     let max = this.options.maxSpread;
     if ( this.options.maxSpread > 0 && this._verticesCount / 6 >= this.options.maxSpread )
