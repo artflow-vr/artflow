@@ -132,7 +132,8 @@ Control._updateNOVR = function ( data ) {
         EventDispatcher.dispatch( this._mouseUseEvent, {
             controllerID: 0,
             position: this._controllerTransform[ 0 ].position,
-            orientation: this._controllerTransform[ 0 ].orientation
+            orientation: this._controllerTransform[ 0 ].orientation,
+            pressure: 0.5
         } );
     }
 
@@ -145,7 +146,7 @@ Control._updateNOVR = function ( data ) {
 Control._initVRControllers = function () {
 
     let renderer = MainView.getRenderer();
-    let controllerMesh = AssetManager.get( AssetManager.VIVE_CONTROLLER );
+    let controllerMesh = AssetManager.assets.model[ 'vive-controller' ];
 
     this._controllers = new Array( 2 );
     this._controllers[ 0 ] = new THREE.ViveController( 0 );
@@ -178,10 +179,9 @@ Control._registerControllerEvents = function () {
 
             EventDispatcher.dispatch( eventID, {
                 controllerID: cID,
-                position: self._controllerTransform[
-                    cID ].position,
-                orientation: self._controllerTransform[
-                    cID ].orientation
+                position: self._controllerTransform[ cID ].position,
+                orientation: self._controllerTransform[ cID ].orientation,
+                pressure: data.pressure
             } );
 
         } );
@@ -259,7 +259,8 @@ Control._registerKeyboardMouseEvents = function () {
         EventDispatcher.dispatch( eventID + 'Down', {
             controllerID: 0,
             position: self._controllerTransform[ 0 ].position,
-            orientation: self._controllerTransform[ 0 ].orientation
+            orientation: self._controllerTransform[ 0 ].orientation,
+            pressure: 0.5
         } );
 
     }, false );
@@ -272,7 +273,8 @@ Control._registerKeyboardMouseEvents = function () {
         EventDispatcher.dispatch( eventID + 'Up', {
             controllerID: 0,
             position: self._controllerTransform[ 0 ].position,
-            orientation: self._controllerTransform[ 0 ].orientation
+            orientation: self._controllerTransform[ 0 ].orientation,
+            pressure: 0.5
         } );
 
     }, false );

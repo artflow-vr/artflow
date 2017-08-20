@@ -40,7 +40,7 @@ MainView.init = function ( w, h, renderer, vr ) {
         let cubemap = AssetManager.assets.cubemap.cubemap;
         this._rootScene.background = cubemap;
     } else {
-        this._rootScene.background = 0xcccccc;
+        renderer.setClearColor( 0xcccccc, 1 );
     }
 
     this._createLighting();

@@ -11,7 +11,7 @@ function BrushTool( options ) {
     AbstractTool.call( this, options );
     this.setOptionsIfUndef( {
         maxSpread: 20,
-        brushThickness: 0.5,
+        brushThickness: 0.1,
         mouseController: true
     } );
 
@@ -39,6 +39,7 @@ function BrushTool( options ) {
         this._material = new THREE.MeshStandardMaterial( {
             side: THREE.DoubleSide,
             map: tex,
+            color: 0xff0000,
             transparent: true,
             depthTest: false,
             metalness: 0.0,
@@ -70,12 +71,11 @@ BrushTool.prototype.update = function () {
 
 BrushTool.prototype.use = function ( data ) {
 
-    this._addPoint( data.position.world, data.orientation );
+    this._addPoint( data.position.world, data.orientation, data.pressure );
 
 };
 
 BrushTool.prototype.trigger = function () {
-    console.log( 'triggered' );
 
     this._geometry = new THREE.BufferGeometry();
     this._vertices = new Float32Array( this._vboLimit * 3 * 3 );
@@ -169,7 +169,7 @@ BrushTool.prototype._processPoint = function ( pointCoords, orientation, vertice
 
 };
 
-BrushTool.prototype._addPoint = function ( pointCoords, orientation ) {
+BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureValue ) {
 
     if ( this._lastPoint.distanceTo( pointCoords ) < this._delta || this._verticesCount / 6 > this.options.maxSpread )
         return;
@@ -182,8 +182,8 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation ) {
     for ( let i = 0; i <= max; i++ )  {
 
         let pressure = i;
-        if ( !this.options.mouseController )
-            pressure = 0.5; // Gamepad Pressure
+        //if ( !this.options.mouseController )
+        pressure = pressureValue; // Gamepad Pressure
         this._uvs[ uv++ ] = pressure / ( max );
         this._uvs[ uv++ ] = 0;
 

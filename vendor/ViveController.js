@@ -112,16 +112,17 @@ THREE.ViveController = function ( id ) {
         }
 
         if ( triggerIsPressed !== gamepad.buttons[ 1 ].pressed ) {
-
             triggerIsPressed = gamepad.buttons[ 1 ].pressed;
             scope.dispatchEvent( {
-                type: triggerIsPressed ? 'triggerdown' : 'triggerup'
+                type: triggerIsPressed ? 'triggerdown' : 'triggerup',
+                pressure: gamepad.buttons[ 1 ].value
             } );
 
         }
         if ( gamepad.buttons[ 1 ].pressed ) {
             scope.dispatchEvent( {
-                type: 'trigger'
+                type: 'trigger',
+                pressure: gamepad.buttons[ 1 ].value
             } );
         }
 
