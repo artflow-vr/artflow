@@ -2,6 +2,8 @@
 
 let AbstractTool = require( './abstract-tool' );
 
+let AddCommand = require( './command/add-command' );
+
 function ParticleTool( options ) {
 
     AbstractTool.call( this, options );
@@ -11,30 +13,29 @@ function ParticleTool( options ) {
     } );
 
     // this._attribute = 0; TODO: attributes go there
-    this._position = THREE.Vector3();
-}
+    this._position = new THREE.Vector3(0, 0, 0);
 
+}
 ParticleTool.prototype = Object.create( AbstractTool.prototype );
 ParticleTool.prototype.constructor = ParticleTool;
 
-BrushTool.prototype.use = function ( data ) {
+ParticleTool.prototype.use = function ( data ) {
 
     this._update_brush( data.position.world );
 
 };
 
-BrushTool.prototype._update_brush = function ( pointCoords ) {
+ParticleTool.prototype._update_brush = function ( pointCoords ) {
     this._position.x = pointCoords.x;
     this._position.y = pointCoords.y;
     this._position.z = pointCoords.z;
-    this._pointer_mesh.radius = this.options.brush_size;
 };
 
 ParticleTool.prototype.update = function () {};
 
 ParticleTool.prototype.trigger = function () {
 
-    let mesh = new THREE.Sphere( this.radius, this._material );
+    let mesh = new THREE.Mesh( new THREE.Sphere(this.options.brush_size, this._position).geometry );
 
     mesh.castShadow = false;
     mesh.receiveShadow = false;
@@ -45,3 +46,5 @@ ParticleTool.prototype.trigger = function () {
 };
 
 ParticleTool.prototype.release = function () { };
+
+module.exports = ParticleTool;
