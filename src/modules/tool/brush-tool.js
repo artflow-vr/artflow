@@ -12,7 +12,7 @@ function BrushTool( options ) {
     this.setOptionsIfUndef( {
         maxSpread: 20,
         brushThickness: 0.5,
-        mouseController: true
+        enablePressure: false
     } );
 
     this._verticesCount = 0;
@@ -125,7 +125,7 @@ BrushTool.prototype._processPoint = function ( pointCoords, orientation, vertice
     this._axisLock.applyQuaternion( orientation );
 
     let thickness = this.options.brushThickness / 2.0;
-    if ( !this.options.texture )
+    if ( this.options.enablePressure )
         thickness *= Math.log( pressure + 1 );
     this._axisLock.multiplyScalar( thickness );
 
@@ -185,16 +185,25 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureVal
     if ( this.options.maxSpread > 0 && this._verticesCount / 6 >= this.options.maxSpread )
         max = this._verticesCount / 6;
 
-    let pressure = pressureValue;
-    //if ( !this.options.mouseController )
-    //pressure = pressureValue; // Gamepad Pressure
-    this._uvs[ this.uv++ ] = pressure;
-    this._uvs[ this.uv++ ] = 0;
+    if ( this.options.enablePressure ) {
+        this._uvs[ this.uv++ ] = pressureValue;
+        this._uvs[ this.uv++ ] = 0;
 
-    this._uvs[ this.uv++ ] = pressure;
-    this._uvs[ this.uv++ ] = 1;
+        this._uvs[ this.uv++ ] = pressureValue;
+        this._uvs[ this.uv++ ] = 1;
+    } else {
 
-    this._processPoint( pointCoords.clone(), orientation, this._verticesCount, this._normalsCount, pressure );
+        this.uv = 0;
+        for ( let i = 0; i <= max; i++ ) {
+            this._uvs[ this.uv++ ] = i / max;
+            this._uvs[ this.uv++ ] = 0;
+
+            this._uvs[ this.uv++ ] = i / max;
+            this._uvs[ this.uv++ ] = 1;
+        }
+    }
+
+    this._processPoint( pointCoords.clone(), orientation, this._verticesCount, this._normalsCount, pressureValue );
 
     this._verticesCount += 6;
     this._normalsCount += 6;
