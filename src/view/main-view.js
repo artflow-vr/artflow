@@ -155,10 +155,10 @@ MainView._createLighting = function () {
 
     // Creates the lightning
     let hemLight = new THREE.HemisphereLight( 0X000000, 0x2C3E50, 1.0 );
-    this._rootScene.add( hemLight );
+    //this._rootScene.add( hemLight );
 
-    let dirLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-    dirLight.position.set( 100, 100, 100 );
+    let dirLight = new THREE.DirectionalLight( 0xffffff, 0.7 );
+    dirLight.position.set( -0.58, 0.65, 0.51 );
     this._rootScene.add( dirLight );
 
     let ambLight = new THREE.AmbientLight( 0xf0f0f0 );
