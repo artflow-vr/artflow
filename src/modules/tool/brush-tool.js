@@ -39,7 +39,7 @@ function BrushTool( options ) {
         this._material = new THREE.MeshStandardMaterial( {
             side: THREE.DoubleSide,
             map: tex,
-            color: 0xff0000,
+            color: 0x404040,
             transparent: true,
             depthTest: false,
             metalness: 0.0,
@@ -171,23 +171,24 @@ BrushTool.prototype._processPoint = function ( pointCoords, orientation, vertice
 
 BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureValue ) {
 
-    if ( this._lastPoint.distanceTo( pointCoords ) < this._delta || this._verticesCount / 6 > this.options.maxSpread )
+    if ( this._lastPoint.distanceTo( pointCoords ) < this._delta )
         return;
 
-    let max = this._verticesCount / 6;
-    if ( this.options.maxSpread > 0 && max === this.options.maxSpread )
-        max = this.options.maxSpread;
+
+    let max = this.options.maxSpread;
+    if ( this.options.maxSpread > 0 && this._verticesCount / 6 >= this.options.maxSpread )
+        max = this._verticesCount / 6;
 
     let uv = 0;
-    for ( let i = 0; i <= max; i++ )  {
+    for ( let i = 0; i < max; i++ )  {
 
-        let pressure = i;
+        let pressure = pressureValue;
         //if ( !this.options.mouseController )
-        pressure = pressureValue; // Gamepad Pressure
-        this._uvs[ uv++ ] = pressure / ( max );
+        //pressure = pressureValue; // Gamepad Pressure
+        this._uvs[ uv++ ] = pressure / ( max - 1 );
         this._uvs[ uv++ ] = 0;
 
-        this._uvs[ uv++ ] = pressure / ( max );
+        this._uvs[ uv++ ] = pressure / ( max - 1 );
         this._uvs[ uv++ ] = 1;
     }
 
@@ -201,7 +202,7 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureVal
     this._geometry.attributes.position.needsUpdate = true;
     this._geometry.attributes.uv.needsUpdate = true;
 
-    this._geometry.setDrawRange( 0, this._verticesCount / 3 );
+    this._geometry.setDrawRange( 4, this._verticesCount / 3 - 4 );
 
     this._lastPoint = pointCoords.clone();
 };
