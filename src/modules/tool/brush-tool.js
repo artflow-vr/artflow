@@ -24,6 +24,7 @@ function BrushTool( options ) {
     this._vertices = null;
     this._normals = null;
     this._uvs = null;
+    this.uv = 0;
     this._delta = 0.05;
     this._axisLock = new THREE.Vector3( 0, 0, -1 );
     this._pointA = new THREE.Vector3( 0, 0, 0 );
@@ -93,6 +94,7 @@ BrushTool.prototype.trigger = function () {
     this._verticesCount = 0;
     this._normalsCount = 0;
     this._uvCount = 0;
+    this.uv = 0;
 
     this._lastPoint = new THREE.Vector3( Number.NEGATIVE_INFINITY );
 
@@ -183,18 +185,14 @@ BrushTool.prototype._addPoint = function ( pointCoords, orientation, pressureVal
     if ( this.options.maxSpread > 0 && this._verticesCount / 6 >= this.options.maxSpread )
         max = this._verticesCount / 6;
 
-    let uv = 0;
-    for ( let i = 0; i < max; i++ )  {
+    let pressure = pressureValue;
+    //if ( !this.options.mouseController )
+    //pressure = pressureValue; // Gamepad Pressure
+    this._uvs[ this.uv++ ] = pressure;
+    this._uvs[ this.uv++ ] = 0;
 
-        let pressure = pressureValue;
-        //if ( !this.options.mouseController )
-        //pressure = pressureValue; // Gamepad Pressure
-        this._uvs[ uv++ ] = pressure;
-        this._uvs[ uv++ ] = 0;
-
-        this._uvs[ uv++ ] = pressure;
-        this._uvs[ uv++ ] = 1;
-    }
+    this._uvs[ this.uv++ ] = pressure;
+    this._uvs[ this.uv++ ] = 1;
 
     this._processPoint( pointCoords.clone(), orientation, this._verticesCount, this._normalsCount );
 
