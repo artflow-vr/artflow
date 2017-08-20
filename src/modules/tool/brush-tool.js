@@ -126,7 +126,7 @@ BrushTool.prototype._processPoint = function ( pointCoords, orientation, vertice
 
     let thickness = this.options.brushThickness / 2.0;
     if ( !this.options.texture )
-        thickness *= pressure;
+        thickness *= Math.log( pressure + 1 );
     this._axisLock.multiplyScalar( thickness );
 
     this._pointA.x = pointCoords.x;
