@@ -24,7 +24,6 @@ function WaterTool( options ) {
     uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
 
     let geometry = new THREE.PlaneBufferGeometry( 2, 2 );
-    geometry.rotateX( -Math.PI / 3 );
     THREE.BufferGeometryUtils.computeTangents( geometry );
 
     let material = new THREE.ShaderMaterial( {
@@ -39,9 +38,9 @@ function WaterTool( options ) {
         }
     } );
     plane = new THREE.Mesh( geometry, material );
-    //plane.rotateZ( Math.PI / 4 );
     plane.translateZ( 5.0 );
-    //plane.rotateX( -Math.PI / 4 );
+    plane.rotateZ( Math.PI / 4 );
+    plane.rotateY( Math.PI / 4 );
 
     this.view.addTHREEObject( plane );
 

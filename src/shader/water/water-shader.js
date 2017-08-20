@@ -35,7 +35,7 @@ module.exports = {
             'vNormal = normalize(normalMatrix * normal);',
             'vTangent = normalize(normalMatrix * tangent.xyz);',
             'vBinormal = normalize(cross(vNormal, vTangent) * tangent.w);',
-            'vDown = normalize(normalMatrix * DOWN);',
+            'vDown = normalize((viewMatrix * vec4(DOWN, 1.0)).xyz);',
             'vUv = uv;',
 
             'gl_Position = projectionMatrix * mvPosition;',
@@ -75,7 +75,7 @@ module.exports = {
             '//for( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {',
 
             'gl_FragColor = vec4(texture2D( normalMap, slideUV ).xyz, 0.65);',
-            '//gl_FragColor = vec4(vec3(vTangent), 1.0);',
+            '//gl_FragColor = vec4(vDown, 1.0);',
 
             //THREE.ShaderChunk.linear_to_gamma_fragment,
 
