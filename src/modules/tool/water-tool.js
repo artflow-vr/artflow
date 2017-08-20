@@ -10,6 +10,7 @@ let WaterShader = require( '../../shader/water/water-shader' );
 let AssetManager = require( '../../utils/asset-manager' );
 
 let uniforms = THREE.UniformsUtils.clone( WaterShader.uniforms );
+let plane = null;
 
 function WaterTool( options ) {
 
@@ -23,11 +24,8 @@ function WaterTool( options ) {
     uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
 
     let geometry = new THREE.PlaneBufferGeometry( 2, 2 );
-    geometry.rotateX( Math.PI / 4 );
-
+    geometry.rotateX( -Math.PI / 3 );
     THREE.BufferGeometryUtils.computeTangents( geometry );
-
-    console.log( geometry );
 
     let material = new THREE.ShaderMaterial( {
         uniforms: uniforms,
@@ -40,11 +38,12 @@ function WaterTool( options ) {
             derivatives: true
         }
     } );
-    let plane = new THREE.Mesh( geometry, material );
-    plane.translateY( 1.2 );
+    plane = new THREE.Mesh( geometry, material );
+    //plane.rotateZ( Math.PI / 4 );
+    plane.translateZ( 5.0 );
+    //plane.rotateX( -Math.PI / 4 );
 
     this.view.addTHREEObject( plane );
-    // END DEBUG
 
 }
 WaterTool.prototype = Object.create( AbstractTool.prototype );

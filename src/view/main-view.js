@@ -135,13 +135,19 @@ MainView._createInitialScene = function ( vr ) {
         color: 0xff0000,
         wireframe: true
     } ) );
+    let zAxisCube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
+        color: 0x0000ff,
+        wireframe: true
+    } ) );
 
     centerCube.translateY( 0.5 );
     xAxisCube.translateX( 2 );
+    zAxisCube.translateZ( 2 );
 
     this._group.add( floor );
     this._group.add( centerCube );
     this._group.add( xAxisCube );
+    this._group.add( zAxisCube );
 
 };
 
