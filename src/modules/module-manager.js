@@ -22,11 +22,9 @@ ModuleManager.init = function () {
 
 };
 
-ModuleManager.update = function ( delta ) {
+ModuleManager.update = function ( data ) {
 
-    ModuleManager._exec( 'update', {
-        delta: delta
-    } );
+    ModuleManager._exec( 'update', data );
 
 };
 

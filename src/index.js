@@ -16,10 +16,20 @@ let WebVR = Artflow.vr.WebVR;
 let renderer = null;
 let clock = null;
 
+let updateData = {
+    delta: 0.0,
+    controllers: [ null, null ]
+};
+
 function update() {
 
-    let delta = clock.getDelta();
-    ModuleManager.update( delta );
+    let controllers = ControlModule.getControllersData();
+
+    updateData.delta = clock.getDelta();
+    updateData.controllers[ 0 ] = controllers[ 0 ];
+    updateData.controllers[ 1 ] = controllers[ 1 ];
+
+    ModuleManager.update( updateData );
 
 }
 

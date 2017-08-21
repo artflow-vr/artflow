@@ -84,6 +84,12 @@ Control.init = function () {
 
 };
 
+Control.getControllersData = function () {
+
+    return this._controllerTransform;
+
+};
+
 Control._updateVR = function () {
 
     this._controllers[ 0 ].update();
@@ -119,11 +125,10 @@ Control._updateNOVR = function ( data ) {
 
     Control._fpsController.update( data.delta );
 
+    this._computeMouseOrientation();
+    this._computeMouseLocalWorldPosition();
+
     if ( this._mouseUseEvent ) {
-
-        this._computeMouseOrientation();
-        this._computeMouseLocalWorldPosition();
-
         EventDispatcher.dispatch( this._mouseUseEvent, {
             controllerID: 0,
             position: this._controllerTransform[ 0 ].position,

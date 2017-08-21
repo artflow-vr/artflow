@@ -103,12 +103,12 @@ ToolModule.init = function () {
 
 };
 
-ToolModule.update = function ( delta ) {
+ToolModule.update = function ( data ) {
 
     let tool = null;
     for ( let toolID in _instance ) {
         tool = _instance[ toolID ];
-        if ( tool.update ) tool.update( delta );
+        if ( tool.update ) tool.update( data );
     }
 
 };
