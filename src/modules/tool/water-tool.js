@@ -16,7 +16,8 @@ function WaterTool( options ) {
 
     AbstractTool.call( this, options );
     this.setOptionsIfUndef( {
-        speed: 50
+        speed: 50,
+        color: new THREE.Vector3()
     } );
 
     let geometry = new THREE.PlaneBufferGeometry( 2, 2 );
