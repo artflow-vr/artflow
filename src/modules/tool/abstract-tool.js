@@ -10,6 +10,8 @@ function Tool( options ) {
     this.localGroup = new ThreeView();
     this.worldGroup = new ThreeView();
 
+    this.controllerID = -1;
+
     this.options = {};
 
     for ( let k in options )

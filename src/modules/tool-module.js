@@ -43,6 +43,7 @@ ToolModule.init = function () {
     // TODO: We have to instanciate the tools according to what the user
     // selected. We should keep track of instanciated tool, to avoid
     // making useless instanciation.
+    _instance.brush0.controllerID = 0;
     _selected[ 0 ] = _instance.brush0;
     _selected[ 1 ] = null;
 
