@@ -92,7 +92,7 @@ BrushTool.prototype.trigger = function () {
     mesh.castShadow = true;
     mesh.receiveShadow = true;
 
-    this.view.addTHREEObject( mesh );
+    this.worldGroup.addTHREEObject( mesh );
 
     return new AddCommand( this.view, mesh );
 

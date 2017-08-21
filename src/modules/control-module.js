@@ -173,8 +173,10 @@ Control._registerControllerEvents = function () {
 
             EventDispatcher.dispatch( eventID, {
                 controllerID: cID,
-                position: self._controllerTransform[ cID ].position,
-                orientation: self._controllerTransform[ cID ].orientation
+                position: self._controllerTransform[
+                    cID ].position,
+                orientation: self._controllerTransform[
+                    cID ].orientation
             } );
 
         } );
@@ -336,14 +338,14 @@ Control._registerKeyboardMouseEvents = function () {
 
 };
 
-Control._computeMouseOrientation = function() {
+Control._computeMouseOrientation = function () {
 
     let orientation = this._controllerTransform[ 0 ].orientation;
     MainView.getCamera().getWorldQuaternion( orientation );
 
 };
 
-Control._computeMouseLocalWorldPosition = function() {
+Control._computeMouseLocalWorldPosition = function () {
 
     let position = this._controllerTransform[ 0 ].position;
     if ( this._mouseUseEvent === EventDispatcher.EVENTS.interact ) {

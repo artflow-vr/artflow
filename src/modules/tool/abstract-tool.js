@@ -7,7 +7,8 @@ function Tool( options ) {
     this.enabled = true;
     this.dynamic = false;
 
-    this.view = new ThreeView();
+    this.localGroup = new ThreeView();
+    this.worldGroup = new ThreeView();
 
     this.options = {};
 
@@ -23,6 +24,10 @@ function Tool( options ) {
         Tool.prototype.triggerChild = Tool.prototype._trigger;
     if ( this.release !== undefined )
         Tool.prototype.releaseChild = Tool.prototype._release;
+    if ( this.onEnter !== undefined )
+        Tool.prototype.onEnterChild = Tool.prototype._onEnter;
+    if ( this.onExit !== undefined )
+        Tool.prototype.onExitChild = Tool.prototype._onExit;
 
 }
 
@@ -35,13 +40,6 @@ Tool.prototype.setOptionsIfUndef = function ( options ) {
     }
 
 };
-
-Tool.prototype.setVisible = function ( trigger ) {
-
-    this.view.setVisible( trigger );
-
-};
-
 
 Tool.prototype._update = function ( delta ) {
 
@@ -80,6 +78,18 @@ Tool.prototype._release = function ( data ) {
     if ( !this.release ) return undefined;
 
     return this.release( data );
+
+};
+
+Tool.prototype._onEnter = function () {
+
+    this.onEnter();
+
+};
+
+Tool.prototype._onExit = function () {
+
+    this.onExit();
 
 };
 

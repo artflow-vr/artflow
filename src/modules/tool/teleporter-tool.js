@@ -54,8 +54,8 @@ function TeleporterTool( options ) {
     for ( let i = 0; i < this._spline.points.length * this.options.nbSub; ++i )
         this._splineGeometry.vertices[ i ] = new THREE.Vector3( 0, 0, 0 );
 
-    this.view.addTHREEObject( this._mesh );
-    this.view.addTHREEObject( this._splineLine );
+    this.localGroup.addTHREEObject( this._mesh );
+    this.localGroup.addTHREEObject( this._splineLine );
 
 }
 TeleporterTool.prototype = Object.create( AbstractTool.prototype );
@@ -68,8 +68,7 @@ TeleporterTool.MATERIAL = new THREE.MeshLambertMaterial( {
     emissive: 0X27ae60,
     emissiveIntensity: 1.0,
     transparent: true,
-    opacity: 0.9,
-    blending: THREE.AdditiveBlending
+    opacity: 0.9
 } );
 
 /**
@@ -101,7 +100,7 @@ TeleporterTool.prototype.trigger = function () {
 
     this.enabled = true;
     this.dynamic = true;
-    this.setVisible( true );
+    this.localGroup.setVisible( true );
 
 };
 
@@ -117,7 +116,7 @@ TeleporterTool.prototype.release = function () {
 
     this.enabled = false;
     this.dynamic = false;
-    this.setVisible( false );
+    this.localGroup.setVisible( false );
 
 };
 

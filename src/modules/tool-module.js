@@ -46,6 +46,8 @@ ToolModule.init = function () {
     _selected[ 0 ] = _instance.brush0;
     _selected[ 1 ] = null;
 
+    // TODO: Add onEnterChild & onExitChild event trigger.
+
     // Registers trigger event for any tool
     EventDispatcher.registerFamily( 'interact', {
         use: function ( data ) {
@@ -111,18 +113,35 @@ ToolModule.update = function ( delta ) {
 
 };
 
+ToolModule._instanciate = function ( instanceID, toolID, options ) {
+
+    if ( !( toolID in _tools ) ) {
+        let errorMsg = 'Tool \'' + toolID + '\' is not registered yet.';
+        throw Error( 'ToolModule._instanciate(): ' + errorMsg );
+    }
+
+    if ( instanceID in _instance ) {
+        let errorMsg = '\'' + instanceID + '\' already instanciated.';
+        throw Error( 'ToolModule._instanciate(): ' + errorMsg );
+    }
+
+    let instance = new _tools[ toolID ]( options );
+    _instance[ instanceID ] = instance;
+
+    // Adds tool's view groups to the root scene and the moving group.
+    MainView.addToMovingGroup( instance.worldGroup.getObject() );
+    MainView.addToScene( instance.localGroup.getObject() );
+
+};
+
 ToolModule._registerBasicTools = function () {
 
     this.register( 'Brush', Tool.BrushTool );
     this.register( 'Teleporter', Tool.TeleporterTool );
 
-    _instance.brush0 = new _tools.Brush( {
+    this._instanciate( 'brush0', 'Brush', {
         texture: AssetManager.assets.texture.brush1
     } );
-
-    _instance.teleporter = new _tools.Teleporter();
-
-    MainView.addToMovingGroup( _instance.brush0.view.getObject() );
-    MainView.addToScene( _instance.teleporter.view.getObject() );
+    this._instanciate( 'teleporter', 'Teleporter' );
 
 };
