@@ -50,6 +50,13 @@ function BrushTool( options ) {
         } );
     }
 
+    // The code below links the teleporter method to the associated events.
+    let self = this;
+    this.registerEvent( 'interact', {
+        use: self.use.bind( self ),
+        trigger: self.trigger.bind( self )
+    } );
+
 }
 BrushTool.prototype = Object.create( AbstractTool.prototype );
 BrushTool.prototype.constructor = BrushTool;

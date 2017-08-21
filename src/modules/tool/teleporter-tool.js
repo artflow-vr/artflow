@@ -57,6 +57,14 @@ function TeleporterTool( options ) {
     this.localGroup.addTHREEObject( this._mesh );
     this.localGroup.addTHREEObject( this._splineLine );
 
+    // The code below links the teleporter method to the associated events.
+    let self = this;
+    this.registerEvent( 'thumbpad', {
+        use: self.use.bind( self ),
+        trigger: self.trigger.bind( self ),
+        release: self.release.bind( self )
+    } );
+
 }
 TeleporterTool.prototype = Object.create( AbstractTool.prototype );
 TeleporterTool.prototype.constructor = TeleporterTool;

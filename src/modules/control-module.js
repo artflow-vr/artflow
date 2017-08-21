@@ -25,15 +25,15 @@ Control.vr = false;
  * This structure allows to use a single pipeline for all actions.
  */
 Control._mouseToAction = {
-    0: EventDispatcher.EVENTS.interact, // Left click
-    2: EventDispatcher.EVENTS.teleport // Right click
+    0: 'interact', // Left click
+    2: 'thumbpad' // Right click
 };
 
 Control._controllerToAction = {
-    thumbpad: EventDispatcher.EVENTS.teleport,
-    trigger: EventDispatcher.EVENTS.interact,
-    triggerdown: EventDispatcher.EVENTS.interact + 'Down',
-    triggerup: EventDispatcher.EVENTS.interact + 'Up'
+    thumbpad: 'thumbpad',
+    trigger: 'interact',
+    triggerdown: 'interactDown',
+    triggerup: 'interactUp'
 };
 
 Control.init = function () {
@@ -293,10 +293,10 @@ Control._registerKeyboardMouseEvents = function () {
     document.addEventListener( 'keydown', function ( event ) {
         switch ( event.keyCode ) {
         case 49: // TODO: To remove (only for debug)
-            EventDispatcher.dispatch( EventDispatcher.EVENTS.undo );
+            EventDispatcher.dispatch( 'undo' );
             break;
         case 50: // TODO: To remove (only for debug)
-            EventDispatcher.dispatch( EventDispatcher.EVENTS.redo );
+            EventDispatcher.dispatch( 'redo' );
             break;
         case 65:
             self._fpsController.left = true;
@@ -353,7 +353,7 @@ Control._computeMouseOrientation = function () {
 Control._computeMouseLocalWorldPosition = function () {
 
     let position = this._controllerTransform[ 0 ].position;
-    if ( this._mouseUseEvent === EventDispatcher.EVENTS.interact ) {
+    if ( this._mouseUseEvent === 'interact' ) {
         MainView.getCamera().getWorldDirection( this._pointerDirection );
         position.local.copy( this._pointerDirection );
         position.local.multiplyScalar( 5.0 );
