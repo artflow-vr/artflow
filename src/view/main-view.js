@@ -2,6 +2,13 @@
 
 let THREE = window.THREE;
 
+let AssetManager = require( '../utils/asset-manager' );
+
+let HTMLView = require( './html-view' );
+let HTMLTextArea = require( './html-text-area' );
+
+let MiscInfoTable = require( '../utils/info-table' ).misc;
+
 let MainView = module.exports;
 
 /**
@@ -12,7 +19,7 @@ let MainView = module.exports;
  * @param  {number} h The height of the element to render in.
  * @param  {THREE.WebGLRenderer} renderer THREE.JS renderer
  */
-MainView.init = function ( w, h, renderer ) {
+MainView.init = function ( w, h, renderer, vr ) {
 
     this._renderer = renderer;
 
@@ -21,10 +28,27 @@ MainView.init = function ( w, h, renderer ) {
     // The _group variable allows us to modify the position of
     // the world according to camera teleportation.
     this._group = new THREE.Group();
-    this._createInitialScene();
+    this._createInitialScene( vr );
 
     this._rootScene = new THREE.Scene();
     this._rootScene.add( this._group );
+
+    // Adds default cubemap as background of the scene
+    // TODO: Update the THREE.JS version with the update handling background
+    // on both eyes.
+    if ( !vr ) {
+        let cubemap = AssetManager.assets.cubemap.cubemap;
+        this._rootScene.background = cubemap;
+    } else {
+        this._rootScene.background = 0xcccccc;
+    }
+
+    this._createLighting();
+
+    this.backgroundView = null;
+    this.clickView = null;
+    this._createHTMLBackground();
+
 };
 
 /**
@@ -88,29 +112,81 @@ MainView.getGroup = function () {
 
 };
 
-MainView._createInitialScene = function () {
+MainView._createInitialScene = function ( vr ) {
 
-    let fog = new THREE.FogExp2( 0x001c2d, 0.0125 );
+    if ( vr ) return;
 
-    let grid = new THREE.GridHelper( 100, 100, 0xbdc3c7, 0xbdc3c7 );
+    let floorTex = AssetManager.assets.texture.floor;
+    let floor = new THREE.Mesh( new THREE.PlaneGeometry( 6, 6 ),
+        new THREE.MeshLambertMaterial( {
+            map: floorTex
+        } )
+    );
+    floor.rotateX( -Math.PI / 2 );
 
     let geometry = new THREE.BoxGeometry( 1, 1, 1 );
-    let centerCube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
-        color: 0x000000,
-        wireframe: false
+    let centerCube = new THREE.Mesh( geometry, new THREE.MeshStandardMaterial( {
+        color: 0x95a5a6,
+        wireframe: false,
+        metalness: 0.0,
+        roughness: 1.0
     } ) );
     let xAxisCube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
         color: 0xff0000,
         wireframe: true
     } ) );
 
-    this._renderer.setClearColor( fog.color, 1 );
-
     centerCube.translateY( 0.5 );
     xAxisCube.translateX( 2 );
 
-    this._group.add( grid );
+    this._group.add( floor );
     this._group.add( centerCube );
     this._group.add( xAxisCube );
+
+};
+
+MainView._createLighting = function () {
+
+    // Creates the lightning
+    let hemLight = new THREE.HemisphereLight( 0X000000, 0x2C3E50, 1.0 );
+    this._rootScene.add( hemLight );
+
+    let dirLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
+    dirLight.position.set( 100, 100, 100 );
+    this._rootScene.add( dirLight );
+
+    let ambLight = new THREE.AmbientLight( 0xf0f0f0 );
+    this._rootScene.add( ambLight );
+
+};
+
+MainView._createHTMLBackground = function () {
+
+    let backgroundStyle = {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: '0px',
+        backgroundColor: 'rgba(44, 62, 80, 0.98)'
+    };
+    let messageViewStyle = {
+        position: 'relative',
+        top: '50%'
+    };
+
+    let backgroundView = new HTMLView( backgroundStyle );
+    backgroundView.setProp( 'align', 'center' );
+
+    let messageView = new HTMLTextArea( null, messageViewStyle );
+    messageView.setMessage( MiscInfoTable.startPointerLocking );
+
+    backgroundView.addChild( messageView );
+
+    this.backgroundView = backgroundView;
+    this.clickView = messageView;
+
+    document.body.appendChild( this.backgroundView.getDOMElement() );
+
+    this.backgroundView.toggleVisibility( false );
 
 };

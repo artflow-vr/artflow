@@ -2,23 +2,24 @@
 
 let EventDispatcher = module.exports;
 
-EventDispatcher.EVENTS = {
-
-    interact: 'interact',
-    teleport: 'teleport'
-
-};
-
 EventDispatcher._events = {};
 
 EventDispatcher.register = function ( eventID, callback ) {
 
-    if ( this._events[ eventID ] === undefined || this._events[ eventID ] ===
-        null ) {
+    if ( this._events[ eventID ] === undefined ||
+        this._events[ eventID ] === null ) {
         this._events[ eventID ] = [];
     }
 
     this._events[ eventID ].push( callback );
+
+};
+
+EventDispatcher.registerFamily = function ( eventID, callbacks ) {
+
+    EventDispatcher.register( eventID, callbacks.use );
+    EventDispatcher.register( eventID + 'Up', callbacks.release );
+    EventDispatcher.register( eventID + 'Down', callbacks.trigger );
 
 };
 

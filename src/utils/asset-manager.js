@@ -10,72 +10,65 @@ let AssetManager = module.exports;
 AssetManager._assetRoot = 'assets/';
 AssetManager._modelPath = AssetManager._assetRoot + 'models/';
 AssetManager._texturePath = AssetManager._assetRoot + 'textures/';
+AssetManager._cubemapPath = AssetManager._texturePath + 'cubemap/';
 
-/**
- * Creates some constants containing ArtFlow mandatory assets.
- * These assets have a particular material assigned at their instanciation
- * to avoid assigning them by hand later.
- */
-AssetManager.ARTFLOW_MATERIALS = {};
-AssetManager.TELEPORTER = 'teleporter';
-AssetManager.VIVE_CONTROLLER = 'vive-controller';
+AssetManager.TEXTURE = 'texture';
+AssetManager.CUBEMAP = 'cubemap';
+AssetManager.MODEL = 'model';
+
+AssetManager._type = {
+    texture: null,
+    cubemap: null,
+    model: null
+};
 
 AssetManager.init = function () {
 
-    this._assets = {};
-    this._OBJLoader = new THREE.OBJLoader();
+    this.assets = {
+        texture: {},
+        cubemap: {},
+        model: {}
+    };
 
-    this.ARTFLOW_MATERIALS[ this.TELEPORTER ] = new THREE.MeshLambertMaterial( {
-        color: new THREE.Color( 0X27ae60 ),
-        emissive: 0X27ae60,
-        emissiveIntensity: 1.0,
-        transparent: true,
-        opacity: 0.9,
-        blending: THREE.AdditiveBlending
-    } );
+    this._OBJLoader = new THREE.OBJLoader();
+    this._textureLoader = new THREE.TextureLoader();
+    this._cubeTextureLoader = new THREE.CubeTextureLoader();
 
     return this._loadRequiredAssets();
 
 };
 
-AssetManager.load = function ( assetID, assetPath, fileName ) {
+AssetManager.load = function ( file, ext, type, path, assetID ) {
+
+    if ( !( type in this._type ) ) {
+        let errorMsg = 'type \'' + type + '\' is not recognized.';
+        throw Error( 'AssetManager: ' + errorMsg );
+    }
 
     let self = this;
-    return new Promise( function ( resolve, reject ) {
+    let id = ( assetID === undefined || assetID === null ) ? file : assetID;
 
-        if ( assetID in self._assets ) {
-            let warnMsg = 'asset ' + assetID +
-                ' has already been registered';
-            console.warn( 'AssetManager: ' + warnMsg );
-        }
+    if ( id in this.assets[ type ] ) {
+        let warnMsg = 'asset ' + id + ' had already been registered.';
+        console.warn( 'AssetManager: ' + warnMsg );
+    }
 
-        self._OBJLoader.setPath( assetPath );
-        self._OBJLoader.load( fileName, function ( object ) {
+    return new Promise( function ( resolve ) {
 
-            self._assets[ assetID ] = object;
+        let fixedPath = ( path === undefined ) ? '.' : path;
 
-            // Assigns default material, if the registered asset
-            // is part of ArtFlow mandatory asset.
-            if ( assetID in self.ARTFLOW_MATERIALS ) {
-                object.traverse( function ( child ) {
+        self._type[ type ]( file, ext, fixedPath, function ( object ) {
 
-                    let material = self.ARTFLOW_MATERIALS[
-                        assetID ];
-                    if ( child instanceof THREE.Mesh )
-                        child.material = material;
-
-                } );
-            }
-
+            self.assets[ type ][ id ] = object;
             resolve();
 
-        }, undefined, function ( threeError ) {
+        }, function () {
 
-            let errorMsg = 'AssetManager: ';
-            errorMsg += 'impossible to load \'' + assetPath +
+            let warnMsg = 'failed to load \'' + file +
                 '\'\n';
-            errorMsg += 'THREE: ' + threeError;
-            reject( errorMsg );
+            warnMsg +=
+                'Please check the path, filename, and provided type.';
+            console.warn( 'AssetManager: ' + warnMsg );
 
         } );
 
@@ -83,24 +76,61 @@ AssetManager.load = function ( assetID, assetPath, fileName ) {
 
 };
 
-AssetManager.get = function ( assetID ) {
+AssetManager._loadTexture = function ( file, ext, path, resolve, reject ) {
 
-    return this._assets[ assetID ];
+    this._textureLoader.setPath( path );
+    this._textureLoader.load( file + ext, resolve, undefined, reject );
 
 };
+AssetManager._type.texture = AssetManager._loadTexture.bind( AssetManager );
+
+AssetManager._loadModel = function ( file, ext, path, resolve, reject ) {
+
+    this._OBJLoader.setPath( path );
+    this._OBJLoader.load( file + ext, resolve, undefined, reject );
+
+};
+AssetManager._type.model = AssetManager._loadModel.bind( AssetManager );
+
+AssetManager._loadCubemap = function ( file, ext, path, resolve, reject ) {
+
+    let urls = [
+        file + '-px' + ext, file + '-nx' + ext,
+        file + '-py' + ext, file + '-ny' + ext,
+        file + '-pz' + ext, file + '-nz' + ext
+    ];
+
+    this._cubeTextureLoader.setPath( path );
+    let toLoad = this._cubeTextureLoader.load( urls, resolve,
+        undefined, reject );
+    toLoad.format = THREE.RGBFormat;
+
+};
+AssetManager._type.cubemap = AssetManager._loadCubemap.bind( AssetManager );
 
 AssetManager._loadRequiredAssets = function () {
 
     let promises = [];
 
     promises.push(
-        this.load( AssetManager.TELEPORTER, this._modelPath,
-            'teleporter.obj' )
+        this.load( 'teleporter', '.obj',
+            AssetManager.MODEL, this._modelPath )
     );
-
     promises.push(
-        this.load( AssetManager.VIVE_CONTROLLER, this._modelPath,
-            'vive-controller.obj' )
+        this.load( 'vive-controller', '.obj',
+            AssetManager.MODEL, this._modelPath )
+    );
+    promises.push(
+        this.load( 'nightsky', '.png',
+            AssetManager.CUBEMAP, this._cubemapPath, 'cubemap' )
+    );
+    promises.push(
+        this.load( 'floor', '.jpg',
+            AssetManager.TEXTURE, this._texturePath )
+    );
+    promises.push(
+        this.load( 'brush2', '.png',
+            AssetManager.TEXTURE, this._texturePath, 'brush1' )
     );
 
     return Promise.all( promises );

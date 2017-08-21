@@ -104,7 +104,11 @@ THREE.ViveController = function ( id ) {
                 type: 'thumbpad',
                 status: thumbpadIsPressed ? 'Down' : 'Up'
             } );
-
+        }
+        if ( gamepad.buttons[ 0 ].pressed ) {
+            scope.dispatchEvent( {
+                type: 'thumbpad'
+            } );
         }
 
         if ( triggerIsPressed !== gamepad.buttons[ 1 ].pressed ) {
@@ -114,6 +118,11 @@ THREE.ViveController = function ( id ) {
                 type: triggerIsPressed ? 'triggerdown' : 'triggerup'
             } );
 
+        }
+        if ( gamepad.buttons[ 1 ].pressed ) {
+            scope.dispatchEvent( {
+                type: 'trigger'
+            } );
         }
 
         if ( gripsArePressed !== gamepad.buttons[ 2 ].pressed ) {
