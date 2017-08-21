@@ -15,6 +15,12 @@ function ParticleTool( options ) {
     // this._attribute = 0; TODO: attributes go there
     this._position = new THREE.Vector3(0, 0, 0);
 
+    this._cursor_sphere = new THREE.Sphere(this.options.brush_size, this._position);
+    this._cursor_mesh = new THREE.Mesh( this._cursor_sphere.geometry );
+
+    this._cursor_mesh.castShadow = false;
+    this._cursor_mesh.receiveShadow = false;
+
 }
 ParticleTool.prototype = Object.create( AbstractTool.prototype );
 ParticleTool.prototype.constructor = ParticleTool;
@@ -26,23 +32,18 @@ ParticleTool.prototype.use = function ( data ) {
 };
 
 ParticleTool.prototype._update_brush = function ( pointCoords ) {
-    this._position.x = pointCoords.x;
-    this._position.y = pointCoords.y;
-    this._position.z = pointCoords.z;
+    this._cursor_mesh.position.x = pointCoords.x;
+    this._cursor_mesh.position.y = pointCoords.y;
+    this._cursor_mesh.position.z = pointCoords.z;
 };
 
 ParticleTool.prototype.update = function () {};
 
 ParticleTool.prototype.trigger = function () {
 
-    let mesh = new THREE.Mesh( new THREE.Sphere(this.options.brush_size, this._position).geometry );
+    this.view.addTHREEObject( this._cursor_mesh );
 
-    mesh.castShadow = false;
-    mesh.receiveShadow = false;
-
-    this.view.addTHREEObject( mesh );
-
-    return new AddCommand( this.view, mesh );
+    return new AddCommand( this.view, this._cursor_mesh );
 };
 
 ParticleTool.prototype.release = function () { };
