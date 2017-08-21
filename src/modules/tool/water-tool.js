@@ -66,16 +66,16 @@ function WaterTool( options ) {
     plane3.translateX( 8.0 );
     plane3.material.uniforms.uCubemap.value = cubemap;
 
-    this.view.addTHREEObject( plane );
-    this.view.addTHREEObject( plane2 );
-    this.view.addTHREEObject( plane3 );
+    this.worldGroup.addTHREEObject( plane );
+    this.worldGroup.addTHREEObject( plane2 );
+    this.worldGroup.addTHREEObject( plane3 );
 
 }
 WaterTool.prototype = Object.create( AbstractTool.prototype );
 WaterTool.prototype.constructor = WaterTool;
 
 WaterTool.prototype.update = function () {
-    this.view.object.traverse( function ( child ) {
+    this.worldGroup.object.traverse( function ( child ) {
 
         if ( child instanceof THREE.Mesh ) {
             child.material.uniforms.uTime.value += 0.001;
