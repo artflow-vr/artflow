@@ -86,7 +86,7 @@ Control.init = function () {
 
 Control.getControllersData = function () {
 
-    return this._controllerTransform;
+    return Control._controllerTransform;
 
 };
 

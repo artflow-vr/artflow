@@ -6,6 +6,7 @@ let ToolModule = require( './tool-module' );
 
 ModuleManager.register( 'control', ControlModule );
 ModuleManager.register( 'tool', ToolModule );
+console.log( 'calledd' );
 
 let modules = module.exports;
 modules.ModuleManager = ModuleManager;

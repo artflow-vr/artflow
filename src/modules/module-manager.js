@@ -2,17 +2,17 @@
 
 let ModuleManager = module.exports;
 
-let _modules = {};
+ModuleManager._modules = {};
 
 ModuleManager.register = function ( moduleID, mod ) {
 
-    if ( moduleID in _modules ) {
+    if ( moduleID in ModuleManager._modules ) {
         let errorMsg = 'you already registered the module \'' + moduleID +
             '\'';
         throw Error( 'ToolModule: ' + errorMsg );
     }
 
-    _modules[ moduleID ] = mod;
+    ModuleManager._modules[ moduleID ] = mod;
 
 };
 
@@ -39,8 +39,8 @@ ModuleManager.resize = function ( w, h ) {
 
 ModuleManager._exec = function ( callbackID, extraParams ) {
 
-    for ( let k in _modules ) {
-        let m = _modules[ k ];
+    for ( let k in ModuleManager._modules ) {
+        let m = ModuleManager._modules[ k ];
         if ( callbackID in m ) m[ callbackID ]( extraParams );
     }
 

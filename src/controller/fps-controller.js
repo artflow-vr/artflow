@@ -38,7 +38,7 @@ function FPSControls( camera, movingWorld ) {
     this._lon = 0;
     this._phi = 0;
     this._theta = 0;
-  
+
 }
 module.exports = FPSControls;
 
@@ -89,7 +89,7 @@ FPSControls.prototype.update = function ( delta ) {
 
     this._mouseX = 0;
     this._mouseY = 0;
-  
+
 };
 
 FPSControls.prototype.moveView = function ( event ) {
