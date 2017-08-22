@@ -83,7 +83,7 @@ Tool.prototype.triggerEvent = function ( eventID, status, data ) {
 
     if ( !( eventID in this.listenTo ) ) return;
 
-    console.log( 'called' );
+    // console.log( 'called' );
 
     let callback = this.listenTo[ eventID ][ status ];
     if ( callback ) callback( data );

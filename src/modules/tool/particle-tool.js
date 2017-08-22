@@ -40,6 +40,13 @@ function ParticleTool( options ) {
             transparent: true
         });
 
+    let self = this;
+    this.registerEvent( 'interact', {
+        use: self.use.bind( self ),
+        trigger: self.trigger.bind( self ),
+        release: self.release.bind( self )
+    } );
+
     this.worldGroup.addTHREEObject( this._cursor_mesh );
 
 }
