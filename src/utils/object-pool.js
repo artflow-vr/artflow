@@ -40,7 +40,7 @@ ObjectPool.prototype._allocate = function () {
 
 ObjectPool.prototype.getObject = function ( type ) {
 
-    return this.mapRegisteredTemplates[ type ];
+    return this.mapRegisteredTemplates[ type ].clone();
 
 };
 
