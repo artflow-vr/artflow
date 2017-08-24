@@ -5,12 +5,7 @@ let AbstractTool = require( './abstract-tool' );
 
 function BrushTool( options ) {
 
-    AbstractTool.call( this, options );
-    this.setOptionsIfUndef( {
-        maxSpread: 20,
-        brushThickness: 0.5,
-        enablePressure: false
-    } );
+    AbstractTool.call( this, null );
 
     this.registeredBrushes = null;
 
@@ -44,7 +39,17 @@ BrushTool.prototype.trigger = function ( ) {
 
 BrushTool.registeredBrushes = [
     {
-
+        maxSpread: 20,
+        brushThickness: 0.5,
+        enablePressure: false,
+        color: 0x808080
+    },
+    {
+        maxSpread: 20,
+        brushThickness: 0.5,
+        texture: null,
+        enablePressure: true,
+        color: 0x808080
     }
 ];
 
