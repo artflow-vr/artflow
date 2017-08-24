@@ -53,6 +53,8 @@ ToolModule.init = function () {
 
     this._registerBasicTools();
 
+    this._objectPool = new Utils.ObjectPool();
+
     // TODO: We have to instanciate the tools according to what the user
     // selected. We should keep track of instanciated tool, to avoid
     // making useless instanciation.
@@ -178,6 +180,8 @@ ToolModule._registerBasicTools = function () {
     this._instanciate( 'brush0', 'Brush', {
         texture: AssetManager.assets.texture.brush1
     } );
+
+
     this._instanciate( 'particle0', 'Particle' );
     this._instanciate( 'teleporter', 'Teleporter' );
     this._instanciate( 'water', 'Water' );
