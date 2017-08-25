@@ -3,6 +3,8 @@
 let THREE = window.THREE;
 
 let AbstractTool = require( '../abstract-tool' );
+let ToolModule = require( '../../tool-module' );
+
 
 function BrushHelper( options ) {
 
@@ -11,7 +13,8 @@ function BrushHelper( options ) {
         maxSpread: 20,
         brushThickness: 0.5,
         enablePressure: false,
-        color: 0x808080
+        color: 0x808080,
+        materialId: 'material_with_tex'
     } );
 
     this.registeredBrushes = null;
@@ -46,29 +49,8 @@ function BrushHelper( options ) {
     } else
         this._computeUV = this._computeUVWithoutPressure;
 
-    if ( this.options.texture ) {
-
-        let tex = this.options.texture;
-        tex.wrapS = THREE.RepeatWrapping;
-        tex.wrapT = THREE.RepeatWrapping;
-
-        this._material = new THREE.MeshStandardMaterial( {
-            side: THREE.DoubleSide,
-            map: tex,
-            color: this.options.color,
-            transparent: true,
-            depthTest: false,
-            metalness: 0.0,
-            roughness: 0.9
-        } );
-    } else {
-        this._material = new THREE.MeshStandardMaterial( {
-            color: this.options.color,
-            side: THREE.DoubleSide,
-            metalness: 0.0,
-            roughness: 0.9
-        } );
-    }
+    this._material = ToolModule.ObjectPool.getObject( this.options.materialId );
+    this._material.color.setHex( this.options.color );
 
 }
 BrushHelper.prototype = Object.create( AbstractTool.prototype );

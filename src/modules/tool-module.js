@@ -26,6 +26,8 @@ let _generalTools = [];
 let undoStack = [];
 let redoStack = [];
 
+this.ObjectPool = null;
+
 /**
  * Registers a new tool into the tools library.
  *
@@ -51,9 +53,9 @@ ToolModule.register = function ( toolID, tool ) {
 
 ToolModule.init = function () {
 
-    this._registerBasicTools();
+    this.ObjectPool = new Utils.ObjectPool();
 
-    this._objectPool = new Utils.ObjectPool();
+    this._registerBasicTools();
 
     // TODO: We have to instanciate the tools according to what the user
     // selected. We should keep track of instanciated tool, to avoid
@@ -100,7 +102,6 @@ ToolModule.init = function () {
             EventDispatcher.registerFamily( eventID, tool.listenTo[ eventID ] );
         }
     }
-
 
 };
 
@@ -178,7 +179,7 @@ ToolModule._registerBasicTools = function () {
     this.register( 'Water', Tool.WaterTool );
 
     this._instanciate( 'brush0', 'Brush', {
-        texture: AssetManager.assets.texture.brush1
+        materialId: 'material_with_tex'
     } );
 
 
