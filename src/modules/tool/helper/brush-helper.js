@@ -125,6 +125,7 @@ BrushHelper.prototype._processPoint = function ( pointCoords, orientation, verti
     this._vertices[ verticesCount++ ] = this._pointB.z;
 
     if ( this._verticesCount >= 3 * 4 ) {
+
         let v0 = new THREE.Vector3( this._vertices[ verticesCount - 9 -
             3 ], this._vertices[ verticesCount - 9 - 2 ],
             this._vertices[ verticesCount - 9 - 1 ] );
@@ -147,7 +148,25 @@ BrushHelper.prototype._processPoint = function ( pointCoords, orientation, verti
         this._normals[ normalsCount++ ] = n1.y;
         this._normals[ normalsCount++ ] = n1.z;
 
+        this._normals[ normalsCount++ ] = n1.x;
+        this._normals[ normalsCount++ ] = n1.y;
+        this._normals[ normalsCount++ ] = n1.z;
+
+        this._normals[ normalsCount++ ] = n1.x;
+        this._normals[ normalsCount++ ] = n1.y;
+        this._normals[ normalsCount++ ] = n1.z;
+
+        this._normals[ normalsCount++ ] = n1.x;
+        this._normals[ normalsCount++ ] = n1.y;
+        this._normals[ normalsCount++ ] = n1.z;
+
+        this._normals[ normalsCount++ ] = n1.x;
+        this._normals[ normalsCount++ ] = n1.y;
+        this._normals[ normalsCount++ ] = n1.z;
+
         this._geometry.normalizeNormals();
+
+        this._normalsCount += 6;
 
     }
 
@@ -200,7 +219,6 @@ BrushHelper.prototype.addPoint = function ( pointCoords, orientation, pressureVa
     this._processPoint( pointCoords.clone(), orientation.clone(), this._verticesCount, this._normalsCount, pressureValue );
 
     this._verticesCount += 6;
-    this._normalsCount += 6;
     this._uvCount += 4;
 
     this._geometry.attributes.normal.needsUpdate = true;
