@@ -130,15 +130,15 @@ BrushHelper.prototype._processPoint = function ( pointCoords, orientation, verti
             it = 2;
 
         let n = new THREE.Vector3( 0 );
-        for ( let i = 0; i < it; i++ ) {
+        for ( let i = 0; i < it * 3; i += 3 ) {
 
             let v0 = new THREE.Vector3();
             let v1 = new THREE.Vector3();
             let v2 = new THREE.Vector3();
 
-            v0.fromArray( this._vertices, verticesCount - 9 );
-            v1.fromArray( this._vertices, verticesCount - 6 );
-            v2.fromArray( this._vertices, verticesCount - 3 );
+            v0.fromArray( this._vertices, verticesCount - 9 - i );
+            v1.fromArray( this._vertices, verticesCount - 6 - i );
+            v2.fromArray( this._vertices, verticesCount - 3 - i );
 
             let v0Subv1 = v0.sub( v1 );
             let v2Subv1 = v2.sub( v1 );
