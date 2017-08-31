@@ -123,43 +123,57 @@ BrushHelper.prototype._processPoint = function ( pointCoords, orientation, verti
 
     if ( this._verticesCount >= 3 * 4 ) {
 
-        let v0 = new THREE.Vector3();
-        let v1 = new THREE.Vector3();
-        let v2 = new THREE.Vector3();
+        let it = 3;
+        if ( verticesCount - 4 * 3 === 0 )
+            it = 1;
+        else if ( verticesCount - 3 * 3 === 3 )
+            it = 2;
 
-        v0.fromArray( this._vertices, verticesCount - 9 );
-        v1.fromArray( this._vertices, verticesCount - 6 );
-        v2.fromArray( this._vertices, verticesCount - 3 );
+        let n = new THREE.Vector3( 0 );
+        for ( let i = 0; i < it; i++ ) {
 
-        let v0Subv1 = v0.sub( v1 );
-        let v2Subv1 = v2.sub( v1 );
+            let v0 = new THREE.Vector3();
+            let v1 = new THREE.Vector3();
+            let v2 = new THREE.Vector3();
 
-        let n1 = v0Subv1.clone();
-        n1.cross( v2Subv1 );
+            v0.fromArray( this._vertices, verticesCount - 9 );
+            v1.fromArray( this._vertices, verticesCount - 6 );
+            v2.fromArray( this._vertices, verticesCount - 3 );
 
-        this._normals[ normalsCount++ ] = n1.x;
-        this._normals[ normalsCount++ ] = n1.y;
-        this._normals[ normalsCount++ ] = n1.z;
+            let v0Subv1 = v0.sub( v1 );
+            let v2Subv1 = v2.sub( v1 );
 
-        this._normals[ normalsCount++ ] = n1.x;
-        this._normals[ normalsCount++ ] = n1.y;
-        this._normals[ normalsCount++ ] = n1.z;
+            let n1 = v0Subv1.clone();
+            n1.cross( v2Subv1 );
 
-        this._normals[ normalsCount++ ] = n1.x;
-        this._normals[ normalsCount++ ] = n1.y;
-        this._normals[ normalsCount++ ] = n1.z;
+            n.add( n1 );
+        }
 
-        this._normals[ normalsCount++ ] = n1.x;
-        this._normals[ normalsCount++ ] = n1.y;
-        this._normals[ normalsCount++ ] = n1.z;
+        n.divideScalar( it );
 
-        this._normals[ normalsCount++ ] = n1.x;
-        this._normals[ normalsCount++ ] = n1.y;
-        this._normals[ normalsCount++ ] = n1.z;
+        this._normals[ normalsCount++ ] = n.x;
+        this._normals[ normalsCount++ ] = n.y;
+        this._normals[ normalsCount++ ] = n.z;
 
-        this._normals[ normalsCount++ ] = n1.x;
-        this._normals[ normalsCount++ ] = n1.y;
-        this._normals[ normalsCount++ ] = n1.z;
+        this._normals[ normalsCount++ ] = n.x;
+        this._normals[ normalsCount++ ] = n.y;
+        this._normals[ normalsCount++ ] = n.z;
+
+        this._normals[ normalsCount++ ] = n.x;
+        this._normals[ normalsCount++ ] = n.y;
+        this._normals[ normalsCount++ ] = n.z;
+
+        this._normals[ normalsCount++ ] = n.x;
+        this._normals[ normalsCount++ ] = n.y;
+        this._normals[ normalsCount++ ] = n.z;
+
+        this._normals[ normalsCount++ ] = n.x;
+        this._normals[ normalsCount++ ] = n.y;
+        this._normals[ normalsCount++ ] = n.z;
+
+        this._normals[ normalsCount++ ] = n.x;
+        this._normals[ normalsCount++ ] = n.y;
+        this._normals[ normalsCount++ ] = n.z;
 
         this._geometry.normalizeNormals();
 
