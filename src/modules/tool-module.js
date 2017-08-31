@@ -61,8 +61,8 @@ ToolModule.init = function () {
     // selected. We should keep track of instanciated tool, to avoid
     // making useless instanciation.
     _instance.brush0.controllerID = 0;
-    //_selected[ 0 ] = _instance.brush0; FIXME: enable
-    _selected[ 0 ] = _instance.particle0;
+    _selected[ 0 ] = _instance.brush0;
+    //_selected[ 0 ] = _instance.particle0;
     _selected[ 1 ] = null;
 
     // TODO: Add onEnterChild & onExitChild event trigger.

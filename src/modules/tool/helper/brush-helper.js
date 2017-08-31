@@ -124,9 +124,9 @@ BrushHelper.prototype._processPoint = function ( pointCoords, orientation, verti
     if ( this._verticesCount >= 3 * 4 ) {
 
         let it = 3;
-        if ( verticesCount - 4 * 3 === 0 )
+        if ( verticesCount - 3 * 3 === 0 )
             it = 1;
-        else if ( verticesCount - 3 * 3 === 3 )
+        else if ( verticesCount - 4 * 3 === 3 )
             it = 2;
 
         let n = new THREE.Vector3( 0 );
