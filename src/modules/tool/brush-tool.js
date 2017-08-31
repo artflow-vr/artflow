@@ -1,7 +1,10 @@
 'use strict';
 
-let BrushHelper = require( './helper/brush-helper' );
+let THREE = window.THREE;
+
 let AbstractTool = require( './abstract-tool' );
+let AddCommand = require( './command/add-command' );
+let BrushHelper = require( './helper/brush-helper' );
 
 function BrushTool( options ) {
 
@@ -18,6 +21,11 @@ function BrushTool( options ) {
         trigger: self.trigger.bind( self )
     } );
 
+    this.helper = null;
+
+    this.mesh = null;
+    this.i = 0;
+
 }
 BrushTool.prototype = Object.create( AbstractTool.prototype );
 BrushTool.prototype.constructor = BrushTool;
@@ -29,11 +37,38 @@ BrushTool.prototype.update = function () {
 BrushTool.prototype.use = function ( data ) {
 
     this._helper.addPoint( data.position.world, data.orientation, data.pressure );
+
+    /*let normals = this.mesh.normals;
+    let vertices = this.mesh.vertices;
+
+    for ( let j = 0; j < 2; j++ ) {
+        let i = this.i;
+        let norm = new THREE.Vector3( normals[ i ], normals[ i + 1 ], normals[ i + 2 ] );
+        let vertex = new THREE.Vector3( vertices[ i ], vertices[ i + 1 ], vertices[ i + 2 ] );
+        this.i += 3;
+
+        let dir = vertex.clone().sub( norm );
+
+        let arrowHelper = new THREE.ArrowHelper( dir.normalize(), vertex, dir.length(), 0xff0000 );
+
+        this.worldGroup.addTHREEObject( arrowHelper );
+    }*/
+
+    //this.helper.update();
+
 };
 
 BrushTool.prototype.trigger = function ( ) {
 
-    return this._helper.trigger();
+    this.i = 0;
+    this.mesh = this._helper.createMesh();
+
+    //this.helper = new THREE.VertexNormalsHelper( this.mesh, 1, 0xff0000, 1 );
+
+    //this.worldGroup.addTHREEObject( this.helper );
+    this.worldGroup.addTHREEObject( this.mesh );
+
+    return new AddCommand( this.worldGroup, this.mesh );
 
 };
 

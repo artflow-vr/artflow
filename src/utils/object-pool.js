@@ -18,13 +18,15 @@ ObjectPool.prototype._allocate = function () {
     this._registeredTemplates = [
         {
             type: 'material_with_tex',
-            object: new THREE.MeshStandardMaterial( {
+            object: new THREE.MeshPhongMaterial( {
                 side: THREE.DoubleSide,
                 map: AssetManager.assets.texture.brush1,
+                normalMap: AssetManager.assets.texture.brush1_N,
                 transparent: true,
                 depthTest: false,
-                metalness: 0.0,
-                roughness: 0.9
+                shininess: 40
+                /*metalness: 0.2,
+                roughness: 0.3*/
             } )
         },
         {
@@ -34,7 +36,7 @@ ObjectPool.prototype._allocate = function () {
                 transparent: true,
                 depthTest: false,
                 metalness: 0.0,
-                roughness: 0.9
+                roughness: 0.3
             } )
         }
     ];

@@ -161,6 +161,10 @@ MainView._createLighting = function () {
     dirLight.position.set( -0.58, 0.65, 0.51 );
     this._rootScene.add( dirLight );
 
+    let pLight = new THREE.DirectionalLight( 0xffffff, 0.7 );
+    pLight.position.set( 0, 0, 0 );
+    this._rootScene.add( pLight );
+
     let ambLight = new THREE.AmbientLight( 0xf0f0f0 );
     this._rootScene.add( ambLight );
 
