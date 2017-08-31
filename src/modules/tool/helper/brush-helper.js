@@ -123,16 +123,6 @@ BrushHelper.prototype._processPoint = function ( pointCoords, orientation, verti
 
     if ( this._verticesCount >= 3 * 4 ) {
 
-        /*let v0 = new THREE.Vector3( this._vertices[ verticesCount - 9 -
-            3 ], this._vertices[ verticesCount - 9 - 2 ],
-            this._vertices[ verticesCount - 9 - 1 ] );
-        let v1 = new THREE.Vector3( this._vertices[ verticesCount - 6 -
-            3 ], this._vertices[ verticesCount - 6 - 2 ],
-            this._vertices[ verticesCount - 6 - 1 ] );
-        let v2 = new THREE.Vector3( this._vertices[ verticesCount - 3 -
-            3 ], this._vertices[ verticesCount - 3 - 2 ],
-            this._vertices[ verticesCount - 3 - 1 ] );*/
-
         let v0 = new THREE.Vector3();
         let v1 = new THREE.Vector3();
         let v2 = new THREE.Vector3();
@@ -140,8 +130,6 @@ BrushHelper.prototype._processPoint = function ( pointCoords, orientation, verti
         v0.fromArray( this._vertices, verticesCount - 9 );
         v1.fromArray( this._vertices, verticesCount - 6 );
         v2.fromArray( this._vertices, verticesCount - 3 );
-
-        this._pair = !this._pair;
 
         let v0Subv1 = v0.sub( v1 );
         let v2Subv1 = v2.sub( v1 );
