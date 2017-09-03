@@ -65,7 +65,6 @@ ToolModule.init = function () {
     // Registers trigger event for any tool
     EventDispatcher.registerFamily( 'interact', this._getEventFamily(
         'interact' ) );
-    //EventDispatcher.registerFamily( 'thumbpad', this._getEventFamily( 'thumbpad' ) );
 
     EventDispatcher.register( 'undo', function () {
 

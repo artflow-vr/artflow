@@ -39,7 +39,8 @@
     "equal": false,
     "start": false,
     "deepEqual": false,
-    "__dirname": false
+    "__dirname": false,
+    "THREE": true
   },
 
   "rules": {
