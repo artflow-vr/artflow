@@ -81,6 +81,7 @@ ToolModule.register('MyNiceTool', toolDescription);
 * [ ] Move temporary allocation to initialization
 * [ ] Move Helper folder from `tool/` folder
 * [ ] Remove call to ToolModule from BrushHelper. (The dependecy should come from the UI, or somewhere else).
+* [ ] Change stroke registration, by adding a `registerStroke` function, taking as parameter the description of a stroke. A stroke could be for instance described by a UI image, an update function to call, a material, and some predifined options (thickness, etc).
 
 #### Particles
 * [ ] Make a POC of GPU particles, without any interactions, but with options (color, glow, etc...)
