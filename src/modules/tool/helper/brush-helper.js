@@ -49,7 +49,8 @@ function BrushHelper( options ) {
     } else
         this._computeUV = this._computeUVWithoutPressure;
 
-    this._material = ToolModule.ObjectPool.getObject( this.options.materialId );
+    // TOOD: Helper shound not access the object pool directly like this.
+    this._material = ToolModule.objectPool.getObject( this.options.materialId );
     this._material.color.setHex( this.options.color );
 
 }

@@ -26,7 +26,7 @@ let _generalTools = [];
 let undoStack = [];
 let redoStack = [];
 
-this.ObjectPool = null;
+ToolModule.objectPool = null;
 
 /**
  * Registers a new tool into the tools library.
@@ -53,7 +53,7 @@ ToolModule.register = function ( toolID, tool ) {
 
 ToolModule.init = function () {
 
-    this.ObjectPool = new Utils.ObjectPool();
+    ToolModule.objectPool = new Utils.ObjectPool();
 
     this._registerBasicTools();
 
