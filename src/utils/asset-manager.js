@@ -136,6 +136,10 @@ AssetManager._loadRequiredAssets = function () {
         this.load( 'particle_raw', '.png',
             AssetManager.TEXTURE, this._texturePath, 'particle_raw' )
     );
+    promises.push(
+        this.load( 'water_normal', '.png',
+            AssetManager.TEXTURE, this._texturePath )
+    );
 
     return Promise.all( promises );
 

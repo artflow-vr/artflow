@@ -135,13 +135,19 @@ MainView._createInitialScene = function ( vr ) {
         color: 0xff0000,
         wireframe: true
     } ) );
+    let zAxisCube = new THREE.Mesh( geometry, new THREE.MeshBasicMaterial( {
+        color: 0x0000ff,
+        wireframe: true
+    } ) );
 
     centerCube.translateY( 0.5 );
     xAxisCube.translateX( 2 );
+    zAxisCube.translateZ( 2 );
 
     this._group.add( floor );
     this._group.add( centerCube );
     this._group.add( xAxisCube );
+    this._group.add( zAxisCube );
 
 };
 
@@ -149,10 +155,10 @@ MainView._createLighting = function () {
 
     // Creates the lightning
     let hemLight = new THREE.HemisphereLight( 0X000000, 0x2C3E50, 1.0 );
-    this._rootScene.add( hemLight );
+    //this._rootScene.add( hemLight );
 
-    let dirLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
-    dirLight.position.set( 100, 100, 100 );
+    let dirLight = new THREE.DirectionalLight( 0xffffff, 0.7 );
+    dirLight.position.set( -0.58, 0.65, 0.51 );
     this._rootScene.add( dirLight );
 
     let ambLight = new THREE.AmbientLight( 0xf0f0f0 );

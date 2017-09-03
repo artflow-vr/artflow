@@ -173,11 +173,13 @@ ToolModule._registerBasicTools = function () {
     this.register( 'Brush', Tool.BrushTool );
     this.register( 'Particle', Tool.ParticleTool );
     this.register( 'Teleporter', Tool.TeleporterTool );
+    this.register( 'Water', Tool.WaterTool );
 
     this._instanciate( 'brush0', 'Brush', {
         texture: AssetManager.assets.texture.brush1
     } );
     this._instanciate( 'particle0', 'Particle' );
     this._instanciate( 'teleporter', 'Teleporter' );
+    this._instanciate( 'water', 'Water' );
 
 };
