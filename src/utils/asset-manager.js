@@ -132,6 +132,10 @@ AssetManager._loadRequiredAssets = function () {
         this.load( 'brush2', '.png',
             AssetManager.TEXTURE, this._texturePath, 'brush1' )
     );
+    promises.push(
+        this.load( 'particle_raw', '.png',
+            AssetManager.TEXTURE, this._texturePath, 'particle_raw' )
+    );
 
     return Promise.all( promises );
 
