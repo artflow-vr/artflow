@@ -81,3 +81,10 @@ ToolModule.register('MyNiceTool', toolDescription);
 * [ ] Move temporary allocation to initialization
 * [ ] Move Helper folder from `tool/` folder
 * [ ] Remove call to ToolModule from BrushHelper. (The dependecy should come from the UI, or somewhere else).
+
+#### Particles
+* [ ] Make a POC of GPU particles, without any interactions, but with options (color, glow, etc...)
+* [ ] Make a POC of GPU particles with depth buffer intereactions.
+
+#### Water
+* [ ] Add input to draw the water plane
