@@ -1,8 +1,33 @@
+/**
+* ArtFlow application
+* https://github.com/artflow-vr/artflow
+*
+* MIT License
+*
+* Copyright (c) 2017 artflow
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+
 import AbstractTool from './abstract-tool';
 import MainView from '../../view/main-view';
-import {
-    AssetManager
-} from '../../utils/asset-manager';
+import { AssetManager } from '../../utils/asset-manager';
 
 const GRAVITY_CONST = -9.81;
 const HALF_GRAVITY_CONST = GRAVITY_CONST / 2.0;
@@ -50,8 +75,7 @@ export default class TeleporterTool extends AbstractTool {
         for ( let i = 0; i < this.options.nbPoints; ++i )
             this._spline.points[ i ] = new THREE.Vector3( 0, 0, 0 );
 
-        for ( let i = 0; i < this._spline.points.length * this.options.nbSub; ++
-            i )
+        for ( let i = 0; i < this._spline.points.length * this.options.nbSub; ++i )
             this._splineGeometry.vertices[ i ] = new THREE.Vector3( 0, 0, 0 );
 
         this.localGroup.addTHREEObject( this._mesh );
@@ -77,11 +101,11 @@ export default class TeleporterTool extends AbstractTool {
         this._direction.applyQuaternion( data.orientation );
 
         this._direction.multiplyScalar( this.options.velocity );
-        let hitTime = this._findIntersectionTime( this._direction.y,
-            localPos.y );
+        let hitTime = this._findIntersectionTime(
+            this._direction.y, localPos.y
+        );
 
         this._updateSpline( this._direction, localPos, hitTime );
-
         this._setToHitPoint( this._direction, localPos, hitTime, this._view );
 
     }
@@ -99,8 +123,9 @@ export default class TeleporterTool extends AbstractTool {
         let direction = new THREE.Vector3();
         let position = this.getTargetPosition();
 
-        direction.subVectors( MainView.getCamera().getWorldPosition(),
-            position );
+        direction.subVectors(
+            MainView.getCamera().getWorldPosition(), position
+        );
 
         MainView.getGroup().position.x += direction.x;
         MainView.getGroup().position.z += direction.z;

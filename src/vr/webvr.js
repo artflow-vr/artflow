@@ -1,4 +1,31 @@
 /**
+* ArtFlow application
+* https://github.com/artflow-vr/artflow
+*
+* MIT License
+*
+* Copyright (c) 2017 artflow
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+
+/**
  * Based on @mrdoob and @Mugen87 file: https://github.com/mrdoob/three.js/blob/dev/examples/js/vr/WebVR.js
  * Based on @tojiro's vr-samples-utils.js
  */
@@ -39,7 +66,6 @@ class WebVR {
     getVRDisplay( onDisplay ) {
 
         if ( 'getVRDisplays' in navigator ) {
-
             navigator.getVRDisplays().then( function ( displays ) {
                 onDisplay( displays[ 0 ] );
             } );
@@ -78,10 +104,8 @@ class WebVR {
     getButton( display, canvas ) {
 
         if ( 'VREffect' in THREE && display instanceof THREE.VREffect ) {
-
             console.error( 'WebVR.getButton() now expects a VRDisplay.' );
             return document.createElement( 'button' );
-
         }
 
         let button = document.createElement( 'button' );
@@ -101,7 +125,6 @@ class WebVR {
         button.style.zIndex = '999';
 
         if ( display ) {
-
             button.textContent = 'ENTER VR';
             button.onclick = function () {
 
@@ -121,11 +144,8 @@ class WebVR {
                     'ENTER VR';
 
             }, false );
-
         } else {
-
             button.textContent = 'NO VR DISPLAY';
-
         }
 
         return button;

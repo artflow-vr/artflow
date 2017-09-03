@@ -25,57 +25,18 @@
 * SOFTWARE.
 */
 
-export default class THREEView {
+export const setPropIfUndefined = ( obj, defaultObj ) => {
 
-    constructor() {
+    for ( let k in defaultObj ) {
+        if ( k in obj ) continue;
 
-        this.object = new THREE.Group();
-
-    }
-
-    addTHREEObject( obj ) {
-
-        if ( !( obj instanceof THREE.Object3D ) ) {
-            let errorMsg = 'addTHREEObject() was not given a THREE.JS object.';
-            throw Error( 'THREEView: ' + errorMsg );
+        let prop = defaultObj[ k ];
+        if ( typeof prop === 'object' ) {
+            obj[ k ] = {};
+            setPropIfUndefined( obj[ k ], defaultObj[ k ] );
+        } else {
+            obj[ k ] = prop;
         }
-
-        this.object.add( obj );
-
     }
 
-    applyMaterial( material ) {
-
-        this.object.traverse( function ( child ) {
-
-            if ( child instanceof THREE.Mesh ) child.material = material;
-
-        } );
-
-    }
-
-    setPos( position ) {
-
-        this.object.position.x = position.x;
-        this.object.position.y = position.y;
-        this.object.position.z = position.z;
-
-    }
-
-    setVisible( trigger ) {
-
-        this.object.traverse( function ( child ) {
-
-            if ( child instanceof THREE.Object3D ) child.visible = trigger;
-
-        } );
-
-    }
-
-    getObject() {
-
-        return this.object;
-
-    }
-
-}
+};
