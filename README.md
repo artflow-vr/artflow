@@ -78,3 +78,6 @@ ToolModule.register('MyNiceTool', toolDescription);
 #### Brushes
 * [ ] Add pressure
 * [ ] Add strokes system
+* [ ] Move temporary allocation to initialization
+* [ ] Move Helper folder from `tool/` folder
+* [ ] Remove call to ToolModule from BrushHelper. (The dependecy should come from the UI, or somewhere else).
