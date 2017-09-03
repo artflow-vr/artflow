@@ -1,12 +1,11 @@
-'use strict';
+import * as vr from './vr/vr';
+import * as modules from './modules/modules';
+import * as view from './view/view';
+import * as utils from './utils/utils';
 
-let vrNamespace = require( './vr/vr' );
-let modulesNamespace = require( './modules/modules' );
-let viewNamespace = require( './view/view' );
-let utilsNamespace = require( './utils/utils' );
-
-let Artflow = module.exports;
-Artflow.vr = vrNamespace;
-Artflow.modules = modulesNamespace;
-Artflow.view = viewNamespace;
-Artflow.utils = utilsNamespace;
+export {
+    vr,
+    modules,
+    view,
+    utils
+};

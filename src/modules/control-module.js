@@ -2,14 +2,14 @@
 
 let THREE = window.THREE;
 
-let MainView = require( '../view/main-view' );
+import MainView from '../view/main-view';
+import * as Utils from '../utils/utils';
+import * as Controller from '../controller/controller';
 
-let Utils = require( '../utils/utils' );
 let EventDispatcher = Utils.EventDispatcher;
 let MiscInfoTable = Utils.InfoTable.misc;
 let AssetManager = Utils.AssetManager;
 
-let Controller = require( '../controller/controller' );
 let FPSControls = Controller.FPSControls;
 let ViveController = Controller.ViveController;
 
@@ -177,8 +177,10 @@ Control._registerControllerEvents = function () {
 
             EventDispatcher.dispatch( eventID, {
                 controllerID: cID,
-                position: self._controllerTransform[ cID ].position,
-                orientation: self._controllerTransform[ cID ].orientation,
+                position: self._controllerTransform[
+                    cID ].position,
+                orientation: self._controllerTransform[
+                    cID ].orientation,
                 pressure: data.pressure
             } );
 

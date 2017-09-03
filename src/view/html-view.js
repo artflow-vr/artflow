@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Encapsulates an HTML div, allowing to perform simple operations,
  * such as adding html/css properties, adding child to hierarchy, etc...

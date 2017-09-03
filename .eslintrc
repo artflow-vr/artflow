@@ -30,6 +30,11 @@
     "shelljs": false     // shelljs global variables.
   },
 
+  "parserOptions": {
+    "ecmaVersion": 6,
+    "sourceType": "module"
+  },
+
   "globals": {
     "ok": false,
     "module": false,

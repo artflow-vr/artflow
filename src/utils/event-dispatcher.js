@@ -1,33 +1,39 @@
-'use strict';
+class EventDispatcher {
 
-let EventDispatcher = module.exports;
+    constructor() {
 
-EventDispatcher._events = {};
+        this._events = {};
 
-EventDispatcher.register = function ( eventID, callback ) {
-
-    if ( this._events[ eventID ] === undefined ||
-        this._events[ eventID ] === null ) {
-        this._events[ eventID ] = [];
     }
 
-    this._events[ eventID ].push( callback );
+    register( eventID, callback ) {
 
-};
+        if ( this._events[ eventID ] === undefined ||
+            this._events[ eventID ] === null ) {
+            this._events[ eventID ] = [];
+        }
 
-EventDispatcher.registerFamily = function ( eventID, callbacks ) {
+        this._events[ eventID ].push( callback );
 
-    EventDispatcher.register( eventID, callbacks.use );
-    EventDispatcher.register( eventID + 'Up', callbacks.release );
-    EventDispatcher.register( eventID + 'Down', callbacks.trigger );
+    }
 
-};
+    registerFamily( eventID, callbacks ) {
 
-EventDispatcher.dispatch = function ( eventID, data ) {
+        this.register( eventID, callbacks.use );
+        this.register( eventID + 'Up', callbacks.release );
+        this.register( eventID + 'Down', callbacks.trigger );
 
-    let events = this._events[ eventID ];
-    if ( events === undefined || events === null ) return;
+    }
 
-    for ( let callbackID in events ) events[ callbackID ]( data );
+    dispatch( eventID, data ) {
 
-};
+        let events = this._events[ eventID ];
+        if ( events === undefined || events === null ) return;
+
+        for ( let callbackID in events ) events[ callbackID ]( data );
+
+    }
+
+}
+
+export default new EventDispatcher();

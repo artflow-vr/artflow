@@ -1,12 +1,11 @@
-'use strict';
+import BrushTool from './brush-tool';
+import ParticleTool from './particle-tool';
+import WaterTool from './water-tool';
+import TeleporterTool from './teleporter-tool';
 
-let BrushTool = require( './brush-tool' );
-let ParticleTool = require( './particle-tool' );
-let WaterTool = require( './water-tool' );
-let TeleporterTool = require( './teleporter-tool' );
-
-let tool = module.exports;
-tool.BrushTool = BrushTool;
-tool.ParticleTool = ParticleTool;
-tool.WaterTool = WaterTool;
-tool.TeleporterTool = TeleporterTool;
+export {
+    BrushTool,
+    ParticleTool,
+    WaterTool,
+    TeleporterTool
+};

@@ -1,47 +1,54 @@
-'use strict';
+class Manager {
 
-let ModuleManager = module.exports;
+    constructor() {
 
-ModuleManager._modules = {};
+        this._modules = {};
 
-ModuleManager.register = function ( moduleID, mod ) {
-
-    if ( moduleID in ModuleManager._modules ) {
-        let errorMsg = 'you already registered the module \'' + moduleID +
-            '\'';
-        throw Error( 'ToolModule: ' + errorMsg );
     }
 
-    ModuleManager._modules[ moduleID ] = mod;
+    register( moduleID, mod ) {
 
-};
+        if ( moduleID in this._modules ) {
+            let errorMsg = 'you already registered the module \'' +
+                moduleID +
+                '\'';
+            throw Error( 'ToolModule: ' + errorMsg );
+        }
 
-ModuleManager.init = function () {
+        this._modules[ moduleID ] = mod;
 
-    ModuleManager._exec( 'init' );
-
-};
-
-ModuleManager.update = function ( data ) {
-
-    ModuleManager._exec( 'update', data );
-
-};
-
-ModuleManager.resize = function ( w, h ) {
-
-    ModuleManager._exec( 'resize', {
-        w: w,
-        h: h
-    } );
-
-};
-
-ModuleManager._exec = function ( callbackID, extraParams ) {
-
-    for ( let k in ModuleManager._modules ) {
-        let m = ModuleManager._modules[ k ];
-        if ( callbackID in m ) m[ callbackID ]( extraParams );
     }
 
-};
+    init() {
+
+        this._exec( 'init' );
+
+    }
+
+    update( data ) {
+
+        this._exec( 'update', data );
+
+    }
+
+    resize( w, h ) {
+
+        this._exec( 'resize', {
+            w: w,
+            h: h
+        } );
+
+    }
+
+    _exec( callbackID, extraParams ) {
+
+        for ( let k in this._modules ) {
+            let m = this._modules[ k ];
+            if ( callbackID in m ) m[ callbackID ]( extraParams );
+        }
+
+    }
+
+}
+
+export default new Manager();

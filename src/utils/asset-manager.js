@@ -1,150 +1,156 @@
-'use strict';
-
-let THREE = window.THREE;
-
 // OBJLoader is auto-added to the THREE namespace.
-require( '../../vendor/OBJLoader' );
+import '../../vendor/OBJLoader';
 
-let AssetManager = module.exports;
+let TEXTURE = 'texture';
+let CUBEMAP = 'cubemap';
+let MODEL = 'model';
 
-AssetManager._assetRoot = 'assets/';
-AssetManager._modelPath = AssetManager._assetRoot + 'models/';
-AssetManager._texturePath = AssetManager._assetRoot + 'textures/';
-AssetManager._cubemapPath = AssetManager._texturePath + 'cubemap/';
+class Manager {
 
-AssetManager.TEXTURE = 'texture';
-AssetManager.CUBEMAP = 'cubemap';
-AssetManager.MODEL = 'model';
+    constructor() {
 
-AssetManager._type = {
-    texture: null,
-    cubemap: null,
-    model: null
-};
+        this._assetRoot = 'assets/';
+        this._modelPath = this._assetRoot + 'models/';
+        this._texturePath = this._assetRoot + 'textures/';
+        this._cubemapPath = this._texturePath + 'cubemap/';
 
-AssetManager.init = function () {
+        this.assets = {
+            texture: {},
+            cubemap: {},
+            model: {}
+        };
 
-    this.assets = {
-        texture: {},
-        cubemap: {},
-        model: {}
-    };
+        this._type = {
+            texture: this._loadTexture.bind( this ),
+            cubemap: this._loadCubemap.bind( this ),
+            model: this._loadModel.bind( this )
+        };
 
-    this._OBJLoader = new THREE.OBJLoader();
-    this._textureLoader = new THREE.TextureLoader();
-    this._cubeTextureLoader = new THREE.CubeTextureLoader();
+        this._OBJLoader = new THREE.OBJLoader();
+        this._textureLoader = new THREE.TextureLoader();
+        this._cubeTextureLoader = new THREE.CubeTextureLoader();
 
-    return this._loadRequiredAssets();
-
-};
-
-AssetManager.load = function ( file, ext, type, path, assetID ) {
-
-    if ( !( type in this._type ) ) {
-        let errorMsg = 'type \'' + type + '\' is not recognized.';
-        throw Error( 'AssetManager: ' + errorMsg );
     }
 
-    let self = this;
-    let id = ( assetID === undefined || assetID === null ) ? file : assetID;
+    init() {
 
-    if ( id in this.assets[ type ] ) {
-        let warnMsg = 'asset ' + id + ' had already been registered.';
-        console.warn( 'AssetManager: ' + warnMsg );
+        return this._loadRequiredAssets();
+
     }
 
-    return new Promise( function ( resolve ) {
+    load( file, ext, type, path, assetID ) {
 
-        let fixedPath = ( path === undefined ) ? '.' : path;
+        if ( !( type in this._type ) ) {
+            let errorMsg = 'type \'' + type + '\' is not recognized.';
+            throw Error( 'AssetManager: ' + errorMsg );
+        }
 
-        self._type[ type ]( file, ext, fixedPath, function ( object ) {
+        let self = this;
+        let id = ( assetID === undefined || assetID === null ) ? file :
+            assetID;
 
-            self.assets[ type ][ id ] = object;
-            resolve();
-
-        }, function () {
-
-            let warnMsg = 'failed to load \'' + file +
-                '\'\n';
-            warnMsg +=
-                'Please check the path, filename, and provided type.';
+        if ( id in this.assets[ type ] ) {
+            let warnMsg = 'asset ' + id + ' had already been registered.';
             console.warn( 'AssetManager: ' + warnMsg );
+        }
+
+        return new Promise( function ( resolve ) {
+
+            let fixedPath = ( path === undefined ) ? '.' : path;
+
+            self._type[ type ]( file, ext, fixedPath, function (
+                object ) {
+
+                self.assets[ type ][ id ] = object;
+                resolve();
+
+            }, function () {
+
+                let warnMsg = 'failed to load \'' + file +
+                    '\'\n';
+                warnMsg +=
+                    'Please check the path, filename, and provided type.';
+                console.warn( 'AssetManager: ' + warnMsg );
+
+            } );
 
         } );
 
-    } );
+    }
 
-};
+    _loadTexture( file, ext, path, resolve, reject ) {
 
-AssetManager._loadTexture = function ( file, ext, path, resolve, reject ) {
+        this._textureLoader.setPath( path );
+        this._textureLoader.load( file + ext, resolve, undefined, reject );
 
-    this._textureLoader.setPath( path );
-    this._textureLoader.load( file + ext, resolve, undefined, reject );
+    }
 
-};
-AssetManager._type.texture = AssetManager._loadTexture.bind( AssetManager );
+    _loadModel( file, ext, path, resolve, reject ) {
 
-AssetManager._loadModel = function ( file, ext, path, resolve, reject ) {
+        this._OBJLoader.setPath( path );
+        this._OBJLoader.load( file + ext, resolve, undefined, reject );
 
-    this._OBJLoader.setPath( path );
-    this._OBJLoader.load( file + ext, resolve, undefined, reject );
+    }
 
-};
-AssetManager._type.model = AssetManager._loadModel.bind( AssetManager );
+    _loadCubemap( file, ext, path, resolve, reject ) {
 
-AssetManager._loadCubemap = function ( file, ext, path, resolve, reject ) {
+        let urls = [
+            file + '-px' + ext, file + '-nx' + ext,
+            file + '-py' + ext, file + '-ny' + ext,
+            file + '-pz' + ext, file + '-nz' + ext
+        ];
 
-    let urls = [
-        file + '-px' + ext, file + '-nx' + ext,
-        file + '-py' + ext, file + '-ny' + ext,
-        file + '-pz' + ext, file + '-nz' + ext
-    ];
+        this._cubeTextureLoader.setPath( path );
+        let toLoad = this._cubeTextureLoader.load( urls, resolve,
+            undefined, reject );
+        toLoad.format = THREE.RGBFormat;
 
-    this._cubeTextureLoader.setPath( path );
-    let toLoad = this._cubeTextureLoader.load( urls, resolve,
-        undefined, reject );
-    toLoad.format = THREE.RGBFormat;
+    }
 
-};
-AssetManager._type.cubemap = AssetManager._loadCubemap.bind( AssetManager );
+    _loadRequiredAssets() {
 
-AssetManager._loadRequiredAssets = function () {
+        let promises = [];
 
-    let promises = [];
+        promises.push(
+            this.load( 'teleporter', '.obj', MODEL, this._modelPath )
+        );
+        promises.push(
+            this.load( 'vive-controller', '.obj', MODEL, this._modelPath )
+        );
+        promises.push(
+            this.load( 'nightsky', '.png',
+                CUBEMAP, this._cubemapPath, 'cubemap' )
+        );
+        promises.push(
+            this.load( 'floor', '.jpg', TEXTURE, this._texturePath )
+        );
+        promises.push(
+            this.load( 'brush3', '.png', TEXTURE, this._texturePath,
+                'brush1' )
+        );
+        promises.push(
+            this.load( 'brush3_N', '.png',
+                TEXTURE, this._texturePath, 'brush1_N' )
+        );
+        promises.push(
+            this.load( 'particle_raw', '.png',
+                TEXTURE, this._texturePath, 'particle_raw' )
+        );
+        promises.push(
+            this.load( 'water_normal', '.png', TEXTURE, this._texturePath )
+        );
 
-    promises.push(
-        this.load( 'teleporter', '.obj',
-            AssetManager.MODEL, this._modelPath )
-    );
-    promises.push(
-        this.load( 'vive-controller', '.obj',
-            AssetManager.MODEL, this._modelPath )
-    );
-    promises.push(
-        this.load( 'nightsky', '.png',
-            AssetManager.CUBEMAP, this._cubemapPath, 'cubemap' )
-    );
-    promises.push(
-        this.load( 'floor', '.jpg',
-            AssetManager.TEXTURE, this._texturePath )
-    );
-    promises.push(
-        this.load( 'brush3', '.png',
-            AssetManager.TEXTURE, this._texturePath, 'brush1' )
-    );
-    promises.push(
-        this.load( 'brush3_N', '.png',
-            AssetManager.TEXTURE, this._texturePath, 'brush1_N' )
-    );
-    promises.push(
-        this.load( 'particle_raw', '.png',
-            AssetManager.TEXTURE, this._texturePath, 'particle_raw' )
-    );
-    promises.push(
-        this.load( 'water_normal', '.png',
-            AssetManager.TEXTURE, this._texturePath )
-    );
+        return Promise.all( promises );
 
-    return Promise.all( promises );
+    }
 
+}
+
+let AssetManager = new Manager();
+
+export {
+    AssetManager,
+    TEXTURE,
+    CUBEMAP,
+    MODEL
 };

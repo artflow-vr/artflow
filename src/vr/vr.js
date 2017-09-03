@@ -1,6 +1,5 @@
-let WebVR = require( './webvr' );
+import WebVR from './webvr';
 
-let vr = {};
-vr.WebVR = WebVR;
-
-module.exports = vr;
+export {
+    WebVR
+};

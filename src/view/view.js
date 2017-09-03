@@ -1,14 +1,11 @@
-'use strict';
+import HTMLView from './html-view';
+import HTMLTextArea from './html-text-area';
+import THREEView from './three-view';
+import MainView from './main-view';
 
-let HTMLView = require( './html-view' );
-let HTMLTextArea = require( './html-text-area' );
-
-let THREEView = require( './three-view' );
-
-let MainView = require( './main-view' );
-
-let view = module.exports;
-view.HTMLView = HTMLView;
-view.HTMLTextArea = HTMLTextArea;
-view.THREEView = THREEView;
-view.MainView = MainView;
+export {
+    HTMLView,
+    HTMLTextArea,
+    THREEView,
+    MainView
+};

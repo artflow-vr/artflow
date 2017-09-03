@@ -2,12 +2,12 @@
 
 let THREE = window.THREE;
 
-let AssetManager = require( '../utils/asset-manager' );
+import * as Utils from '../utils/utils';
+import HTMLView from './html-view';
+import HTMLTextArea from './html-text-area';
 
-let HTMLView = require( './html-view' );
-let HTMLTextArea = require( './html-text-area' );
-
-let MiscInfoTable = require( '../utils/info-table' ).misc;
+let AssetManager = Utils.AssetManager;
+let MiscInfoTable = Utils.InfoTable.misc;
 
 let MainView = module.exports;
 
@@ -154,7 +154,7 @@ MainView._createInitialScene = function ( vr ) {
 MainView._createLighting = function () {
 
     // Creates the lightning
-    let hemLight = new THREE.HemisphereLight( 0X000000, 0x2C3E50, 1.0 );
+    //let hemLight = new THREE.HemisphereLight( 0X000000, 0x2C3E50, 1.0 );
     //this._rootScene.add( hemLight );
 
     let dirLight = new THREE.DirectionalLight( 0xffffff, 0.7 );

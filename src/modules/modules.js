@@ -1,13 +1,12 @@
-'use strict';
-
-let ModuleManager = require( './module-manager' );
-let ControlModule = require( './control-module' );
-let ToolModule = require( './tool-module' );
+import ModuleManager from './module-manager';
+import ControlModule from './control-module';
+import ToolModule from './tool-module';
 
 ModuleManager.register( 'control', ControlModule );
 ModuleManager.register( 'tool', ToolModule );
 
-let modules = module.exports;
-modules.ModuleManager = ModuleManager;
-modules.ControlModule = ControlModule;
-modules.ToolModule = ToolModule;
+export {
+    ModuleManager,
+    ControlModule,
+    ToolModule
+};

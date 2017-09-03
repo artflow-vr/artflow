@@ -12,7 +12,12 @@ let OUTPUT_FILE = 'artflow-dist';
 
 let env = require( 'dotenv' ).config();
 
-let plugins = [];
+let plugins = [
+  new webpack.ProvidePlugin( {
+    'THREE': 'three',
+    'window.THREE': 'three'
+  } )
+];
 let loaders = [
   {
     test: /\.js$/,
@@ -30,7 +35,7 @@ let exp = {
     path: path.resolve( __dirname, BUILD + '/' ),
     filename: null,
     publicPath: '/' + BUILD + '/',
-    library: 'VRUI'
+    library: 'Artflow'
   },
   module: {}
 };

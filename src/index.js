@@ -1,6 +1,5 @@
-'use strict';
+import ArtflowMain from './main';
 
-let ArtflowMain = require( './main' );
 
 window.onload = function () {
 

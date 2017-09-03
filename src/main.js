@@ -1,115 +1,120 @@
-let Main = module.exports;
+import * as Artflow from './artflow';
 
-let THREE = window.THREE = require( 'three' );
-
-let Artflow = require( './artflow' );
 let ModuleManager = Artflow.modules.ModuleManager;
 let ControlModule = Artflow.modules.ControlModule;
-
 let AssetManager = Artflow.utils.AssetManager;
-
 let MainView = Artflow.view.MainView;
-
 let WebVR = Artflow.vr.WebVR;
 
-let renderer = null;
-let clock = null;
+class Main {
 
-let updateData = {
-    delta: 0.0,
-    controllers: [ null, null ]
-};
+    constructor() {
 
-Main.init = function ( w, h ) {
+        this._renderer = new THREE.WebGLRenderer( {
+            antialias: true
+        } );
 
-    renderer = new THREE.WebGLRenderer( {
-        antialias: true
-    } );
-    renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( w, h );
-    document.body.appendChild( renderer.domElement );
+        this._clock = new THREE.Clock();
 
-    AssetManager.init()
-        .then( function () {
+        this._updateData = {
+            delta: 0.0,
+            controllers: [ null, null ]
+        };
 
-            WebVR.checkAvailability()
-                .then( function () {
-                    WebVR.getVRDisplay( function ( display ) {
+    }
+
+    init( w, h ) {
+
+        this._renderer.setPixelRatio( window.devicePixelRatio );
+        this._renderer.setSize( w, h );
+        document.body.appendChild( this._renderer.domElement );
+
+        AssetManager.init().then( () => {
+
+                WebVR.checkAvailability().then( () => {
+
+                        WebVR.getVRDisplay( ( display ) => {
+
+                            document.body.appendChild(
+                                WebVR.getButton(
+                                    display,
+                                    this._renderer.domElement
+                                )
+                            );
+                            this._renderer.vr.enabled =
+                                true;
+                            this._renderer.vr.standing =
+                                true;
+                            this._renderer.vr.setDevice(
+                                display );
+
+                            ControlModule.vr = true;
+                            this._initData( w, h );
+
+                        } );
+
+                    } )
+                    .catch( ( message ) => {
 
                         document.body.appendChild(
-                            WebVR.getButton( display,
-                                renderer.domElement )
+                            WebVR.getMessageContainer( message )
                         );
-                        renderer.vr.enabled = true;
-                        renderer.vr.standing = true;
-                        renderer.vr.setDevice( display );
-
-                        ControlModule.vr = true;
-                        Main._initData( w, h );
+                        this._initData( w, h );
 
                     } );
 
-                } )
-                .catch( function ( message ) {
+            } )
+            .catch( ( error ) => {
 
-                    document.body.appendChild(
-                        WebVR.getMessageContainer( message )
-                    );
-                    Main._initData( w, h );
+                throw Error( error );
 
-                } );
+            } );
 
-        } )
-        .catch( function ( error ) {
+    }
 
-            throw Error( error );
+    resize( w, h ) {
 
-        } );
+        ModuleManager.resize( w, h );
+        MainView.resize( w, h );
+        this._renderer.setSize( w, h );
 
+    }
 
-};
+    _update() {
 
-Main.resize = function ( w, h ) {
+        let controllers = ControlModule.getControllersData();
 
-    ModuleManager.resize( w, h );
-    MainView.resize( w, h );
-    renderer.setSize( w, h );
+        this._updateData.delta = this._clock.getDelta();
+        this._updateData.controllers[ 0 ] = controllers[ 0 ];
+        this._updateData.controllers[ 1 ] = controllers[ 1 ];
 
-};
+        ModuleManager.update( this._updateData );
 
-Main._update = function () {
+    }
 
-    let controllers = ControlModule.getControllersData();
+    _render() {
 
-    updateData.delta = clock.getDelta();
-    updateData.controllers[ 0 ] = controllers[ 0 ];
-    updateData.controllers[ 1 ] = controllers[ 1 ];
+        MainView.render();
 
-    ModuleManager.update( updateData );
+    }
 
-};
+    _animate() {
 
-Main._render = function () {
+        this._update();
+        this._render();
 
-    MainView.render();
+    }
 
-};
+    _initData( w, h ) {
 
-Main._animate = function () {
+        MainView.init( w, h, this._renderer, ControlModule.vr );
+        ModuleManager.init();
 
-    Main._update();
-    Main._render();
+        this.resize( w, h );
+        this._renderer.animate( this._animate.bind( this ) );
 
-};
+    }
 
-Main._initData = function ( w, h ) {
+}
 
-    clock = new THREE.Clock();
-
-    MainView.init( w, h, renderer, ControlModule.vr );
-    ModuleManager.init();
-
-    Main.resize( w, h );
-    renderer.animate( Main._animate );
-
-};
+export default new Main();

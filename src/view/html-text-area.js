@@ -1,6 +1,6 @@
 'use strict';
 
-let HTMLView = require( './html-view' );
+import HTMLView from './html-view';
 
 /**
  * Simple text-area view based on the HTMLView wrapper.

@@ -1,6 +1,5 @@
-'use strict';
+import AddCommand from './add-command.js';
 
-let AddCommand = require( './add-command.js' );
-
-let command = module.exports;
-command.Add = AddCommand;
+export {
+    AddCommand
+};

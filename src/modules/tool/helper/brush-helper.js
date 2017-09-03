@@ -2,9 +2,8 @@
 
 let THREE = window.THREE;
 
-let AbstractTool = require( '../abstract-tool' );
-let ToolModule = require( '../../tool-module' );
-
+import AbstractTool from '../abstract-tool';
+import ToolModule from '../../tool-module';
 
 function BrushHelper( options ) {
 
@@ -38,7 +37,7 @@ function BrushHelper( options ) {
     this._thickness = this.options.brushThickness / 2.0;
 
     this._computeUV = null;
-    this._computeThickness = function( ) {
+    this._computeThickness = function () {
 
         return this._thickness;
     };
@@ -57,7 +56,7 @@ function BrushHelper( options ) {
 BrushHelper.prototype = Object.create( AbstractTool.prototype );
 BrushHelper.prototype.constructor = BrushHelper;
 
-BrushHelper.prototype.createMesh = function ( ) {
+BrushHelper.prototype.createMesh = function () {
 
     this._geometry = new THREE.BufferGeometry();
     this._vertices = new Float32Array( this._vboLimit * 3 * 3 );
@@ -90,7 +89,8 @@ BrushHelper.prototype.createMesh = function ( ) {
 
 };
 
-BrushHelper.prototype._processPoint = function ( pointCoords, orientation, verticesCount_, normalsCount_, pressure ) {
+BrushHelper.prototype._processPoint = function ( pointCoords, orientation,
+    verticesCount_, normalsCount_, pressure ) {
 
     let verticesCount = verticesCount_;
     let normalsCount = normalsCount_;
@@ -194,7 +194,7 @@ BrushHelper.prototype._computeThicknessWithPressure = function ( pressure ) {
     return v;
 };
 
-BrushHelper.prototype._computeUVWithPressure = function( max, pressureValue ) {
+BrushHelper.prototype._computeUVWithPressure = function ( max, pressureValue ) {
 
     this._uvs[ this._uv++ ] = pressureValue;
     this._uvs[ this._uv++ ] = 0;
@@ -204,7 +204,7 @@ BrushHelper.prototype._computeUVWithPressure = function( max, pressureValue ) {
 
 };
 
-BrushHelper.prototype._computeUVWithoutPressure = function( max, pressureValue ) {
+BrushHelper.prototype._computeUVWithoutPressure = function ( max ) {
 
     this._uv = 0;
     for ( let i = 0; i <= max; i++ ) {
@@ -217,18 +217,21 @@ BrushHelper.prototype._computeUVWithoutPressure = function( max, pressureValue )
 
 };
 
-BrushHelper.prototype.addPoint = function ( pointCoords, orientation, pressureValue ) {
+BrushHelper.prototype.addPoint = function ( pointCoords, orientation,
+    pressureValue ) {
 
     if ( this._lastPoint.distanceTo( pointCoords ) < this._delta )
         return;
 
     let max = this.options.maxSpread;
-    if ( this.options.maxSpread > 0 && this._verticesCount / 6 >= this.options.maxSpread )
+    if ( this.options.maxSpread > 0 && this._verticesCount / 6 >= this.options
+        .maxSpread )
         max = this._verticesCount / 6;
 
     this._computeUV( max, pressureValue );
 
-    this._processPoint( pointCoords.clone(), orientation.clone(), this._verticesCount, this._normalsCount, pressureValue );
+    this._processPoint( pointCoords.clone(), orientation.clone(), this._verticesCount,
+        this._normalsCount, pressureValue );
 
     this._verticesCount += 6;
     this._uvCount += 4;
