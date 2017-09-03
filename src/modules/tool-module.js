@@ -57,7 +57,8 @@ ToolModule.init = function () {
     // selected. We should keep track of instanciated tool, to avoid
     // making useless instanciation.
     _instance.brush0.controllerID = 0;
-    _selected[ 0 ] = _instance.brush0;
+    //_selected[ 0 ] = _instance.brush0; FIXME: enable
+    _selected[ 0 ] = _instance.particle0;
     _selected[ 1 ] = null;
 
     // TODO: Add onEnterChild & onExitChild event trigger.
@@ -65,7 +66,6 @@ ToolModule.init = function () {
     // Registers trigger event for any tool
     EventDispatcher.registerFamily( 'interact', this._getEventFamily(
         'interact' ) );
-    //EventDispatcher.registerFamily( 'thumbpad', this._getEventFamily( 'thumbpad' ) );
 
     EventDispatcher.register( 'undo', function () {
 
@@ -170,13 +170,14 @@ ToolModule._instanciate = function ( instanceID, toolID, options ) {
 };
 
 ToolModule._registerBasicTools = function () {
-
     this.register( 'Brush', Tool.BrushTool );
+    this.register( 'Particle', Tool.ParticleTool );
     this.register( 'Teleporter', Tool.TeleporterTool );
 
     this._instanciate( 'brush0', 'Brush', {
         texture: AssetManager.assets.texture.brush1
     } );
+    this._instanciate( 'particle0', 'Particle' );
     this._instanciate( 'teleporter', 'Teleporter' );
 
 };
