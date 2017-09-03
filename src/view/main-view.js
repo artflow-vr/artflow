@@ -40,7 +40,7 @@ MainView.init = function ( w, h, renderer, vr ) {
         let cubemap = AssetManager.assets.cubemap.cubemap;
         this._rootScene.background = cubemap;
     } else {
-        this._rootScene.background = 0xcccccc;
+        renderer.setClearColor( 0xcccccc, 1 );
     }
 
     this._createLighting();
@@ -160,6 +160,10 @@ MainView._createLighting = function () {
     let dirLight = new THREE.DirectionalLight( 0xffffff, 0.7 );
     dirLight.position.set( -0.58, 0.65, 0.51 );
     this._rootScene.add( dirLight );
+
+    let pLight = new THREE.DirectionalLight( 0xffffff, 0.7 );
+    pLight.position.set( 0, 0, 0 );
+    this._rootScene.add( pLight );
 
     let ambLight = new THREE.AmbientLight( 0xf0f0f0 );
     this._rootScene.add( ambLight );

@@ -26,6 +26,8 @@ let _generalTools = [];
 let undoStack = [];
 let redoStack = [];
 
+this.ObjectPool = null;
+
 /**
  * Registers a new tool into the tools library.
  *
@@ -51,14 +53,16 @@ ToolModule.register = function ( toolID, tool ) {
 
 ToolModule.init = function () {
 
+    this.ObjectPool = new Utils.ObjectPool();
+
     this._registerBasicTools();
 
     // TODO: We have to instanciate the tools according to what the user
     // selected. We should keep track of instanciated tool, to avoid
     // making useless instanciation.
     _instance.brush0.controllerID = 0;
-    //_selected[ 0 ] = _instance.brush0; FIXME: enable
-    _selected[ 0 ] = _instance.particle0;
+    _selected[ 0 ] = _instance.brush0;
+    //_selected[ 0 ] = _instance.particle0;
     _selected[ 1 ] = null;
 
     // TODO: Add onEnterChild & onExitChild event trigger.
@@ -98,7 +102,6 @@ ToolModule.init = function () {
             EventDispatcher.registerFamily( eventID, tool.listenTo[ eventID ] );
         }
     }
-
 
 };
 
@@ -176,8 +179,10 @@ ToolModule._registerBasicTools = function () {
     this.register( 'Water', Tool.WaterTool );
 
     this._instanciate( 'brush0', 'Brush', {
-        texture: AssetManager.assets.texture.brush1
+        materialId: 'material_with_tex'
     } );
+
+
     this._instanciate( 'particle0', 'Particle' );
     this._instanciate( 'teleporter', 'Teleporter' );
     this._instanciate( 'water', 'Water' );
