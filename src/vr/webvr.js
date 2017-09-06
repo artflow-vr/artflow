@@ -30,8 +30,6 @@
  * Based on @tojiro's vr-samples-utils.js
  */
 
-import THREE from 'three';
-
 class WebVR {
 
     checkAvailability() {

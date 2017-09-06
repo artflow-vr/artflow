@@ -117,8 +117,6 @@ class Main {
 
     _createInitialScene( vr ) {
 
-        if ( vr ) return;
-
         let floorTex = AssetManager.assets.texture.floor;
         let floor = new THREE.Mesh( new THREE.PlaneGeometry( 6, 6 ),
             new THREE.MeshLambertMaterial( {
@@ -126,6 +124,9 @@ class Main {
             } )
         );
         floor.rotateX( -Math.PI / 2 );
+        this._group.add( floor );
+    
+        if ( vr ) return;        
 
         let geometry = new THREE.BoxGeometry( 1, 1, 1 );
         let centerCube = new THREE.Mesh(
@@ -156,7 +157,6 @@ class Main {
         xAxisCube.translateX( 2 );
         zAxisCube.translateZ( 2 );
 
-        this._group.add( floor );
         this._group.add( centerCube );
         this._group.add( xAxisCube );
         this._group.add( zAxisCube );

@@ -186,20 +186,21 @@ class Control {
 
     _registerControllerEvents() {
 
+        let self = this;
         let registerEventForController = ( cID, evt ) => {
 
-            this._controllers[ cID ].addEventListener( evt, function ( data ) {
+            self._controllers[ cID ].addEventListener( evt, function ( data ) {
 
-                let eventID = this._controllerToAction[ evt ];
+                let eventID = self._controllerToAction[ evt ];
                 if ( data.status )
                     eventID += data.status;
 
-                this._currentController = this._controllers[ cID ];
+                self._currentController = self._controllers[ cID ];
 
                 EventDispatcher.dispatch( eventID, {
                     controllerID: cID,
-                    position: this._controllerTransform[ cID ].position,
-                    orientation: this._controllerTransform[ cID ].orientation,
+                    position: self._controllerTransform[ cID ].position,
+                    orientation: self._controllerTransform[ cID ].orientation,
                     pressure: data.pressure
                 } );
 
