@@ -37,6 +37,14 @@ export default class BrushTool extends AbstractTool {
 
         this.registeredBrushes = null;
 
+        this.setOptionsIfUndef( options, {
+            maxSpread: 20,
+            brushThickness: 0.1,
+            enablePressure: true,
+            color: 0x808080,
+            materialId: 'material_without_tex'
+        } );
+
         this._helper = new BrushHelper( options );
 
         let self = this;
@@ -45,10 +53,13 @@ export default class BrushTool extends AbstractTool {
             trigger: self.trigger.bind( self )
         } );
 
+        this.registerEvent( 'axisChanged', {
+            use: self.useAxisChanged.bind( self )
+        } );
+
         this.helper = null;
 
         this.mesh = null;
-        this.i = 0;
 
     }
 
@@ -62,11 +73,16 @@ export default class BrushTool extends AbstractTool {
 
     trigger() {
 
-        this.i = 0;
         this.mesh = this._helper.createMesh();
         this.worldGroup.addTHREEObject( this.mesh );
 
         return new AddCommand( this.worldGroup, this.mesh );
+
+    }
+
+    useAxisChanged( data ) {
+
+        this._helper.setLastSizePoint( data );
 
     }
 

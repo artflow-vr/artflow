@@ -89,13 +89,13 @@ export default class WaterTool extends AbstractTool {
         plane3.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
         plane3.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
         plane3.material.uniforms.uSpeed.value = this.options.speed;
-        plane3.translateZ( 5.0 );
-        plane3.translateX( 8.0 );
+        plane3.translateZ( 2.0 );
+        plane3.translateX( 2.0 );
         plane3.material.uniforms.uCubemap.value = cubemap;
 
-        this.worldGroup.addTHREEObject( plane );
-        this.worldGroup.addTHREEObject( plane2 );
-        this.worldGroup.addTHREEObject( plane3 );
+        this.localGroup.addTHREEObject( plane );
+        this.localGroup.addTHREEObject( plane2 );
+        this.localGroup.addTHREEObject( plane3 );
 
     }
 

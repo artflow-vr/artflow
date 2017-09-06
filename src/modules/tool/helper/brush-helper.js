@@ -26,7 +26,6 @@
 */
 
 import ToolModule from '../../tool-module';
-import { setPropIfUndefined } from '../../../utils/object';
 
 export default class BrushHelper {
 
@@ -34,15 +33,7 @@ export default class BrushHelper {
 
         this.registeredBrushes = null;
 
-        this.options = {};
-        for ( let k in this.options ) this.options[ k ] = options[ k ];
-        setPropIfUndefined( this.options, {
-            maxSpread: 20,
-            brushThickness: 0.75,
-            enablePressure: false,
-            color: 0x808080,
-            materialId: 'material_with_tex'
-        } );
+        this.options = options;
 
         this._verticesCount = 0;
         this._normalsCount = 0;
@@ -54,11 +45,13 @@ export default class BrushHelper {
         this._normals = null;
         this._uvs = null;
         this._uv = 0;
-        this._delta = 0.05;
+        this._delta = 0.01;
         this._axisLock = new THREE.Vector3( 0, 0, -1 );
         this._pointA = new THREE.Vector3( 0, 0, 0 );
         this._pointB = new THREE.Vector3( 0, 0, 0 );
         this._lastPoint = new THREE.Vector3( Number.NEGATIVE_INFINITY );
+        this._sizePoint = null;
+        this._lastSizePoint = null;
         this._lastPressure = 0.0;
         this._thickness = this.options.brushThickness / 2.0;
 
@@ -116,6 +109,18 @@ export default class BrushHelper {
 
         return mesh;
 
+    }
+
+    setLastSizePoint( point ) {
+        this._lastSizePoint = this._sizePoint;
+        this._sizePoint = new THREE.Vector2( point[ 0 ], point[ 1 ] );
+
+        let dist = 0.0;
+        if ( this._lastSizePoint )
+            this._lastSizePoint.distanceTo( this._sizePoint );
+
+        console.log( 'dist' );
+        console.log( dist );
     }
 
     addPoint ( pointCoords, orientation, pressureValue ) {

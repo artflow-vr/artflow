@@ -29,7 +29,7 @@ export default class ViveController extends THREE.Object3D {
                     if ( val[ 0 ] !== axes[ 0 ] || val[ 1 ] !==
                         axes[ 1 ] ) {
                         self.dispatchEvent( {
-                            type: 'axischanged',
+                            type: 'axisChanged',
                             axes: axes
                         } );
                         self.buttons.thumbpad.axes[ 0 ] = axes[ 0 ];

@@ -78,13 +78,18 @@ class ToolModule {
         this._instance.brush0.controllerID = 0;
         this._selected[ 0 ] = this._instance.brush0;
         //this._selected[ 0 ] = this._instance.particle0;
-        this._selected[ 1 ] = null;
+        this._selected[ 1 ] = this._instance.brush0;
 
         // TODO: Add onEnterChild & onExitChild event trigger.
 
         // Registers trigger event for any tool
-        EventDispatcher.registerFamily( 'interact', this._getEventFamily(
-            'interact' ) );
+        EventDispatcher.registerFamily(
+            'interact', this._getEventFamily( 'interact' )
+        );
+
+        EventDispatcher.registerFamily(
+            'axisChanged', this._getEventFamily( 'axisChanged' )
+        );
 
         EventDispatcher.register( 'undo', () => {
 
@@ -144,6 +149,7 @@ class ToolModule {
             },
             trigger: ( data ) => {
 
+                console.log( data );
                 let cmd = this._selected[ data.controllerID ].triggerEvent(
                     eventID, 'trigger', data
                 );
@@ -194,9 +200,7 @@ class ToolModule {
         this.register( 'Teleporter', Tool.TeleporterTool );
         this.register( 'Water', Tool.WaterTool );
 
-        this._instanciate( 'brush0', 'Brush', {
-            materialId: 'material_with_tex'
-        } );
+        this._instanciate( 'brush0', 'Brush', Tool.BrushTool.registeredBrushes[ 1 ] );
 
         this._instanciate( 'particle0', 'Particle' );
         this._instanciate( 'teleporter', 'Teleporter' );

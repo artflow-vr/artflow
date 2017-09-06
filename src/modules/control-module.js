@@ -86,7 +86,8 @@ class Control {
             thumbpad: 'thumbpad',
             trigger: 'interact',
             triggerdown: 'interactDown',
-            triggerup: 'interactUp'
+            triggerup: 'interactUp',
+            axisChanged: 'axisChanged'
         };
 
     }
@@ -216,6 +217,8 @@ class Control {
         registerEventForController( 1, 'triggerup' );
         registerEventForController( 0, 'triggerdown' );
         registerEventForController( 1, 'triggerdown' );
+        registerEventForController( 0, 'axisChanged' );
+        registerEventForController( 1, 'axisChanged' );
 
     }
 

@@ -125,8 +125,8 @@ class Main {
         );
         floor.rotateX( -Math.PI / 2 );
         this._group.add( floor );
-    
-        if ( vr ) return;        
+
+        if ( vr ) return;
 
         let geometry = new THREE.BoxGeometry( 1, 1, 1 );
         let centerCube = new THREE.Mesh(
