@@ -75,6 +75,9 @@ ToolModule.register('MyNiceTool', toolDescription);
 
 ### TODO
 
+#### All
+* [ ] Remove _movingGroup and add a dolly group above the camera
+
 #### Brushes
 * [ ] Add pressure
 * [ ] Add strokes system
