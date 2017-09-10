@@ -33,7 +33,7 @@ export default class BrushTool extends AbstractTool {
 
     constructor( options ) {
 
-        super( null );
+        super( options );
 
         this.registeredBrushes = null;
 

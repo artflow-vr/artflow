@@ -45,7 +45,7 @@ export default class BrushHelper {
         this._normals = null;
         this._uvs = null;
         this._uv = 0;
-        this._delta = 0.01;
+        this._delta = 0.05;
         this._axisLock = new THREE.Vector3( 0, 0, -1 );
         this._pointA = new THREE.Vector3( 0, 0, 0 );
         this._pointB = new THREE.Vector3( 0, 0, 0 );
@@ -59,6 +59,7 @@ export default class BrushHelper {
         this._computeThickness = function () {
 
             return this._thickness;
+
         };
 
         if ( this.options.enablePressure ) {

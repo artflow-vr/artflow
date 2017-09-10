@@ -200,7 +200,7 @@ class ToolModule {
         this.register( 'Teleporter', Tool.TeleporterTool );
         this.register( 'Water', Tool.WaterTool );
 
-        this._instanciate( 'brush0', 'Brush', Tool.BrushTool.registeredBrushes[ 1 ] );
+        this._instanciate( 'brush0', 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
 
         this._instanciate( 'particle0', 'Particle' );
         this._instanciate( 'teleporter', 'Teleporter' );
