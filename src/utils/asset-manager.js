@@ -164,6 +164,10 @@ class Manager {
                 TEXTURE, this._texturePath, 'particle_raw' )
         );
         promises.push(
+            this.load( 'perlin-512', '.png',
+                TEXTURE, this._texturePath, 'particle_noise' )
+        );
+        promises.push(
             this.load( 'water_normal', '.png', TEXTURE, this._texturePath )
         );
 
