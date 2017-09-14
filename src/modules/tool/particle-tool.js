@@ -171,7 +171,6 @@ export default class ParticleTool extends AbstractTool {
         this._particleTexture = AssetManager.assets.texture.particle_raw;
         this.time = 0;
         this.particleContainers = [];
-        this._nbParticleContainers = this.options.nbParticleContainers || 1;
         this.rand = [];
         this.particleShaderMat = new THREE.ShaderMaterial( {
             transparent: true,
@@ -218,7 +217,7 @@ export default class ParticleTool extends AbstractTool {
         for ( let i = 0; i < this.PARTICLE_CONTAINERS; i ++ ) {
             let c = new ParticleContainer( this.PARTICLES_PER_CONTAINER, this );
             this.particleContainers.push( c );
-            // super.add( c ); TODO: Add to scene or something ?
+            this.worldGroup.addTHREEObject( c );
         }
     }
 
@@ -252,37 +251,6 @@ export default class ParticleTool extends AbstractTool {
 
     use( data ) {
         this._updateBrush( data.position.world );
-
-        // Create the particles
-        // TODO: This loop is really bad for performance reasons.
-        // it is only a POC. We should not allocate new geometry in ArtFlow.
-        // We should only create meshes, and reuse geometries.
-        let particles = new THREE.Geometry();
-        for ( let p = 0; p < this._particleCount; p++ ) {
-
-            // create a particle with random
-            // position values, -250 -> 250
-            let offsetX = Math.random() * this._brushSize - this._brushSize / 2,
-                offsetY = Math.random() * this._brushSize - this._brushSize / 2,
-                offsetZ = Math.random() * this._brushSize - this._brushSize / 2,
-                particle =
-                    new THREE.Vector3(
-                        this._cursorMesh.position.x + offsetX,
-                        this._cursorMesh.position.y + offsetY,
-                        this._cursorMesh.position.z + offsetZ
-                    );
-
-            // add it to the geometry
-            particles.vertices.push( particle );
-        }
-
-        // create the particle system
-        let particleGeometry = new THREE.Points(
-            particles,
-            this._pMaterial );
-
-        // add it to the scene
-        this.worldGroup.addTHREEObject( particleGeometry );
         this.spawnParticle();
     }
 
@@ -305,7 +273,7 @@ export default class ParticleTool extends AbstractTool {
     }
 
     trigger() {
-        this.worldGroup.addTHREEObject( this._cursorMesh );
+        // this.worldGroup.addTHREEObject( this._cursorMesh );
     }
 
     release() {}
