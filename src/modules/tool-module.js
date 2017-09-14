@@ -76,9 +76,9 @@ class ToolModule {
         // selected. We should keep track of instanciated tool, to avoid
         // making useless instanciation.
         this._instance.brush0.controllerID = 0;
-        this._selected[ 0 ] = this._instance.brush0;
+        this._selected[ 0 ] = this._instance.particle0;
         //this._selected[ 0 ] = this._instance.particle0;
-        this._selected[ 1 ] = this._instance.brush0;
+        this._selected[ 1 ] = this._instance.particle0;
 
         // TODO: Add onEnterChild & onExitChild event trigger.
 
