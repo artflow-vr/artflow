@@ -42,7 +42,6 @@ export class ParticleContainer extends THREE.Object3D {
         this.count = 0;
         this.DPR = window.devicePixelRatio;
         this.particleSystem = particleSystem;
-        this.particleUpdate = false;
 
         // geometry
 
@@ -61,28 +60,25 @@ export class ParticleContainer extends THREE.Object3D {
         this.init();
     }
 
-    spawnParticle( options = {} ) {
+    spawnParticle() {
         let positionStartAttribute = this.particleShaderGeo.getAttribute( 'positionStart' );
         let colorAttribute = this.particleShaderGeo.getAttribute( 'color' );
 
         // setup reasonable default values for all arguments
-
-        this.position.set( options.position !== undefined ? this.position.copy( options.position ) : 0, 0, 0 );
-        this.color = options.color !== undefined ? this.color.set( options.color ) : this.color.set( 0xffffff );
-
-        let positionRandomness = options.positionRandomness !== undefined ? options.positionRandomness : 0;
-        let colorRandomness = options.colorRandomness !== undefined ? options.colorRandomness : 1;
+        // TODO: set randomness and start values from parameters
+        this.position.set( 0, 0, 0 );
+        this.color.set( 0xffffff );
+        let positionRandomness = 10;
+        let colorRandomness = 1;
 
         let i = this.PARTICLE_CURSOR;
 
         // position
-
         positionStartAttribute.array[ i * 3 ] = this.position.x + ( this.particleSystem.getRandom() * positionRandomness );
         positionStartAttribute.array[ i * 3 + 1 ] = this.position.y + ( this.particleSystem.getRandom() * positionRandomness );
         positionStartAttribute.array[ i * 3 + 2 ] = this.position.z + ( this.particleSystem.getRandom() * positionRandomness );
 
         // color
-
         this.color.r = THREE.Math.clamp( this.color.r + this.particleSystem.getRandom() * colorRandomness, 0, 1 );
         this.color.g = THREE.Math.clamp( this.color.g + this.particleSystem.getRandom() * colorRandomness, 0, 1 );
         this.color.b = THREE.Math.clamp( this.color.b + this.particleSystem.getRandom() * colorRandomness, 0, 1 );
@@ -91,62 +87,26 @@ export class ParticleContainer extends THREE.Object3D {
         colorAttribute.array[ i * 3 + 2 ] = this.color.b;
 
         // offset
-
         if ( this.offset === 0 )
             this.offset = this.PARTICLE_CURSOR;
 
         // counter and cursor
-
         this.count++;
         this.PARTICLE_CURSOR++;
 
         if ( this.PARTICLE_CURSOR >= this.PARTICLE_COUNT )
             this.PARTICLE_CURSOR = 0;
 
-        this.particleUpdate = true;
     }
 
     init() {
         this.particleGeometry = new THREE.Points( this.particleShaderGeo, this.particleShaderMat );
+        console.log(this.particleShaderGeo);
         this.particleGeometry.frustumCulled = false;
         super.add( this.particleGeometry );
     }
 
     update( time ) {
-        /*
-        this.time = time;
-        this.particleShaderMat.uniforms.uTime.value = time;
-
-        this.geometryUpdate();
-        */
-    }
-
-    geometryUpdate() {
-        if ( this.particleUpdate === true ) {
-            this.particleUpdate = false;
-            let positionStartAttribute = this.particleShaderGeo.getAttribute( 'positionStart' );
-            let colorAttribute = this.particleShaderGeo.getAttribute( 'color' );
-            if ( this.offset + this.count < this.PARTICLE_COUNT ) {
-                positionStartAttribute.updateRange.offset = this.offset * positionStartAttribute.itemSize;
-                colorAttribute.updateRange.offset = this.offset * colorAttribute.itemSize;
-                positionStartAttribute.updateRange.count = this.count * positionStartAttribute.itemSize;
-                colorAttribute.updateRange.count = this.count * colorAttribute.itemSize;
-            } else {
-                positionStartAttribute.updateRange.offset = 0;
-                colorAttribute.updateRange.offset = 0;
-                // Use -1 to update the entire buffer, see #11476
-                positionStartAttribute.updateRange.count = -1;
-                colorAttribute.updateRange.count = -1;
-            }
-            positionStartAttribute.needsUpdate = true;
-            colorAttribute.needsUpdate = true;
-            this.offset = 0;
-            this.count = 0;
-        }
-    }
-
-    dispose() {
-        this.particleShaderGeo.dispose();
     }
 
 }
@@ -265,15 +225,8 @@ export default class ParticleTool extends AbstractTool {
             this.particleContainers[ i ].update( this.time );
     }
 
-    dispose() {
-        this.particleShaderMat.dispose();
-        this.particleSpriteTex.dispose();
-        for ( let i = 0; i < this.PARTICLE_CONTAINERS; i ++ )
-            this.particleContainers[ i ].dispose();
-    }
-
+    // At first click
     trigger() {
-        // this.worldGroup.addTHREEObject( this._cursorMesh );
     }
 
     release() {}
