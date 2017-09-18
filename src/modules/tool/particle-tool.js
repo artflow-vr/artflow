@@ -45,8 +45,15 @@ export class ParticleContainer extends THREE.Object3D {
         // geometry
         this.particleShaderGeo = new THREE.BufferGeometry();
 
+        // position
         this.particleShaderGeo.addAttribute( 'position',
             new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
+
+        // size
+        this.particleShaderGeo.addAttribute( 'size',
+            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT ), 1 ).setDynamic( true ) );
+        this.startSize = this.DPR * 10;
+        this.sizeRandomness = 10;
 
         // material
         this.particleShaderMat = this.particleSystem.particleShaderMat;
@@ -75,6 +82,12 @@ export class ParticleContainer extends THREE.Object3D {
             + ( this.particleSystem.getRandom() * positionRandomness );
         positionStartAttribute.array[ i * 3 + 2 ] = position.z
             + ( this.particleSystem.getRandom() * positionRandomness );
+
+        // size
+        let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
+        sizeAttribute.needsUpdate = true;
+        sizeAttribute.array[ i ] = this.startSize + this.particleSystem.getRandom() * this.sizeRandomness;
+        console.log(sizeAttribute.array[ i ]);
 
         /*
         // color

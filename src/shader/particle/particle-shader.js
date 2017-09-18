@@ -27,11 +27,13 @@
 
 module.exports = {
     vertex: [
-        'attribute vec3 positionStart;',
-        'attribute vec3 color;',
+        //'attribute vec3 positionStart;',
+        //'attribute vec3 color;',
+        'attribute float size;',
 
         'void main() {',
-        '	gl_Position = projectionMatrix * modelViewMatrix * vec4( positionStart, 1.0 );',
+        '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+        '	gl_PointSize = size;',
         '}'
 
     ].join( '\n' ),
