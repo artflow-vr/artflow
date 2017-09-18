@@ -33,7 +33,6 @@ import ParticleShader from '../../shader/particle/particle-shader';
 export class ParticleContainer extends THREE.Object3D {
     constructor( maxParticles, particleSystem ) {
         super();
-        // THREE.Object3D.apply( this, arguments );
 
         this.PARTICLE_COUNT = maxParticles || 100000;
         this.PARTICLE_CURSOR = 0;
@@ -44,40 +43,44 @@ export class ParticleContainer extends THREE.Object3D {
         this.particleSystem = particleSystem;
 
         // geometry
-
         this.particleShaderGeo = new THREE.BufferGeometry();
 
-        this.particleShaderGeo.addAttribute( 'positionStart', new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
-        this.particleShaderGeo.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
+        this.particleShaderGeo.addAttribute( 'position',
+            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
+        // this.particleShaderGeo.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
 
         // material
-
         this.particleShaderMat = this.particleSystem.particleShaderMat;
-
-        this.position.set( new THREE.Vector3() );
-        this.color = new THREE.Color();
 
         this.init();
     }
 
     spawnParticle() {
-        let positionStartAttribute = this.particleShaderGeo.getAttribute( 'positionStart' );
-        let colorAttribute = this.particleShaderGeo.getAttribute( 'color' );
+
+        this.position.set( 0, 2, 0 );
+        this.color = new THREE.Color();
+
+        let positionStartAttribute = this.particleShaderGeo.getAttribute( 'position' );
+        positionStartAttribute.needsUpdate = true;
+        // let colorAttribute = this.particleShaderGeo.getAttribute( 'color' );
 
         // setup reasonable default values for all arguments
         // TODO: set randomness and start values from parameters
         this.position.set( 0, 0, 0 );
-        this.color.set( 0xffffff );
-        let positionRandomness = 10;
-        let colorRandomness = 1;
+        // this.color.set( 0xffffff );
+        let positionRandomness = 1;
 
         let i = this.PARTICLE_CURSOR;
 
         // position
-        positionStartAttribute.array[ i * 3 ] = this.position.x + ( this.particleSystem.getRandom() * positionRandomness );
-        positionStartAttribute.array[ i * 3 + 1 ] = this.position.y + ( this.particleSystem.getRandom() * positionRandomness );
-        positionStartAttribute.array[ i * 3 + 2 ] = this.position.z + ( this.particleSystem.getRandom() * positionRandomness );
+        positionStartAttribute.array[ i * 3 ] = this.position.x
+            + ( this.particleSystem.getRandom() * positionRandomness );
+        positionStartAttribute.array[ i * 3 + 1 ] = this.position.y
+            + ( this.particleSystem.getRandom() * positionRandomness );
+        positionStartAttribute.array[ i * 3 + 2 ] = this.position.z
+            + ( this.particleSystem.getRandom() * positionRandomness );
 
+        /*
         // color
         this.color.r = THREE.Math.clamp( this.color.r + this.particleSystem.getRandom() * colorRandomness, 0, 1 );
         this.color.g = THREE.Math.clamp( this.color.g + this.particleSystem.getRandom() * colorRandomness, 0, 1 );
@@ -85,6 +88,7 @@ export class ParticleContainer extends THREE.Object3D {
         colorAttribute.array[ i * 3 ] = this.color.r;
         colorAttribute.array[ i * 3 + 1 ] = this.color.g;
         colorAttribute.array[ i * 3 + 2 ] = this.color.b;
+        */
 
         // offset
         if ( this.offset === 0 )
@@ -101,7 +105,7 @@ export class ParticleContainer extends THREE.Object3D {
 
     init() {
         this.particleGeometry = new THREE.Points( this.particleShaderGeo, this.particleShaderMat );
-        console.log(this.particleShaderGeo);
+        console.log( this.particleShaderGeo );
         this.particleGeometry.frustumCulled = false;
         super.add( this.particleGeometry );
     }
@@ -116,6 +120,7 @@ export default class ParticleTool extends AbstractTool {
     constructor( options ) {
 
         super( options );
+
         this.setOptionsIfUndef( {
             brushSize: 1,
             thickness: 10
@@ -150,9 +155,6 @@ export default class ParticleTool extends AbstractTool {
             vertexShader: ParticleShader.vertex,
             fragmentShader: ParticleShader.fragment
         } );
-
-        this.particleShaderMat.defaultAttributeValues.particlePositionsStartTime = [ 0, 0, 0, 0 ];
-        this.particleShaderMat.defaultAttributeValues.particleVelColSizeLife = [ 0, 0, 0, 0 ];
 
         this.initCursorMesh();
 
@@ -207,6 +209,7 @@ export default class ParticleTool extends AbstractTool {
             this.PARTICLE_CURSOR = 1;
         let currentContainer = this.particleContainers[ Math.floor( this.PARTICLE_CURSOR / this.PARTICLES_PER_CONTAINER ) ];
         currentContainer.spawnParticle( this.options );
+        this.worldGroup.addTHREEObject( currentContainer );
     }
 
     use( data ) {
