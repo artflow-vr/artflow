@@ -47,17 +47,16 @@ export class ParticleContainer extends THREE.Object3D {
 
         this.particleShaderGeo.addAttribute( 'position',
             new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
-        // this.particleShaderGeo.addAttribute( 'color', new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
 
         // material
         this.particleShaderMat = this.particleSystem.particleShaderMat;
+        this.position.set( 0, 0, 0 );
 
         this.init();
     }
 
-    spawnParticle() {
+    spawnParticle( position ) {
 
-        this.position.set( 0, 2, 0 );
         this.color = new THREE.Color();
 
         let positionStartAttribute = this.particleShaderGeo.getAttribute( 'position' );
@@ -65,19 +64,16 @@ export class ParticleContainer extends THREE.Object3D {
         // let colorAttribute = this.particleShaderGeo.getAttribute( 'color' );
 
         // setup reasonable default values for all arguments
-        // TODO: set randomness and start values from parameters
-        this.position.set( 0, 0, 0 );
-        // this.color.set( 0xffffff );
         let positionRandomness = 1;
 
         let i = this.PARTICLE_CURSOR;
 
         // position
-        positionStartAttribute.array[ i * 3 ] = this.position.x
+        positionStartAttribute.array[ i * 3 ] = position.x
             + ( this.particleSystem.getRandom() * positionRandomness );
-        positionStartAttribute.array[ i * 3 + 1 ] = this.position.y
+        positionStartAttribute.array[ i * 3 + 1 ] = position.y
             + ( this.particleSystem.getRandom() * positionRandomness );
-        positionStartAttribute.array[ i * 3 + 2 ] = this.position.z
+        positionStartAttribute.array[ i * 3 + 2 ] = position.z
             + ( this.particleSystem.getRandom() * positionRandomness );
 
         /*
@@ -203,18 +199,18 @@ export default class ParticleTool extends AbstractTool {
         this.worldGroup.addTHREEObject( this._cursorMesh );
     }
 
-    spawnParticle() {
+    spawnParticle( position ) {
         this.PARTICLE_CURSOR ++;
         if ( this.PARTICLE_CURSOR >= this.PARTICLE_COUNT )
             this.PARTICLE_CURSOR = 1;
         let currentContainer = this.particleContainers[ Math.floor( this.PARTICLE_CURSOR / this.PARTICLES_PER_CONTAINER ) ];
-        currentContainer.spawnParticle( this.options );
+        currentContainer.spawnParticle( position );
         this.worldGroup.addTHREEObject( currentContainer );
     }
 
     use( data ) {
         this._updateBrush( data.position.world );
-        this.spawnParticle();
+        this.spawnParticle( data.position.world );
     }
 
     _updateBrush( pointCoords ) {
