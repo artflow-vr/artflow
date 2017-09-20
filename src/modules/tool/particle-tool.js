@@ -34,26 +34,34 @@ export class ParticleContainer extends THREE.Object3D {
     constructor( maxParticles, particleSystem ) {
         super();
 
-        this.PARTICLE_COUNT = maxParticles || 100000;
+        this.PARTICLE_MAX_COUNT = maxParticles || 100000;
         this.PARTICLE_CURSOR = 0;
-        this.time = 0;
         this.offset = 0;
         this.count = 0;
         this.DPR = window.devicePixelRatio;
         this.particleSystem = particleSystem;
+        this._clock = new THREE.Clock();
+        this._clock.start();
+        this.first = true;
 
         // geometry
         this.particleShaderGeo = new THREE.BufferGeometry();
 
         // position
         this.particleShaderGeo.addAttribute( 'position',
-            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT * 3 ), 3 ).setDynamic( true ) );
+            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_MAX_COUNT * 3 ), 3 ).setDynamic( true ) );
 
         // size
         this.particleShaderGeo.addAttribute( 'size',
-            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_COUNT ), 1 ).setDynamic( true ) );
+            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_MAX_COUNT ), 1 ).setDynamic( true ) );
         this.startSize = this.DPR * 10;
         this.sizeRandomness = 10;
+
+        // lifeSpan
+        this.particleShaderGeo.addAttribute( 'lifeSpan',
+            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_MAX_COUNT ), 1 ).setDynamic( true ) );
+        this.lifeSpan = 10;
+        this.lifeSpanRandomness = 10;
 
         // material
         this.particleShaderMat = this.particleSystem.particleShaderMat;
@@ -87,7 +95,10 @@ export class ParticleContainer extends THREE.Object3D {
         let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
         sizeAttribute.needsUpdate = true;
         sizeAttribute.array[ i ] = this.startSize + this.particleSystem.getRandom() * this.sizeRandomness;
-        console.log(sizeAttribute.array[ i ]);
+
+        let lifeSpanAttribute = this.particleShaderGeo.getAttribute( 'lifeSpan' );
+        lifeSpanAttribute.needsUpdate = true;
+        lifeSpanAttribute.array[ i ] = this.lifeSpan + this.particleSystem.getRandom() * this.lifeSpanRandomness;
 
         /*
         // color
@@ -107,7 +118,7 @@ export class ParticleContainer extends THREE.Object3D {
         this.count++;
         this.PARTICLE_CURSOR++;
 
-        if ( this.PARTICLE_CURSOR >= this.PARTICLE_COUNT )
+        if ( this.PARTICLE_CURSOR >= this.PARTICLE_MAX_COUNT )
             this.PARTICLE_CURSOR = 0;
 
     }
@@ -119,7 +130,17 @@ export class ParticleContainer extends THREE.Object3D {
         super.add( this.particleGeometry );
     }
 
-    update( time ) {
+    update() {
+        let elapsedTime = this._clock.getElapsedTime();
+        this._clock.start();
+        let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
+        sizeAttribute.needsUpdate = true;
+        let i = 0;
+        for ( i; i <= this.PARTICLE_CURSOR; i++ ) {
+            sizeAttribute.array[ i ] = sizeAttribute.array[ i ] - elapsedTime * 10;
+            if ( sizeAttribute.array[ i ] <= 0 )
+                sizeAttribute.array[ i ] = this.startSize + this.particleSystem.getRandom() * this.sizeRandomness;
+        }
     }
 
 }
@@ -127,8 +148,7 @@ export class ParticleContainer extends THREE.Object3D {
 export default class ParticleTool extends AbstractTool {
 
     constructor( options ) {
-
-        super( options );
+super( options );
 
         this.setOptionsIfUndef( {
             brushSize: 1,
@@ -139,11 +159,10 @@ export default class ParticleTool extends AbstractTool {
         this.PARTICLE_CONTAINERS = 1;
         this.PARTICLES_PER_CONTAINER = 100000;
         this.PARTICLE_CURSOR = 0;
-        this.PARTICLE_COUNT = 0;
+        this.PARTICLE_MAX_COUNT = 0;
 
         // Initializing particles
         this._particleTexture = AssetManager.assets.texture.particle_raw;
-        this.time = 0;
         this.particleContainers = [];
         this.rand = [];
         this.particleShaderMat = new THREE.ShaderMaterial( {
@@ -214,7 +233,7 @@ export default class ParticleTool extends AbstractTool {
 
     spawnParticle( position ) {
         this.PARTICLE_CURSOR ++;
-        if ( this.PARTICLE_CURSOR >= this.PARTICLE_COUNT )
+        if ( this.PARTICLE_CURSOR >= this.PARTICLE_MAX_COUNT )
             this.PARTICLE_CURSOR = 1;
         let currentContainer = this.particleContainers[ Math.floor( this.PARTICLE_CURSOR / this.PARTICLES_PER_CONTAINER ) ];
         currentContainer.spawnParticle( position );
@@ -234,7 +253,7 @@ export default class ParticleTool extends AbstractTool {
 
     update() {
         for ( let i = 0; i < this.PARTICLE_CONTAINERS; i ++ )
-            this.particleContainers[ i ].update( this.time );
+            this.particleContainers[ i ].update( );
     }
 
     // At first click
