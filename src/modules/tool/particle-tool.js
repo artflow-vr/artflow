@@ -34,37 +34,28 @@ export class ParticleContainer extends THREE.Object3D {
     constructor( maxParticles, particleSystem ) {
         super();
 
-        this.PARTICLE_MAX_COUNT = maxParticles || 100000;
-        this.PARTICLE_CURSOR = 0;
-        this.offset = 0;
-        this.count = 0;
-        this.DPR = window.devicePixelRatio;
-        this.particleSystem = particleSystem;
+        this._particleMaxCount = maxParticles || 100000;
+        this._particleCursor = 0;
+        this._DPR = window.devicePixelRatio;
+        this._particleSystem = particleSystem;
         this._clock = new THREE.Clock();
         this._clock.start();
-        this.first = true;
 
         // geometry
         this.particleShaderGeo = new THREE.BufferGeometry();
 
         // position
         this.particleShaderGeo.addAttribute( 'position',
-            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_MAX_COUNT * 3 ), 3 ).setDynamic( true ) );
+            new THREE.BufferAttribute( new Float32Array( this._particleMaxCount * 3 ), 3 ).setDynamic( true ) );
 
         // size
         this.particleShaderGeo.addAttribute( 'size',
-            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_MAX_COUNT ), 1 ).setDynamic( true ) );
-        this.startSize = this.DPR * 10;
+            new THREE.BufferAttribute( new Float32Array( this._particleMaxCount ), 1 ).setDynamic( true ) );
+        this.startSize = this._DPR * 10;
         this.sizeRandomness = 10;
 
-        // lifeSpan
-        this.particleShaderGeo.addAttribute( 'lifeSpan',
-            new THREE.BufferAttribute( new Float32Array( this.PARTICLE_MAX_COUNT ), 1 ).setDynamic( true ) );
-        this.lifeSpan = 10;
-        this.lifeSpanRandomness = 10;
-
         // material
-        this.particleShaderMat = this.particleSystem.particleShaderMat;
+        this.particleShaderMat = this._particleSystem.particleShaderMat;
         this.position.set( 0, 0, 0 );
 
         this.init();
@@ -81,45 +72,26 @@ export class ParticleContainer extends THREE.Object3D {
         // setup reasonable default values for all arguments
         let positionRandomness = 1;
 
-        let i = this.PARTICLE_CURSOR;
+        let i = this._particleCursor;
 
         // position
         positionStartAttribute.array[ i * 3 ] = position.x
-            + ( this.particleSystem.getRandom() * positionRandomness );
+            + ( this._particleSystem.getRandom() * positionRandomness );
         positionStartAttribute.array[ i * 3 + 1 ] = position.y
-            + ( this.particleSystem.getRandom() * positionRandomness );
+            + ( this._particleSystem.getRandom() * positionRandomness );
         positionStartAttribute.array[ i * 3 + 2 ] = position.z
-            + ( this.particleSystem.getRandom() * positionRandomness );
+            + ( this._particleSystem.getRandom() * positionRandomness );
 
         // size
         let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
         sizeAttribute.needsUpdate = true;
-        sizeAttribute.array[ i ] = this.startSize + this.particleSystem.getRandom() * this.sizeRandomness;
-
-        let lifeSpanAttribute = this.particleShaderGeo.getAttribute( 'lifeSpan' );
-        lifeSpanAttribute.needsUpdate = true;
-        lifeSpanAttribute.array[ i ] = this.lifeSpan + this.particleSystem.getRandom() * this.lifeSpanRandomness;
-
-        /*
-        // color
-        this.color.r = THREE.Math.clamp( this.color.r + this.particleSystem.getRandom() * colorRandomness, 0, 1 );
-        this.color.g = THREE.Math.clamp( this.color.g + this.particleSystem.getRandom() * colorRandomness, 0, 1 );
-        this.color.b = THREE.Math.clamp( this.color.b + this.particleSystem.getRandom() * colorRandomness, 0, 1 );
-        colorAttribute.array[ i * 3 ] = this.color.r;
-        colorAttribute.array[ i * 3 + 1 ] = this.color.g;
-        colorAttribute.array[ i * 3 + 2 ] = this.color.b;
-        */
-
-        // offset
-        if ( this.offset === 0 )
-            this.offset = this.PARTICLE_CURSOR;
+        sizeAttribute.array[ i ] = this.startSize + this._particleSystem.getRandom() * this.sizeRandomness;
 
         // counter and cursor
-        this.count++;
-        this.PARTICLE_CURSOR++;
+        this._particleCursor++;
 
-        if ( this.PARTICLE_CURSOR >= this.PARTICLE_MAX_COUNT )
-            this.PARTICLE_CURSOR = 0;
+        if ( this._particleCursor >= this._particleMaxCount )
+            this._particleCursor = 0;
 
     }
 
@@ -136,10 +108,10 @@ export class ParticleContainer extends THREE.Object3D {
         let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
         sizeAttribute.needsUpdate = true;
         let i = 0;
-        for ( i; i <= this.PARTICLE_CURSOR; i++ ) {
+        for ( i; i <= this._particleCursor; i++ ) {
             sizeAttribute.array[ i ] = sizeAttribute.array[ i ] - elapsedTime * 10;
             if ( sizeAttribute.array[ i ] <= 0 )
-                sizeAttribute.array[ i ] = this.startSize + this.particleSystem.getRandom() * this.sizeRandomness;
+                sizeAttribute.array[ i ] = this.startSize + this._particleSystem.getRandom() * this.sizeRandomness;
         }
     }
 
@@ -152,19 +124,22 @@ super( options );
 
         this.setOptionsIfUndef( {
             brushSize: 1,
-            thickness: 10
+            thickness: 10,
+            particlesPerContainer: 100000,
+            particleContainers: 1
         } );
+
         this._brushSize = this.options.brushSize;
         this._thickness = this.options.thickness;
-        this.PARTICLE_CONTAINERS = 1;
-        this.PARTICLES_PER_CONTAINER = 100000;
-        this.PARTICLE_CURSOR = 0;
-        this.PARTICLE_MAX_COUNT = 0;
+        this._particleContainers = 1;
+        this._particlesPerContainer = 100000;
+        this._particleCursor = 0;
+        this._particleMaxCount = 0;
+        this.rand = [];
 
         // Initializing particles
         this._particleTexture = AssetManager.assets.texture.particle_raw;
         this.particleContainers = [];
-        this.rand = [];
         this.particleShaderMat = new THREE.ShaderMaterial( {
             transparent: true,
             depthWrite: false,
@@ -193,19 +168,18 @@ super( options );
         }
 
         // Bind functions to events
-        let self = this;
         this.registerEvent( 'interact', {
-            use: self.use.bind( self ),
-            trigger: self.trigger.bind( self ),
-            release: self.release.bind( self )
+            use: this.use.bind( this ),
+            trigger: this.trigger.bind( this ),
+            release: this.release.bind( this )
         } );
 
         this.initParticleContainers();
     }
 
     initParticleContainers() {
-        for ( let i = 0; i < this.PARTICLE_CONTAINERS; i ++ ) {
-            let c = new ParticleContainer( this.PARTICLES_PER_CONTAINER, this );
+        for ( let i = 0; i < this._particleContainers; i ++ ) {
+            let c = new ParticleContainer( this._particlesPerContainer, this );
             this.particleContainers.push( c );
             this.worldGroup.addTHREEObject( c );
         }
@@ -232,10 +206,10 @@ super( options );
     }
 
     spawnParticle( position ) {
-        this.PARTICLE_CURSOR ++;
-        if ( this.PARTICLE_CURSOR >= this.PARTICLE_MAX_COUNT )
-            this.PARTICLE_CURSOR = 1;
-        let currentContainer = this.particleContainers[ Math.floor( this.PARTICLE_CURSOR / this.PARTICLES_PER_CONTAINER ) ];
+        this._particleCursor ++;
+        if ( this._particleCursor >= this._particleMaxCount )
+            this._particleCursor = 1;
+        let currentContainer = this.particleContainers[ Math.floor( this._particleCursor / this._particlesPerContainer ) ];
         currentContainer.spawnParticle( position );
         this.worldGroup.addTHREEObject( currentContainer );
     }
@@ -252,14 +226,15 @@ super( options );
     }
 
     update() {
-        for ( let i = 0; i < this.PARTICLE_CONTAINERS; i ++ )
-            this.particleContainers[ i ].update( );
+        for ( let i = 0; i < this._particleContainers; i ++ )
+            this.particleContainers[ i ].update();
     }
 
     // At first click
     trigger() {
     }
 
-    release() {}
+    release() {
+    }
 
 }
