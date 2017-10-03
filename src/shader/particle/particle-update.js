@@ -46,7 +46,7 @@ module.exports = {
         '   vec4 velocity = texture2D( tVelocitiesMap, gl_PointCoord );',
         '   vec4 position = texture2D( tPositionsMap, gl_PointCoord );',
         '	vec4 tex = texture2D( tSprite, gl_PointCoord );',
-        '	gl_FragColor = vec4( tex );',
+        '	gl_FragColor = vec4( position );',
         '}'
 
     ].join( '\n' )

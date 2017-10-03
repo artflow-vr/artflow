@@ -40,17 +40,19 @@ class PrimitivesRenderer {
         // rendering to scene does the same as rendering to texture in Three.js
         this._targetScene = new THREE.Scene();
         this._velocitiesTexture = AssetManager.assets.texture.particle_velocity;
-        this._inputBufferTexture = AssetManager.assets.texture.particle_position;
+        this._initialTexture = AssetManager.assets.texture.particle_position;
         let renderTargetParams = {
             minFilter:THREE.LinearFilter,
             stencilBuffer:false,
             depthBuffer:false
         };
+
+        // create buffers
+        this._inputBufferTexture = this._initialTexture;
         let imageWidth = this._inputBufferTexture.image.width;
         let imageHeight = this._inputBufferTexture.image.height;
 
-        // create buffer
-        this._outputBufferTexture = new THREE.WebGLRenderTarget( imageWidth, imageHeight, renderTargetParams );
+        this._outputTarget = new THREE.WebGLRenderTarget( imageWidth, imageHeight, renderTargetParams );
 
         // custom RTT materials
         this._targetTextureMat = new THREE.ShaderMaterial( {
@@ -74,7 +76,9 @@ class PrimitivesRenderer {
     }
 
     update() {
-        this._renderer.render( this._targetScene, this._camera, this._outputBufferTexture, true );
+        this._renderer.render( this._targetScene, this._camera, this._outputTarget, true );
+        this._inputBufferTexture = this._outputTarget.texture;
+        return this._outputTarget.texture;
     }
 }
 
@@ -91,6 +95,7 @@ class ParticleContainer extends THREE.Object3D {
 
         // initialize position and velocity updater
         this._primitivesRenderer = new PrimitivesRenderer();
+        this._updatedPositions = this._primitivesRenderer.update();
 
         // geometry
         this.particleShaderGeo = new THREE.BufferGeometry();
@@ -113,7 +118,8 @@ class ParticleContainer extends THREE.Object3D {
             uniforms: {
                 uTime: { type: 'f', value: 0.0 },
                 uScale: { type: 'f', value: 1.0 },
-                tSprite: { type: 't', value: this._particleTexture }
+                tSprite: { type: 't', value: this._particleTexture },
+                tPositions: { type: 't', value: this._updatedPositions }
             },
             blending: THREE.AdditiveBlending,
             vertexShader: ParticleShader.vertex,
@@ -166,7 +172,7 @@ class ParticleContainer extends THREE.Object3D {
     }
 
     update() {
-        this._primitivesRenderer.update();
+        this._updatedPositions = this._primitivesRenderer.update();
         let elapsedTime = this._clock.getElapsedTime();
         this._clock.start();
         let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );

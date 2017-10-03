@@ -40,9 +40,10 @@ module.exports = {
 
     fragment: [
         'uniform sampler2D tSprite;',
+        'uniform sampler2D tPositions;',
 
         'void main() {',
-        '	vec4 tex = texture2D( tSprite, gl_PointCoord );',
+        '	vec4 tex = texture2D( tPositions, vec2(0, 0) );',
         '	gl_FragColor = vec4( tex );',
         '}'
 
