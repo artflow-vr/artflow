@@ -28,9 +28,57 @@
 import AbstractTool from './abstract-tool';
 import { AssetManager } from '../../utils/asset-manager';
 import ParticleShader from '../../shader/particle/particle-shader';
+import ParticleUpdate from '../../shader/particle/particle-update';
+import MainView from '../../view/main-view';
 
+class PrimitivesRenderer {
+    constructor( options ) {
+        this.options = options;
 
-export class ParticleContainer extends THREE.Object3D {
+        this._renderer = MainView._renderer;
+
+        // rendering to scene does the same as rendering to texture in Three.js
+        this._targetScene = new THREE.Scene();
+        this._velocitiesTexture = AssetManager.assets.texture.particle_velocity;
+        this._inputBufferTexture = AssetManager.assets.texture.particle_position;
+        let renderTargetParams = {
+            minFilter:THREE.LinearFilter,
+            stencilBuffer:false,
+            depthBuffer:false
+        };
+        let imageWidth = this._inputBufferTexture.image.width;
+        let imageHeight = this._inputBufferTexture.image.height;
+
+        // create buffer
+        this._outputBufferTexture = new THREE.WebGLRenderTarget( imageWidth, imageHeight, renderTargetParams );
+
+        // custom RTT materials
+        this._targetTextureMat = new THREE.ShaderMaterial( {
+            uniforms: {
+                tVelocitiesMap : { type: 't', value: this._velocitiesTexture },
+                tPositionsMap : { type: 't', value: this._inputBufferTexture }
+            },
+            vertexShader: ParticleUpdate.vertex,
+            fragmentShader: ParticleUpdate.fragment
+        } );
+
+        // Setup render-to-texture scene
+        this._camera = new THREE.OrthographicCamera( imageWidth / - 2,
+            imageWidth / 2,
+            imageHeight / 2,
+            imageHeight / - 2, -10000, 10000 );
+        this._targetTextureGeo = new THREE.PlaneGeometry( imageWidth, imageHeight );
+        this._targetTextureMesh = new THREE.Mesh( this._targetTextureGeo, this._targetTextureMat );
+        this._targetTextureMesh.position.z = -100;
+        this._targetScene.add( this._targetTextureMesh );
+    }
+
+    update() {
+        this._renderer.render( this._targetScene, this._camera, this._outputBufferTexture, true );
+    }
+}
+
+class ParticleContainer extends THREE.Object3D {
     constructor( maxParticles, particleSystem ) {
         super();
 
@@ -40,6 +88,9 @@ export class ParticleContainer extends THREE.Object3D {
         this._particleSystem = particleSystem;
         this._clock = new THREE.Clock();
         this._clock.start();
+
+        // initialize position and velocity updater
+        this._primitivesRenderer = new PrimitivesRenderer();
 
         // geometry
         this.particleShaderGeo = new THREE.BufferGeometry();
@@ -55,7 +106,19 @@ export class ParticleContainer extends THREE.Object3D {
         this.sizeRandomness = 10;
 
         // material
-        this.particleShaderMat = this._particleSystem.particleShaderMat;
+        this._particleTexture = AssetManager.assets.texture.particle_raw;
+        this.particleShaderMat = new THREE.ShaderMaterial( {
+            transparent: true,
+            depthWrite: false,
+            uniforms: {
+                uTime: { type: 'f', value: 0.0 },
+                uScale: { type: 'f', value: 1.0 },
+                tSprite: { type: 't', value: this._particleTexture }
+            },
+            blending: THREE.AdditiveBlending,
+            vertexShader: ParticleShader.vertex,
+            fragmentShader: ParticleShader.fragment
+        } );
         this.position.set( 0, 0, 0 );
 
         this.init();
@@ -103,6 +166,7 @@ export class ParticleContainer extends THREE.Object3D {
     }
 
     update() {
+        this._primitivesRenderer.update();
         let elapsedTime = this._clock.getElapsedTime();
         this._clock.start();
         let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
@@ -138,26 +202,7 @@ super( options );
         this.rand = [];
 
         // Initializing particles
-        this._particleTexture = AssetManager.assets.texture.particle_raw;
         this.particleContainers = [];
-        this.particleShaderMat = new THREE.ShaderMaterial( {
-            transparent: true,
-            depthWrite: false,
-            uniforms: {
-                uTime: {
-                    value: 0.0
-                },
-                uScale: {
-                    value: 1.0
-                },
-                tSprite: {
-                    value: this._particleTexture
-                }
-            },
-            blending: THREE.AdditiveBlending,
-            vertexShader: ParticleShader.vertex,
-            fragmentShader: ParticleShader.fragment
-        } );
 
         this.initCursorMesh();
 

@@ -170,6 +170,14 @@ class Manager {
         promises.push(
             this.load( 'water_normal', '.png', TEXTURE, this._texturePath )
         );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_position' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_velocity' )
+        );
 
         return Promise.all( promises );
 
