@@ -180,6 +180,7 @@ class Manager {
         );
         promises.push(
             this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+<<<<<<< HEAD
                 'particle_position_in' )
         );
         promises.push(
@@ -193,6 +194,13 @@ class Manager {
         promises.push(
             this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
                 'particle_velocity_out' )
+=======
+                'particle_position' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_velocity' )
+>>>>>>> Add PrimiteRenderer that manages the update of primitives for particles
         );
 
         this._loadUIAssets( promises );
