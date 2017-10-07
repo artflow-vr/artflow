@@ -172,11 +172,11 @@ class Manager {
         );
         promises.push(
             this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
-                'particle_position' )
+                'particle_position_in' )
         );
         promises.push(
             this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
-                'particle_velocity' )
+                'particle_velocity_in' )
         );
 
         return Promise.all( promises );

@@ -27,21 +27,22 @@
 
 module.exports = {
     vertex: [
-        'attribute float size;',
 
         'void main() {',
         '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
-        '	gl_PointSize = size;',
         '}'
 
     ].join( '\n' ),
 
     fragment: [
-        'uniform sampler2D tSprite;',
+        'uniform sampler2D tVelocitiesMap;',
+        'uniform sampler2D tPositionsMap;',
+        'uniform float dt;',
 
         'void main() {',
-        '	vec4 tex = texture2D( tSprite, gl_PointCoord );',
-        '	gl_FragColor = vec4( tex );',
+        '   vec4 velocity = texture2D( tVelocitiesMap, gl_PointCoord );',
+        '   vec4 position = texture2D( tPositionsMap, gl_PointCoord );',
+        '	gl_FragColor = vec4( position );',
         '}'
 
     ].join( '\n' )

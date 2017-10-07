@@ -28,7 +28,8 @@
 import AbstractTool from './abstract-tool';
 import { AssetManager } from '../../utils/asset-manager';
 import ParticleShader from '../../shader/particle/particle-shader';
-import ParticleUpdate from '../../shader/particle/particle-update';
+import ParticleUpdate from '../../shader/particle/position-update';
+import VelocityUpdate from '../../shader/particle/velocity-update';
 import MainView from '../../view/main-view';
 
 class PrimitivesRenderer {
@@ -38,47 +39,79 @@ class PrimitivesRenderer {
         this._renderer = MainView._renderer;
 
         // rendering to scene does the same as rendering to texture in Three.js
-        this._targetScene = new THREE.Scene();
-        this._velocitiesTexture = AssetManager.assets.texture.particle_velocity;
-        this._initialTexture = AssetManager.assets.texture.particle_position;
+        this._inputPositionsTexture = AssetManager.assets.texture.particle_position_in;
+        this._inputVelocitiesTexture = AssetManager.assets.texture.particle_velocity_in;
+
+        this.initPositionRenderPass();
+    }
+
+    initPositionRenderPass() {
         let renderTargetParams = {
             minFilter:THREE.LinearFilter,
             stencilBuffer:false,
             depthBuffer:false
         };
+        this._positionsTargetScene = new THREE.Scene();
+        this._velocitiesTargetScene = new THREE.Scene();
 
-        // create buffers
-        this._inputBufferTexture = this._initialTexture;
-        let imageWidth = this._inputBufferTexture.image.width;
-        let imageHeight = this._inputBufferTexture.image.height;
+        let imageWidth = this._inputPositionsTexture.image.width;
+        let imageHeight = this._inputPositionsTexture.image.height;
 
-        this._outputTarget = new THREE.WebGLRenderTarget( imageWidth, imageHeight, renderTargetParams );
+        this._positionsOutputTarget = new THREE.WebGLRenderTarget( imageWidth, imageHeight, renderTargetParams );
+        this._velocitiesOutputTarget = new THREE.WebGLRenderTarget( imageWidth, imageHeight, renderTargetParams );
 
         // custom RTT materials
-        this._targetTextureMat = new THREE.ShaderMaterial( {
+        this._positionsTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
-                tVelocitiesMap : { type: 't', value: this._velocitiesTexture },
-                tPositionsMap : { type: 't', value: this._inputBufferTexture }
+                tVelocitiesMap : { type: 't', value: this._inputVelocitiesTexture },
+                tPositionsMap : { type: 't', value: this._inputPositionsTexture },
+                dt : { type: 'f', value: 0 }
             },
             vertexShader: ParticleUpdate.vertex,
             fragmentShader: ParticleUpdate.fragment
         } );
+        this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
+            uniforms: {
+                tVelocitiesMap : { type: 't', value: this._inputVelocitiesTexture },
+                dt : { type: 'f', value: 0 }
+            },
+            vertexShader: VelocityUpdate.vertex,
+            fragmentShader: VelocityUpdate.fragment
+        } );
 
-        // Setup render-to-texture scene
-        this._camera = new THREE.OrthographicCamera( imageWidth / - 2,
+        this._positionsCamera = new THREE.OrthographicCamera( imageWidth / - 2,
             imageWidth / 2,
             imageHeight / 2,
             imageHeight / - 2, -10000, 10000 );
-        this._targetTextureGeo = new THREE.PlaneGeometry( imageWidth, imageHeight );
-        this._targetTextureMesh = new THREE.Mesh( this._targetTextureGeo, this._targetTextureMat );
-        this._targetTextureMesh.position.z = -100;
-        this._targetScene.add( this._targetTextureMesh );
+        this._velocitiesCamera = new THREE.OrthographicCamera( imageWidth / - 2,
+            imageWidth / 2,
+            imageHeight / 2,
+            imageHeight / - 2, -10000, 10000 );
+
+        // Setup render-to-texture scene
+        this._positionsTargetTextureGeo = new THREE.PlaneGeometry( imageWidth, imageHeight );
+        this._positionsTargetTextureMesh = new THREE.Mesh( this._positionsTargetTextureGeo,
+            this._positionsTargetTextureMat );
+        this._positionsTargetTextureMesh.position.z = -100;
+        this._positionsTargetScene.add( this._positionsTargetTextureMesh );
+
+        this._velocitiesTargetTextureGeo = new THREE.PlaneGeometry( imageWidth, imageHeight );
+        this._velocitiesTargetTextureMesh = new THREE.Mesh( this._velocitiesTargetTextureGeo,
+            this._velocitiesTargetTextureMat );
+        this._velocitiesTargetTextureMesh.position.z = -100;
+        this._velocitiesTargetScene.add( this._velocitiesTargetTextureMesh );
     }
 
-    update() {
-        this._renderer.render( this._targetScene, this._camera, this._outputTarget, true );
-        this._inputBufferTexture = this._outputTarget.texture;
-        return this._outputTarget.texture;
+    update( dt ) {
+        this._velocitiesTargetTextureMesh.material.uniforms.dt.value = dt;
+        this._renderer.render( this._velocitiesTargetScene, this._velocitiesCamera, this._velocitiesOutputTarget, true );
+        this._inputVelocitiesTexture = this._velocitiesOutputTarget.texture;
+
+        this._positionsTargetTextureMesh.material.uniforms.dt.value = dt;
+        this._renderer.render( this._positionsTargetScene, this._positionsCamera, this._positionsOutputTarget, true );
+        this._inputPositionsTexture = this._positionsOutputTarget.texture;
+
+        return this._positionsOutputTarget.texture;
     }
 }
 
@@ -94,8 +127,10 @@ class ParticleContainer extends THREE.Object3D {
         this._clock.start();
 
         // initialize position and velocity updater
+        /*
         this._primitivesRenderer = new PrimitivesRenderer();
         this._updatedPositions = this._primitivesRenderer.update();
+        */
 
         // geometry
         this.particleShaderGeo = new THREE.BufferGeometry();
@@ -172,8 +207,8 @@ class ParticleContainer extends THREE.Object3D {
     }
 
     update() {
-        this._updatedPositions = this._primitivesRenderer.update();
         let elapsedTime = this._clock.getElapsedTime();
+        // this._updatedPositions = this._primitivesRenderer.update( elapsedTime );
         this._clock.start();
         let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
         sizeAttribute.needsUpdate = true;
