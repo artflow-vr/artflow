@@ -208,9 +208,6 @@ class ParticleEmitter extends THREE.Object3D {
             MainView.addToMovingGroup( this._primitivesRenderer._debugPlaneMesh );
         this._updatedPositions = this._primitivesRenderer.update( 0 );
 
-        // initialize position and velocity updater
-        this._primitivesRenderer = new PrimitivesRenderer();
-
         // geometry
         this.particleShaderGeo = new THREE.BufferGeometry();
 
