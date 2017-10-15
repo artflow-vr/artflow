@@ -10,6 +10,10 @@ function AbstractBrushStroke( ) {
 
 }
 
+AbstractBrushStroke.prototype.update = function ( data ) {
+
+};
+
 AbstractBrushStroke.prototype.use = function ( data ) {
 
   this._helper.addPoint( data.position.world, data.orientation, data.pressure );

@@ -37,7 +37,14 @@ export default class BrushTool extends AbstractTool {
 
         super( options );
 
+<<<<<<< HEAD
         this.registeredBrushes = null;
+=======
+    this.registeredStrokes = {
+        with_tex : new StrokeWithTex(),
+        without_tex : new StrokeWithoutTex()
+    };
+>>>>>>> Add: setCurrentStroke +
 
         this.setOptionsIfUndef( BrushTool.registeredBrushes[ 0 ] );
 
