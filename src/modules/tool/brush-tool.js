@@ -91,19 +91,4 @@ export default class BrushTool extends AbstractTool {
 
 }
 
-BrushTool.registeredBrushes = [ {
-        maxSpread: 20,
-        brushThickness: 0.1,
-        enablePressure: false,
-        color: 0x808080,
-        materialId: 'material_with_tex'
-    },
-    {
-        maxSpread: 20,
-        brushThickness: 0.5,
-        texture: null,
-        enablePressure: true,
-        color: 0x808080,
-        materialId: 'material_without_tex'
-    }
-];
+module.exports = BrushTool;
