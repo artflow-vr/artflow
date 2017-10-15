@@ -17,8 +17,8 @@ function BrushTool( ) {
     } );
 
     this.registeredStrokes = {
-        'with_tex' : new StrokeWithTex() ,
-        'without_tex' : new StrokeWithoutTex()
+        with_tex : new StrokeWithTex(),
+        without_tex : new StrokeWithoutTex()
     };
 
     this.currentStroke = 'with_tex';
@@ -29,12 +29,14 @@ BrushTool.prototype.constructor = BrushTool;
 
 BrushTool.prototype.setCurrentStroke = function ( id ) {
 
+    this.currentStroke = id;
+
 };
 
 BrushTool.prototype.update = function () {
 
     for ( let s in this.registeredStrokes )
-        this.registeredStrokes[ s ].update();
+        this.registeredStrokes[ s ].update( {} );
 
 };
 
