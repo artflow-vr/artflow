@@ -42,7 +42,9 @@ class Manager {
         this._cubemapPath = this._texturePath + 'cubemap/';
 
         this.assets = {
-            texture: {},
+            texture: {
+                ui: { }
+            },
             cubemap: {},
             model: {}
         };
@@ -166,6 +168,32 @@ class Manager {
         promises.push(
             this.load( 'water_normal', '.png', TEXTURE, this._texturePath )
         );
+
+        /*
+            Loads UI assets
+        */
+        promises.push(
+            this.load( 'ui/background', '.png', TEXTURE, this._texturePath,
+                'ui-background' )
+        );
+        promises.push(
+            this.load( 'ui/button-background', '.png', TEXTURE, this._texturePath,
+                'ui-button-back' )
+        );
+        promises.push(
+            this.load( 'ui/arrow-icon', '.png', TEXTURE, this._texturePath,
+                'ui-arrow-left' )
+        );
+
+        /*
+            Loads UI tool textures
+        */
+        for ( let elt of ['brush', 'particles', 'water', 'tree'] ) {
+            promises.push(
+                this.load( 'ui/tools/' + elt + '-icon', '.png',
+                    TEXTURE, this._texturePath, 'ui-tool-' + elt )
+            );
+        }
 
         return Promise.all( promises );
 

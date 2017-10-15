@@ -116,12 +116,10 @@ export default class BrushHelper {
         this._lastSizePoint = this._sizePoint;
         this._sizePoint = new THREE.Vector2( point[ 0 ], point[ 1 ] );
 
-        let dist = 0.0;
+        /*let dist = 0.0;
         if ( this._lastSizePoint )
-            this._lastSizePoint.distanceTo( this._sizePoint );
+            this._lastSizePoint.distanceTo( this._sizePoint );*/
 
-        console.log( 'dist' );
-        console.log( dist );
     }
 
     addPoint ( pointCoords, orientation, pressureValue ) {

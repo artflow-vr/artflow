@@ -56,7 +56,6 @@ export default class ViveController extends THREE.Object3D {
             menu: {
                 pressed: false,
                 triggerEvent() {
-
                     self._triggerBoolButton(
                         'menu',
                         self._gamepad.buttons[ 3 ].pressed

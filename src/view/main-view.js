@@ -40,6 +40,8 @@ class Main {
         // the world according to camera teleportation.
         this._group = new THREE.Group();
 
+        this.controllers = null;
+
         this._rootScene = new THREE.Scene();
         this._rootScene.add( this._group );
 
@@ -157,9 +159,9 @@ class Main {
         xAxisCube.translateX( 2 );
         zAxisCube.translateZ( 2 );
 
-        this._group.add( centerCube );
+        /*this._group.add( centerCube );
         this._group.add( xAxisCube );
-        this._group.add( zAxisCube );
+        this._group.add( zAxisCube );*/
 
     }
 

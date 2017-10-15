@@ -35,6 +35,11 @@ class EventDispatcher {
 
     register( eventID, callback ) {
 
+        if ( !callback ) {
+            let warnMsg = 'trying to register `' + eventID + '\' with undefined callback';
+            console.warn( 'EventDispatcher.register(): ' + warnMsg );
+            return;
+        }
         if ( this._events[ eventID ] === undefined ||
             this._events[ eventID ] === null ) {
             this._events[ eventID ] = [];
@@ -46,9 +51,12 @@ class EventDispatcher {
 
     registerFamily( eventID, callbacks ) {
 
-        this.register( eventID, callbacks.use );
-        this.register( eventID + 'Up', callbacks.release );
-        this.register( eventID + 'Down', callbacks.trigger );
+        if ( callbacks.use )
+            this.register( eventID, callbacks.use );
+        if ( callbacks.release )
+            this.register( eventID + 'Up', callbacks.release );
+        if ( callbacks.trigger )
+            this.register( eventID + 'Down', callbacks.trigger );
 
     }
 
