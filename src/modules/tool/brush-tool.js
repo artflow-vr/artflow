@@ -37,15 +37,9 @@ export default class BrushTool extends AbstractTool {
 
         this.registeredBrushes = null;
 
-        this.setOptionsIfUndef( options, {
-            maxSpread: 20,
-            brushThickness: 0.1,
-            enablePressure: true,
-            color: 0x808080,
-            materialId: 'material_without_tex'
-        } );
+        this.setOptionsIfUndef( BrushTool.registeredBrushes[ 0 ] );
 
-        this._helper = new BrushHelper( options );
+        this._helper = new BrushHelper( this.options );
 
         let self = this;
         this.registerEvent( 'interact', {
@@ -90,7 +84,7 @@ export default class BrushTool extends AbstractTool {
 
 BrushTool.registeredBrushes = [ {
         maxSpread: 20,
-        brushThickness: 0.5,
+        brushThickness: 0.1,
         enablePressure: false,
         color: 0x808080,
         materialId: 'material_with_tex'

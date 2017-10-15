@@ -27,8 +27,11 @@
 
 import * as Tool from './tool/tool';
 import * as Utils from '../utils/utils';
-import MainView from '../view/main-view';
 
+import MainView from '../view/main-view';
+import UI from '../view/ui';
+
+let AssetManager = Utils.AssetManager;
 let EventDispatcher = Utils.EventDispatcher;
 
 class ToolModule {
@@ -65,12 +68,22 @@ class ToolModule {
 
         this._tools[ toolID ] = tool;
 
+        // Adds the tool to the UI if a texture was provided.
+        if ( tool.uiTexture ) {
+            UI.addTool( toolID, tool.uiTexture,
+                AssetManager.assets.texture[ 'ui-button-back' ],
+                this._onUISelection
+            );
+        }
+
     }
 
     init() {
 
         this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();
+
+        UI._homeUIs[ 0 ].refresh();
 
         // TODO: We have to instanciate the tools according to what the user
         // selected. We should keep track of instanciated tool, to avoid
@@ -137,6 +150,10 @@ class ToolModule {
 
     }
 
+    _onUISelection( toolID, evt ) {
+        console.log( toolID );
+    }
+
     _getEventFamily( eventID ) {
 
         return {
@@ -149,7 +166,6 @@ class ToolModule {
             },
             trigger: ( data ) => {
 
-                console.log( data );
                 let cmd = this._selected[ data.controllerID ].triggerEvent(
                     eventID, 'trigger', data
                 );
@@ -184,7 +200,7 @@ class ToolModule {
             throw Error( 'ToolModule._instanciate(): ' + errorMsg );
         }
 
-        let instance = new this._tools[ toolID ]( options );
+        let instance = new this._tools[ toolID ].Tool( options );
         this._instance[ instanceID ] = instance;
 
         // Adds tool's view groups to the root scene and the moving group.
@@ -195,13 +211,23 @@ class ToolModule {
 
     _registerBasicTools() {
 
-        this.register( 'Brush', Tool.BrushTool );
-        this.register( 'Particle', Tool.ParticleTool );
-        this.register( 'Teleporter', Tool.TeleporterTool );
-        this.register( 'Water', Tool.WaterTool );
+        this.register( 'Teleporter', {
+            Tool: Tool.TeleporterTool
+        } );
+        this.register( 'Brush', {
+            uiTexture: AssetManager.assets.texture[ 'ui-tool-brush' ],
+            Tool: Tool.BrushTool
+        } );
+        this.register( 'Particle', {
+            uiTexture: AssetManager.assets.texture[ 'ui-tool-particles' ],
+            Tool: Tool.ParticleTool
+        } );
+        this.register( 'Water', {
+            uiTexture: AssetManager.assets.texture[ 'ui-tool-water' ],
+            Tool: Tool.WaterTool
+        } );
 
         this._instanciate( 'brush0', 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
-
         this._instanciate( 'particle0', 'Particle' );
         this._instanciate( 'teleporter', 'Teleporter' );
         this._instanciate( 'water', 'Water' );

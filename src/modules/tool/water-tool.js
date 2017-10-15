@@ -93,9 +93,12 @@ export default class WaterTool extends AbstractTool {
         plane3.translateX( 2.0 );
         plane3.material.uniforms.uCubemap.value = cubemap;
 
-        this.localGroup.addTHREEObject( plane );
+        /*this.localGroup.addTHREEObject( plane );
         this.localGroup.addTHREEObject( plane2 );
-        this.localGroup.addTHREEObject( plane3 );
+        this.localGroup.addTHREEObject( plane3 );*/
+        this.worldGroup.addTHREEObject( plane );
+        this.worldGroup.addTHREEObject( plane2 );
+        this.worldGroup.addTHREEObject( plane3 );
 
     }
 

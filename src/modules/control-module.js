@@ -27,6 +27,7 @@
 
 import * as Utils from '../utils/utils';
 import * as Controller from '../controller/controller';
+import UI from '../view/ui';
 import MainView from '../view/main-view';
 
 let EventDispatcher = Utils.EventDispatcher;
@@ -87,7 +88,8 @@ class Control {
             trigger: 'interact',
             triggerdown: 'interactDown',
             triggerup: 'interactUp',
-            axisChanged: 'axisChanged'
+            axisChanged: 'axisChanged',
+            menu: 'menu'
         };
 
     }
@@ -107,6 +109,31 @@ class Control {
             MainView.getCamera().position.y = 1.5;
             MainView.backgroundView.toggleVisibility( true );
         }
+
+        // Creates the UI and add initial offsets.
+        // The UI will grow when new item will be registered.
+        UI.addInputControllers( this._controllers );
+        UI.createToolsUI( {
+            background: AssetManager.assets.texture[ 'ui-background' ],
+            arrowLeft: AssetManager.assets.texture[ 'ui-arrow-left' ],
+            buttonBackground: AssetManager.assets.texture[ 'ui-button-back' ]
+        } );
+
+        // Registers event for menu openning
+        EventDispatcher.registerFamily(
+            'menu', {
+                trigger: function( data ) {
+                   UI.triggerShow( data.controllerID );
+                   console.log( 'DKAKDKADLDAKADK' );
+                },
+                release: function( data ) {
+                    UI.triggerShow( data.controllerID );
+                }
+            }
+        );
+
+        // UI._homeUIs[ 0 ].root.group.rotation.x = Math.PI * 0.5;
+        // MainView.controllers[ 0 ].add( UI._homeUIs[ 0 ].root.group );
 
     }
 
@@ -180,6 +207,8 @@ class Control {
         this._controllers[ 0 ].add( controllerMesh.clone() );
         this._controllers[ 1 ].add( controllerMesh.clone() );
 
+        MainView.controllers = this._controllers;
+
         MainView.addToScene( this._controllers[ 0 ] );
         MainView.addToScene( this._controllers[ 1 ] );
 
@@ -219,6 +248,8 @@ class Control {
         registerEventForController( 1, 'triggerdown' );
         registerEventForController( 0, 'axisChanged' );
         registerEventForController( 1, 'axisChanged' );
+        registerEventForController( 0, 'menu' );
+        registerEventForController( 1, 'menu' );
 
     }
 

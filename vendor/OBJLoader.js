@@ -2,7 +2,6 @@
  * @author mrdoob / http://mrdoob.com/
  */
 
-console.log( 'called OBJ' );
 THREE.OBJLoader = ( function () {
 
 	// v float float float
