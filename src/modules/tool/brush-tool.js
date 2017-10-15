@@ -33,8 +33,9 @@ BrushTool.prototype.setCurrentStroke = function ( id ) {
 
 BrushTool.prototype.update = function () {
 
-   //    for ( s in this.registeredStrokes )
-                
+    for ( let s in this.registeredStrokes )
+        this.registeredStrokes[ s ].update();
+
 };
 
 BrushTool.prototype.use = function ( data ) {
