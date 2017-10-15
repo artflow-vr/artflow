@@ -29,10 +29,12 @@ import InfoTable from './info-table';
 import EventDispatcher from './event-dispatcher';
 import { AssetManager } from './asset-manager';
 import ObjectPool from './object-pool';
+import LSystem from './l-system';
 
 export {
     ObjectPool,
     InfoTable,
     EventDispatcher,
-    AssetManager
+    AssetManager,
+    LSystem
 };
