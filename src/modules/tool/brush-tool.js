@@ -59,13 +59,27 @@ export default class BrushTool extends AbstractTool {
             }
         } );
 
-        this.registerEvent( 'colorChanged', ( hsv ) => {
-            this._helper.setColor( hsv );
-        } );
+        this.registeredStrokes = {
+            'with_tex': new StrokeWithTex(),
+            'without_tex': new StrokeWithoutTex()
+        };
 
-        this.mesh = null;
+        this.currentStroke = 'with_tex';
 
     }
+
+    setCurrentStroke( id ) {
+
+        this.currentStroke = id;
+
+    }
+
+    update() {
+
+        for ( let s in this.registeredStrokes )
+            this.registeredStrokes[ s ].update( {} );
+
+        }
 
     use( data ) {
 
