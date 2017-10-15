@@ -26,20 +26,18 @@
 */
 
 import AbstractTool from './abstract-tool';
-import AddCommand from './command/add-command';
-import BrushHelper from './helper/brush-helper';
+import StrokeWithTex from './brush-strokes/stroke-with-tex';
+import StrokeWithoutTex from './brush-strokes/stroke-without-tex';
 
 export default class BrushTool extends AbstractTool {
 
-    constructor( options ) {
+    constructor() {
 
-        super( options );
+        super();
 
-        this.registeredBrushes = null;
+        //AbstractTool.call( this, null );
 
-        this.setOptionsIfUndef( BrushTool.registeredBrushes[ 0 ] );
-
-        this._helper = new BrushHelper( this.options );
+        this.registeredStrokes = null;
 
         let self = this;
         this.registerEvent( 'interact', {
@@ -51,26 +49,34 @@ export default class BrushTool extends AbstractTool {
             use: self.useAxisChanged.bind( self )
         } );
 
-        this.helper = null;
+        this.registeredStrokes = {
+            'with_tex': new StrokeWithTex(),
+            'without_tex': new StrokeWithoutTex()
+        };
 
-        this.mesh = null;
+        this.currentStroke = 'with_tex';
+
+    }
+
+    setCurrentStroke( id ) {
+
+    }
+
+    update() {
+
+        //    for ( s in this.registeredStrokes )
 
     }
 
     use( data ) {
 
-        this._helper.addPoint(
-            data.position.world, data.orientation, data.pressure
-        );
+        this.registeredStrokes[ this.currentStroke ].use( data );
 
     }
 
     trigger() {
 
-        this.mesh = this._helper.createMesh();
-        this.worldGroup.addTHREEObject( this.mesh );
-
-        return new AddCommand( this.worldGroup, this.mesh );
+        this.registeredStrokes[ this.currentStroke ].trigger( this );
 
     }
 
@@ -79,22 +85,4 @@ export default class BrushTool extends AbstractTool {
         this._helper.setLastSizePoint( data );
 
     }
-
 }
-
-BrushTool.registeredBrushes = [ {
-        maxSpread: 20,
-        brushThickness: 0.1,
-        enablePressure: false,
-        color: 0x808080,
-        materialId: 'material_with_tex'
-    },
-    {
-        maxSpread: 20,
-        brushThickness: 0.5,
-        texture: null,
-        enablePressure: true,
-        color: 0x808080,
-        materialId: 'material_without_tex'
-    }
-];

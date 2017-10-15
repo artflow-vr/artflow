@@ -230,7 +230,7 @@ class ToolModule {
             Tool: Tool.WaterTool
         } );
 
-        this._instanciate( 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
+        this._instanciate( 'Brush' );
         this._instanciate( 'Particle' );
         this._instanciate( 'Water' );
 
