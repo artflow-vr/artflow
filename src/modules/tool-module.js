@@ -178,10 +178,7 @@ ToolModule._registerBasicTools = function () {
     this.register( 'Teleporter', Tool.TeleporterTool );
     this.register( 'Water', Tool.WaterTool );
 
-    this._instanciate( 'brush0', 'Brush', {
-        materialId: 'material_with_tex'
-    } );
-
+    this._instanciate( 'brush0', 'Brush' );
 
     this._instanciate( 'particle0', 'Particle' );
     this._instanciate( 'teleporter', 'Teleporter' );
