@@ -60,12 +60,14 @@ export default class BrushTool extends AbstractTool {
 
     setCurrentStroke( id ) {
 
+        this.currentStroke = id;
+
     }
 
     update() {
 
     for ( let s in this.registeredStrokes )
-        this.registeredStrokes[ s ].update();
+        this.registeredStrokes[ s ].update( {} );
 
     }
 
