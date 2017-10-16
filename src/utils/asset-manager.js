@@ -147,6 +147,12 @@ class Manager {
             this.load( 'vive-controller', '.obj', MODEL, this._modelPath )
         );
         promises.push(
+            this.load( 'controller-diffuse', '.png', TEXTURE, this._texturePath )
+        );
+        promises.push(
+            this.load( 'controller-specular', '.png', TEXTURE, this._texturePath )
+        );
+        promises.push(
             this.load( 'nightsky', '.png',
                 CUBEMAP, this._cubemapPath, 'cubemap' )
         );

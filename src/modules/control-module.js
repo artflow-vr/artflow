@@ -124,10 +124,6 @@ class Control {
             'menu', {
                 trigger: function( data ) {
                    UI.triggerShow( data.controllerID );
-                   console.log( 'DKAKDKADLDAKADK' );
-                },
-                release: function( data ) {
-                    UI.triggerShow( data.controllerID );
                 }
             }
         );
@@ -196,6 +192,15 @@ class Control {
 
         let renderer = MainView.getRenderer();
         let controllerMesh = AssetManager.assets.model[ 'vive-controller' ];
+        controllerMesh.traverse( function ( child ) {
+
+            if ( child instanceof THREE.Mesh ) {
+                child.material.map = AssetManager.assets.texture[ 'controller-diffuse' ];
+                child.material.specularMap = AssetManager.assets.texture[ 'controller-specular' ];
+                child.material.needsUpdate = true;
+            }
+
+        } );
 
         this._controllers = new Array( 2 );
         this._controllers[ 0 ] = new ViveController( 0 );

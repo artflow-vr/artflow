@@ -1,5 +1,13 @@
 import { VRUI } from '../../vendor/vr-ui.min';
 
+let setPointerVisibility = ( element, visibility ) => {
+    let child = null;
+    for ( let i = 0; i < element.children.length; ++i ) {
+        child = element.children[ i ];
+        if ( child.name === 'pointer' ) child.visible = visibility;
+    }
+};
+
 class UI {
 
     constructor() {
@@ -8,7 +16,7 @@ class UI {
         this._textures = null;
         this._homeUIs = [];
 
-        this._show = true;
+        this._show = false;
         this._pagesGroup = new THREE.Group();
         this._pagesGroup.name = 'ui';
 
@@ -90,46 +98,73 @@ class UI {
     triggerShow( controllerID ) {
 
         this._show = !this._show;
-        if ( this._show ) {
-            if ( this._prevController ) {
-                let controller = this._controllers[ this._prevController ];
-                // Removes the UI from the previous controller
-                for ( let i = controller.children.length - 1; i >= 0; i-- ) {
-                    if ( controller.children[ i ].name === 'ui' ) {
-                        controller.remove( controller.children[ i ] );
-                        console.log( 'édlaldald' );
-                        break;
-                    }
-                }
-            }
-            // Adds the UI to the next controller
-            this._prevController = controllerID;
-            this._controllers[ controllerID ].add( this._pagesGroup );
-            this._homeUIs[ this._currPage ].enabled = true;
-            this._homeUIs[ this._currPage ].addInput( this._controllers[ controllerID ] );
+        console.log( this._show );
+        if ( !this._show ) {
             this._pagesGroup.traverse ( function ( child ) {
-                if ( child instanceof THREE.Mesh ) child.visible = true;
+                if ( child instanceof THREE.Mesh ) child.visible = false;
             } );
+            this._homeUIs[ this._currPage ].enabled = false;
+            setPointerVisibility( this._controllers[ 0 ], false );
+            setPointerVisibility( this._controllers[ 1 ], false );
             return;
         }
 
+        // Re-displays the UI, and reactivate the input with the opposite
+        // controller.
+        let nextController = ( controllerID + 1 ) % 2;
         this._pagesGroup.traverse ( function ( child ) {
-            if ( child instanceof THREE.Mesh ) child.visible = false;
+            if ( child instanceof THREE.Mesh ) child.visible = true;
         } );
-        this._homeUIs[ this._currPage ].enabled = false;
+        this._homeUIs[ this._currPage ].enabled = true;
+        this._homeUIs[ this._currPage ].addInput( this._controllers[ nextController ] );
+        setPointerVisibility( this._controllers[ nextController ], true );
+
+        if ( controllerID === this._prevController ) return;
+
+        this._controllers[ controllerID ].add( this._pagesGroup );
+
+        if ( !this._prevController ) {
+            this._prevController = controllerID;
+            return;
+        }
+
+        let prevController = this._controllers[ this._prevController ];
+        // Removes the UI from the previous controller
+        for ( let i = prevController.children.length - 1; i >= 0; i-- ) {
+            if ( prevController.children[ i ].name === 'ui' ) {
+                prevController.remove( prevController.children[ i ] );
+                break;
+            }
+        }
+        this._prevController = controllerID;
+
     }
 
     addInputControllers( controllers ) {
 
         this._controllers = controllers;
 
+        // The code below adds a laser pointer to each controller, and hides
+        // it by default. This pointer will be used to select element in the
+        // GUI, by pointing at it with the opposite controller.
         let geometry = new THREE.Geometry();
         geometry.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
         geometry.vertices.push( new THREE.Vector3( 0, 0, - 1 ) );
 
-        let line = new THREE.Line( geometry );
-        line.name = 'line';
+        let lineMat = new THREE.LineBasicMaterial( {
+            color: 0xE67E22,
+            opacity: 1,
+            linewidth: 3
+        } );
+
+        let line = new THREE.Line( geometry, lineMat );
+        line.name = 'pointer';
         line.scale.z = 5;
+
+        this._controllers[ 0 ].add( line );
+        setPointerVisibility( this._controllers[ 0 ], false );
+        this._controllers[ 1 ].add( line.clone() );
+        setPointerVisibility( this._controllers[ 1 ], false );
 
     }
 
