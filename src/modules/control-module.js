@@ -168,6 +168,9 @@ class Control {
         position1.world.x -= MainView.getGroup().position.x;
         position1.world.z -= MainView.getGroup().position.z;
 
+        // Updates the UI inputs
+        UI.update();
+
     }
 
     _updateNOVR( data ) {

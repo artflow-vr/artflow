@@ -17,6 +17,8 @@ export default class ViveController extends THREE.Object3D {
         this.matrixAutoUpdate = false;
 
         let self = this;
+        this.userData.vrui = {};
+        this.userData.vrui.pressed = false;
 
         this.buttons = {
             thumbpad: {
@@ -47,6 +49,7 @@ export default class ViveController extends THREE.Object3D {
                 value: 0.0,
                 triggerEvent() {
 
+                    self.userData.vrui.pressed = self._gamepad.buttons[ 1 ].value;
                     self._triggerValueButton(
                         'trigger', self._gamepad.buttons[ 1 ].value
                     );
