@@ -68,7 +68,7 @@ class Main {
                     this._renderer.vr.standing = true;
                     this._renderer.vr.setDevice( display );
 
-                    ControlModule.vr = true;
+                    ModuleManager.vr = true;
                     this._initData( w, h );
 
                 } );
@@ -127,7 +127,7 @@ class Main {
 
     _initData( w, h ) {
 
-        MainView.init( w, h, this._renderer, ControlModule.vr );
+        MainView.init( w, h, this._renderer, ModuleManager.vr );
         ModuleManager.init();
 
         this.resize( w, h );

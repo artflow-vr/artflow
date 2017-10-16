@@ -207,6 +207,10 @@ class Manager {
                 'ui-button-back' )
         );
         promises.push(
+            this.load( 'ui/button-hover', '.png', TEXTURE, this._texturePath,
+                'ui-button-hover' )
+        );
+        promises.push(
             this.load( 'ui/arrow-icon', '.png', TEXTURE, this._texturePath,
                 'ui-arrow-left' )
         );

@@ -30,6 +30,7 @@ class Manager {
     constructor() {
 
         this._modules = {};
+        this.vr = false;
 
     }
 
@@ -47,7 +48,7 @@ class Manager {
 
     init() {
 
-        this._exec( 'init' );
+        this._exec( 'init', this.vr );
 
     }
 

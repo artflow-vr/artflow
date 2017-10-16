@@ -59,6 +59,7 @@ class Main {
         this._renderer = renderer;
         this._camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 100 );
 
+        console.log( vr );
         this._createInitialScene( vr );
 
         // Adds default cubemap as background of the scene
