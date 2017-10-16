@@ -212,6 +212,7 @@ class ToolModule {
 
     }
 
+<<<<<<< HEAD
     _registerBasicTools() {
 
         this.register( 'Teleporter', {
@@ -235,6 +236,9 @@ class ToolModule {
         this._instanciate( 'Water' );
 
     }
+=======
+    this._instanciate( 'brush0', 'Brush' );
+>>>>>>> c6851d1ecbbcb190257d7492654659414e634e9d
 
 }
 
