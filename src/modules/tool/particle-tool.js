@@ -208,12 +208,25 @@ class ParticleEmitter extends THREE.Object3D {
             MainView.addToMovingGroup( this._primitivesRenderer._debugPlaneMesh );
         this._updatedPositions = this._primitivesRenderer.update( 0 );
 
+        this._primitivesRenderer._debugPlaneMesh.scale.x = 0.01;
+        this._primitivesRenderer._debugPlaneMesh.scale.y = 0.01;
+        this._primitivesRenderer._debugPlaneMesh.scale.z = 0.01;
+        this._primitivesRenderer._debugPlaneMesh.position.x = 1;
+        this._primitivesRenderer._debugPlaneMesh.position.y = 1;
+        this._primitivesRenderer._debugPlaneMesh.position.z = 0;
+        MainView.addToMovingGroup( this._primitivesRenderer._debugPlaneMesh );
+        this._updatedPositions = this._primitivesRenderer.update( 0 );
+
         // geometry
         this.particleShaderGeo = new THREE.BufferGeometry();
 
         // position
         this.particleShaderGeo.addAttribute( 'position',
             new THREE.BufferAttribute( new Float32Array( this._particleMaxCount * 3 ), 3 ).setDynamic( true ) );
+
+        // index in data textures
+        this.particleShaderGeo.addAttribute( 'idx',
+            new THREE.BufferAttribute( new Float32Array( this._particleMaxCount * 2 ), 2 ).setDynamic( true ) );
 
         // index in data textures
         this.particleShaderGeo.addAttribute( 'idx',
