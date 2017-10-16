@@ -122,6 +122,12 @@ export default class BrushHelper {
 
     }
 
+    setThickness( thickness ) {
+
+        this._thickness = thickness / 2.0;
+
+    }
+
     addPoint ( pointCoords, orientation, pressureValue ) {
 
         if ( this._lastPoint.distanceTo( pointCoords ) < this._delta )

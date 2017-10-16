@@ -29,6 +29,8 @@ import AbstractTool from './abstract-tool';
 import AddCommand from './command/add-command';
 import BrushHelper from './helper/brush-helper';
 
+const SIZE_FACTOR = 0.2;
+
 export default class BrushTool extends AbstractTool {
 
     constructor( options ) {
@@ -48,11 +50,14 @@ export default class BrushTool extends AbstractTool {
         } );
 
         this.registerEvent( 'axisChanged', {
-            use: self.useAxisChanged.bind( self )
+            use: self.useAxisChanged.bind( self ),
+            release: function() {
+                console.log( 'realease' );
+                self._previousY = 0.0;
+            }
         } );
 
         this.helper = null;
-
         this.mesh = null;
 
     }
@@ -76,7 +81,9 @@ export default class BrushTool extends AbstractTool {
 
     useAxisChanged( data ) {
 
-        this._helper.setLastSizePoint( data );
+        this.options.brushThickness =
+            data.controller.sizeMesh.scale.x * SIZE_FACTOR;
+        this._helper.setThickness( this.options.brushThickness );
 
     }
 
