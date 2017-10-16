@@ -49,7 +49,7 @@ export default class ViveController extends THREE.Object3D {
                 value: 0.0,
                 triggerEvent() {
 
-                    self.userData.vrui.pressed = self._gamepad.buttons[ 1 ].value;
+                    self.userData.vrui.pressed = self._gamepad.buttons[ 1 ].pressed;
                     self._triggerValueButton(
                         'trigger', self._gamepad.buttons[ 1 ].value
                     );

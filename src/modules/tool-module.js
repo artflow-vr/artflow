@@ -72,7 +72,7 @@ class ToolModule {
         if ( tool.uiTexture ) {
             UI.addTool( toolID, tool.uiTexture,
                 AssetManager.assets.texture[ 'ui-button-back' ],
-                this._onUISelection
+                this._onUISelection.bind( this )
             );
         }
 
@@ -83,15 +83,13 @@ class ToolModule {
         this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();
 
+        // TODO: This is gross and this is a bug of the UI.
+        // It should be OK to refresh each time an element is added but
+        // it does not seem to work.
         UI._homeUIs[ 0 ].refresh();
 
-        // TODO: We have to instanciate the tools according to what the user
-        // selected. We should keep track of instanciated tool, to avoid
-        // making useless instanciation.
-        this._instance.brush0.controllerID = 0;
-        this._selected[ 0 ] = this._instance.brush0;
-        //this._selected[ 0 ] = this._instance.particle0;
-        this._selected[ 1 ] = this._instance.brush0;
+        this._selected[ 0 ] = this._instance.Brush[ 0 ];
+        this._selected[ 1 ] = this._instance.Brush[ 1 ];
 
         // TODO: Add onEnterChild & onExitChild event trigger.
 
@@ -128,7 +126,7 @@ class ToolModule {
         // tools, it will allow them to be accessible every time.
         // TODO: Look at the parameter 'general' when registering a tool, in
         // order to avoid hardcode this registering.
-        this._generalTools.push( this._instance.teleporter );
+        this._generalTools.push( new Tool.TeleporterTool() );
         for ( let toolID in this._generalTools ) {
             let tool = this._generalTools[ toolID ];
             for ( let eventID in tool.listenTo ) {
@@ -150,8 +148,12 @@ class ToolModule {
 
     }
 
-    _onUISelection( toolID, evt ) {
-        console.log( toolID );
+    _onUISelection( toolID, controllerID, evt ) {
+
+        console.log( evt );
+        if ( evt.pressed )
+            this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
+
     }
 
     _getEventFamily( eventID ) {
@@ -188,24 +190,25 @@ class ToolModule {
 
     }
 
-    _instanciate( instanceID, toolID, options ) {
+    _instanciate( toolID, options ) {
 
         if ( !( toolID in this._tools ) ) {
             let errorMsg = 'Tool \'' + toolID + '\' is not registered yet.';
             throw Error( 'ToolModule._instanciate(): ' + errorMsg );
         }
 
-        if ( instanceID in this._instance ) {
-            let errorMsg = '\'' + instanceID + '\' already instanciated.';
-            throw Error( 'ToolModule._instanciate(): ' + errorMsg );
-        }
-
-        let instance = new this._tools[ toolID ].Tool( options );
-        this._instance[ instanceID ] = instance;
+        // The user can use two tool at the same time. We need two instances
+        // of each.
+        let instance = new Array( 2 );
+        instance[ 0 ] = new this._tools[ toolID ].Tool( options );
+        instance[ 1 ] = new this._tools[ toolID ].Tool( options );
+        this._instance[ toolID ] = instance;
 
         // Adds tool's view groups to the root scene and the moving group.
-        MainView.addToMovingGroup( instance.worldGroup.getObject() );
-        MainView.addToScene( instance.localGroup.getObject() );
+        MainView.addToMovingGroup( instance[ 0 ].worldGroup.getObject() );
+        MainView.addToMovingGroup( instance[ 1 ].worldGroup.getObject() );
+        MainView.addToScene( instance[ 0 ].localGroup.getObject() );
+        MainView.addToScene( instance[ 1 ].localGroup.getObject() );
 
     }
 
@@ -227,10 +230,9 @@ class ToolModule {
             Tool: Tool.WaterTool
         } );
 
-        this._instanciate( 'brush0', 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
-        this._instanciate( 'particle0', 'Particle' );
-        this._instanciate( 'teleporter', 'Teleporter' );
-        this._instanciate( 'water', 'Water' );
+        this._instanciate( 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
+        this._instanciate( 'Particle' );
+        this._instanciate( 'Water' );
 
     }
 

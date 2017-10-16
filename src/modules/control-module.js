@@ -39,7 +39,7 @@ let ViveController = Controller.ViveController;
 
 class Control {
 
-    constructor() {
+    constructor( ) {
 
         this.vr = false;
 
@@ -94,8 +94,9 @@ class Control {
 
     }
 
-    init() {
+    init( vr ) {
 
+        this.vr = vr;
         // If VR is activated, we will registers other events,
         // display meshes for controllers, etc...
         if ( this.vr ) {
@@ -112,12 +113,13 @@ class Control {
 
         // Creates the UI and add initial offsets.
         // The UI will grow when new item will be registered.
-        UI.addInputControllers( this._controllers );
-        UI.createToolsUI( {
+        let uiTextures = {
             background: AssetManager.assets.texture[ 'ui-background' ],
             arrowLeft: AssetManager.assets.texture[ 'ui-arrow-left' ],
-            buttonBackground: AssetManager.assets.texture[ 'ui-button-back' ]
-        } );
+            buttonBackground: AssetManager.assets.texture[ 'ui-button-back' ],
+            buttonHover: AssetManager.assets.texture[ 'ui-button-hover' ]
+        };
+        UI.init( uiTextures, this.vr ? this._controllers : null );
 
         // Registers event for menu openning
         EventDispatcher.registerFamily(

@@ -21,31 +21,66 @@ class UI {
         this._pagesGroup.name = 'ui';
 
         this._prevController = null;
-        this._controllers = new Array( 2 );
+        this._controllers = null;
+
+        this._hoverContainer = null;
+        this._hoverCursor = null;
+
+        this._vr = false;
+
     }
 
-    createToolsUI( textures ) {
+    init( textures, controllers ) {
 
-        for ( let elt of ['background', 'arrowLeft', 'buttonBackground'] ) {
+        let expectedTex = [
+            'background', 'arrowLeft', 'buttonBackground', 'buttonHover'
+        ];
+        for ( let elt of expectedTex ) {
             if ( !textures[ elt ] ) {
                 let warnMsg = 'no `' + elt + '\' texture provided.';
                 console.warn( 'UI.createToolsUI(): ' + warnMsg );
             }
         }
 
-        let homeUI = this._createHomeUI( textures.background );
-        homeUI.root.add(
-            this._createArrowLine( textures.arrowLeft, textures.buttonBackground )
-        );
-        homeUI.root.onHoverEnter( ( evt ) => {
-            console.log( 'CALDLAJDKALDDLALAD' );
-        } );
-        homeUI.root.group.position.z = -0.2;
-        homeUI.root.group.position.y = 0.5;
-
         this._textures = textures;
-        this._homeUIs.push( homeUI );
-        this._pagesGroup.add( homeUI.root.group );
+        this.triggerShow = this._triggerShowNOVR;
+
+        this._hoverCursor = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ),
+            new THREE.MeshBasicMaterial( {
+                color: 0xFFFFFF,
+                opacity: 1.0,
+                transparent: true,
+                map: textures.buttonHover,
+                visible: false
+            } )
+        );
+
+        this._vr = controllers !== undefined && controllers !== null;
+        if ( this._vr ) {
+            this._initControllers( controllers );
+            this.triggerShow = this._triggerShowVR;
+        }
+
+        // Creates the initial UI page.
+        this._createToolsUI();
+
+    }
+
+    update() {
+
+        let dist = this._homeUIs[ this._currPage ].update();
+
+        // Changes the size of pointers if an intersection occurs.
+        let line0 = this._controllers[ 0 ].children[ 1 ];
+        let line1 = this._controllers[ 1 ].children[ 1 ];
+        if ( !dist ) {
+            line0.scale.z = 5;
+            line1.scale.z = 5;
+            return;
+        }
+
+        line0.scale.z = dist;
+        line1.scale.z = dist;
 
     }
 
@@ -71,11 +106,13 @@ class UI {
             background: toolBackground
         } );
         button.userData.id = toolID;
-        button.onHoverEnter( ( evt ) => {
-            console.log( 'CALDLAJDKALDDLALAD' );
-        } );
-        button.onHoverExit( ( evt ) => {
-            console.log( 'EXIT' );
+        button.onHoverEnter( this._buttonHoverEnter.bind( this ) );
+        button.onHoverExit( this._buttonHoverExit.bind( this ) );
+        button.onChange( ( object, evt ) => {
+
+            let controllerID = ( this._prevController + 1 ) % 2;
+            callback( toolID, controllerID, evt );
+
         } );
 
         // Adds the button to the GUI GridLayout.
@@ -98,10 +135,31 @@ class UI {
 
     }
 
-    triggerShow( controllerID ) {
+    /*
+        The `_triggerShowNOVR()` and `_triggerShowVR()` method are bound
+        when calling the `init()` method.
+        It avoids checking each time the method is called, whether we are in
+        VR or not.
+    */
+
+    _triggerShowNOVR() {
 
         this._show = !this._show;
-        console.log( this._show );
+        if ( this._show ) {
+            this._pagesGroup.traverse ( function ( child ) {
+                if ( child instanceof THREE.Mesh ) child.visible = true;
+            } );
+            return;
+        }
+        this._pagesGroup.traverse ( function ( child ) {
+            if ( child instanceof THREE.Mesh ) child.visible = false;
+        } );
+
+    }
+
+    _triggerShowVR( controllerID ) {
+
+        this._show = !this._show;
         if ( !this._show ) {
             this._pagesGroup.traverse ( function ( child ) {
                 if ( child instanceof THREE.Mesh ) child.visible = false;
@@ -143,7 +201,7 @@ class UI {
 
     }
 
-    addInputControllers( controllers ) {
+    _initControllers( controllers ) {
 
         this._controllers = controllers;
 
@@ -171,29 +229,18 @@ class UI {
 
     }
 
-    update() {
-        this._homeUIs[ this._currPage ].update();
-    }
+    _createToolsUI() {
 
-    _updatePage( newValue ) {
+        let textures = this._textures;
+        let homeUI = this._createHomeUI( textures.background );
+        homeUI.root.add(
+            this._createArrowLine( textures.arrowLeft, textures.buttonBackground )
+        );
+        homeUI.root.group.position.z = -0.2;
+        homeUI.root.group.position.y = 0.5;
 
-        // Hides previous page
-        let group = this._homeUIs[ this._currPage ].root.group;
-        group.traverse ( function ( child ) {
-            if ( child instanceof THREE.Mesh ) {
-                child.visible = false;
-            }
-        } );
-
-        this._currPage = newValue;
-
-        // Shows next page
-        group = this._homeUIs[ this._currPage ].root.group;
-        group.traverse ( function ( child ) {
-            if ( child instanceof THREE.Mesh ) {
-                child.visible = true;
-            }
-        } );
+        this._homeUIs.push( homeUI );
+        this._pagesGroup.add( homeUI.root.group );
 
     }
 
@@ -217,8 +264,6 @@ class UI {
             margin: { left: 0.1 },
             padding: { top: 0.08, bottom: 0.08, left: 0.01, right: 0.01 },
             background: leftTexBackground
-        } ).onChange( () => {
-            this._updatePage( ( this._currPage + 1 ) % this._homeUIs.length );
         } );
 
         let rightArrow = new VRUI.view.ImageButton( rightTex, {
@@ -228,9 +273,6 @@ class UI {
             margin: { right: 0.1 },
             padding: { top: 0.08, bottom: 0.08, left: 0.01, right: 0.01 },
             background: leftTexBackground
-        } ).onChange( () => {
-            let val = this._currPage - 1;
-            this._updatePage( val < 0 ? this._homeUIs.length - 1 : val );
         } );
 
         layout.add( leftArrow, rightArrow );
@@ -267,6 +309,48 @@ class UI {
 
         layout.add( gridLayout );
         return new VRUI.VRUI( layout, guiWidth, guiHeight );
+
+    }
+
+    /*
+        The two methods below are the callbacks added to every buttons
+        in the UI. They allow to handle the transparent cursor moving on
+        focused elements.
+    */
+
+    _buttonHoverEnter ( object ) {
+
+        let width = object._background.scale.x;
+        let height = object._background.scale.y;
+
+        object.userData.prevScale = {
+            x: object.group.scale.x,
+            y: object.group.scale.y
+        };
+
+        object.group.scale.x *= 1.2;
+        object.group.scale.y *= 1.2;
+
+        this._hoverCursor.scale.x = width;
+        this._hoverCursor.scale.y = height;
+
+        let position = object.group.position;
+        this._hoverCursor.position.x = width / 2;
+        this._hoverCursor.position.y = - height * 0.5;
+        this._hoverCursor.position.z = position.z + 0.001;
+        this._hoverCursor.material.visible = true;
+
+        if ( this._hoverContainer ) this._hoverContainer.group.children.pop();
+        object.group.add( this._hoverCursor );
+        this._hoverContainer = object;
+
+    }
+
+    _buttonHoverExit( object ) {
+
+        this._hoverCursor.material.visible = false;
+        object.group.scale.x = object.userData.prevScale.x;
+        object.group.scale.y = object.userData.prevScale.y;
 
     }
 
