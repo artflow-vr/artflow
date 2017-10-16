@@ -37,6 +37,9 @@ class UI {
         homeUI.root.add(
             this._createArrowLine( textures.arrowLeft, textures.buttonBackground )
         );
+        homeUI.root.onHoverEnter( ( evt ) => {
+            console.log( 'CALDLAJDKALDDLALAD' );
+        } );
         homeUI.root.group.position.z = -0.2;
         homeUI.root.group.position.y = 0.5;
 
@@ -166,6 +169,10 @@ class UI {
         this._controllers[ 1 ].add( line.clone() );
         setPointerVisibility( this._controllers[ 1 ], false );
 
+    }
+
+    update() {
+        this._homeUIs[ this._currPage ].update();
     }
 
     _updatePage( newValue ) {
