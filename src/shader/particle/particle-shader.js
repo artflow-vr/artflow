@@ -28,9 +28,13 @@
 module.exports = {
     vertex: [
         'attribute float size;',
+        'attribute vec2 idx;',
+        'uniform sampler2D tPositions;',
 
         'void main() {',
         '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+        //'	gl_Position = projectionMatrix * modelViewMatrix * vec4( idx, idx);',
+        //'	gl_Position = projectionMatrix * modelViewMatrix * (texture2D( tPositions, idx)) / 100.0;',
         '	gl_PointSize = size;',
         '}'
 

@@ -37,15 +37,12 @@ module.exports = {
     ].join( '\n' ),
 
     fragment: [
-        'uniform sampler2D tVelocitiesMap;',
-        'uniform sampler2D tPositionsMap;',
-        'uniform float dt;',
+        'uniform sampler2D tSprite;',
         'varying vec2 a_uv;',
 
         'void main() {',
-        '   vec4 velocity = texture2D( tVelocitiesMap, a_uv );',
-        '   vec4 position = texture2D( tPositionsMap, a_uv );',
-        '	gl_FragColor = position + vec4(0.5, 0.5, 0.5, 0.0);',
+        '	vec4 tex = texture2D( tSprite, a_uv);',
+        '	gl_FragColor = vec4( tex );',
         '}'
 
     ].join( '\n' )

@@ -178,6 +178,14 @@ class Manager {
             this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
                 'particle_velocity_in' )
         );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_position_out' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_velocity_out' )
+        );
 
         return Promise.all( promises );
 

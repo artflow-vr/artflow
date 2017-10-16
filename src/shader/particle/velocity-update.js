@@ -27,19 +27,23 @@
 
 module.exports = {
     vertex: [
+        'varying vec2 a_uv;',
 
         'void main() {',
         '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+        '   a_uv = uv;',
         '}'
 
     ].join( '\n' ),
 
     fragment: [
         'uniform sampler2D tVelocitiesMap;',
+        'uniform sampler2D tPositionsMap;',
         'uniform float dt;',
+        'varying vec2 a_uv;',
 
         'void main() {',
-        '   vec4 velocity = texture2D( tVelocitiesMap, gl_PointCoord );',
+        '   vec4 velocity = texture2D( tVelocitiesMap, a_uv );',
         '	gl_FragColor = vec4( velocity );',
         '}'
 

@@ -28,6 +28,7 @@
 import * as Utils from '../utils/utils';
 import HTMLView from './html-view';
 import HTMLTextArea from './html-text-area';
+import '../../vendor/ImageUtils';
 
 let AssetManager = Utils.AssetManager;
 let MiscInfoTable = Utils.InfoTable.misc;
@@ -157,9 +158,11 @@ class Main {
         xAxisCube.translateX( 2 );
         zAxisCube.translateZ( 2 );
 
+        /*
         this._group.add( centerCube );
         this._group.add( xAxisCube );
         this._group.add( zAxisCube );
+        */
 
     }
 
