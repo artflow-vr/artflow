@@ -208,14 +208,11 @@ class Control {
         } );
 
         this._controllers = new Array( 2 );
-        this._controllers[ 0 ] = new ViveController( 0 );
+        this._controllers[ 0 ] = new ViveController( 0, controllerMesh.clone() );
         this._controllers[ 0 ].standingMatrix = renderer.vr.getStandingMatrix();
 
-        this._controllers[ 1 ] = new ViveController( 1 );
+        this._controllers[ 1 ] = new ViveController( 1, controllerMesh.clone() );
         this._controllers[ 1 ].standingMatrix = renderer.vr.getStandingMatrix();
-
-        this._controllers[ 0 ].add( controllerMesh.clone() );
-        this._controllers[ 1 ].add( controllerMesh.clone() );
 
         MainView.controllers = this._controllers;
 
@@ -238,17 +235,23 @@ class Control {
                 self._currentController = self._controllers[ cID ];
 
                 EventDispatcher.dispatch( eventID, {
+                    controller: self._currentController,
                     controllerID: cID,
                     position: self._controllerTransform[ cID ].position,
                     orientation: self._controllerTransform[ cID ].orientation,
-                    pressure: data.pressure
+                    pressure: data.pressure,
+                    axis: data.axes
                 } );
 
             } );
 
         };
 
-        registerEventForController( 0, 'thumbpad' );
+        for ( let elt in this._controllerToAction ) {
+            registerEventForController( 0, elt );
+            registerEventForController( 1, elt );
+        }
+        /*registerEventForController( 0, 'thumbpad' );
         registerEventForController( 1, 'thumbpad' );
         registerEventForController( 0, 'trigger' );
         registerEventForController( 1, 'trigger' );
@@ -259,7 +262,7 @@ class Control {
         registerEventForController( 0, 'axisChanged' );
         registerEventForController( 1, 'axisChanged' );
         registerEventForController( 0, 'menu' );
-        registerEventForController( 1, 'menu' );
+        registerEventForController( 1, 'menu' );*/
 
     }
 
