@@ -52,12 +52,14 @@ export default class BrushTool extends AbstractTool {
         this.registerEvent( 'axisChanged', {
             use: self.useAxisChanged.bind( self ),
             release: function() {
-                console.log( 'realease' );
                 self._previousY = 0.0;
             }
         } );
 
-        this.helper = null;
+        this.registerEvent( 'colorChanged', ( hsv ) => {
+            this._helper.setColor( hsv );
+        } );
+
         this.mesh = null;
 
     }
