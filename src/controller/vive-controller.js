@@ -4,17 +4,36 @@
  * Original file can be found at https://github.com/mrdoob/three.js/blob/dev/examples/js/vr/ViveController.js
  */
 
+import MathUtils from '../utils/math';
+
+const MIN_SIZE_SELECTION = 0.25;
+const MAX_SIZE_SELECTION = 1.5;
+const SIZE_SCALE_SPEED = 0.08;
+
 export default class ViveController extends THREE.Object3D {
 
-    constructor( id ) {
+    constructor( id, mesh ) {
 
         super();
+
+        this.add( mesh );
+        // Keeps references to part of meshes to change them according
+        // to the inputs.
+        this.sizeMesh = null;
+        for ( let i = 0; i < mesh.children.length; ++i ) {
+            if ( mesh.children[ i ].name === 'sizehint' ) {
+                this.sizeMesh = mesh.children[ i ];
+                break;
+            }
+        }
 
         this._gamepadID = id;
         this._gamepad = null;
 
         this.standingMatrix = new THREE.Matrix4();
         this.matrixAutoUpdate = false;
+
+        this._axesDiff = new Array( 2 );
 
         let self = this;
         this.userData.vrui = {};
@@ -25,17 +44,33 @@ export default class ViveController extends THREE.Object3D {
                 pressed: false,
                 axes: [ 0, 0 ],
                 triggerEvent() {
-
                     let axes = self._gamepad.axes;
                     let val = self.buttons.thumbpad.axes;
                     if ( val[ 0 ] !== axes[ 0 ] || val[ 1 ] !==
                         axes[ 1 ] ) {
+                        self._axesDiff[ 0 ] = axes[ 0 ] - val[ 0 ];
+                        self._axesDiff[ 1 ] = axes[ 1 ] - val[ 1 ];
                         self.dispatchEvent( {
                             type: 'axisChanged',
-                            axes: axes
+                            axes: self._axesDiff
                         } );
+
                         self.buttons.thumbpad.axes[ 0 ] = axes[ 0 ];
                         self.buttons.thumbpad.axes[ 1 ] = axes[ 1 ];
+
+                        // Scales the size mesh accordingly
+                        if ( Math.abs( self._axesDiff[ 1 ] ) < 0.5 ) {
+                            let sx = self.sizeMesh.scale.x + self._axesDiff[ 1 ] * SIZE_SCALE_SPEED;
+                            let sy = self.sizeMesh.scale.y + self._axesDiff[ 1 ] * SIZE_SCALE_SPEED;
+                            let sz = self.sizeMesh.scale.z + self._axesDiff[ 1 ] * SIZE_SCALE_SPEED;
+                            self.sizeMesh.scale.x =
+                                MathUtils.clamp( MIN_SIZE_SELECTION, MAX_SIZE_SELECTION, sx );
+                            self.sizeMesh.scale.y =
+                                MathUtils.clamp( MIN_SIZE_SELECTION, MAX_SIZE_SELECTION, sy );
+                            self.sizeMesh.scale.z =
+                                MathUtils.clamp( MIN_SIZE_SELECTION, MAX_SIZE_SELECTION, sz );
+                        }
+
                     }
                     self._triggerBoolButton(
                         'thumbpad',

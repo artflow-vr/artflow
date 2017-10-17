@@ -1,4 +1,6 @@
-import { VRUI } from '../../vendor/vr-ui.min';
+import VRUI from 'vr-ui';
+
+const INIT_POINTER_LEN = 3.5;
 
 let setPointerVisibility = ( element, visibility ) => {
     let child = null;
@@ -12,6 +14,7 @@ class UI {
 
     constructor() {
 
+        console.log( VRUI );
         this._currPage = 0;
         this._textures = null;
         this._homeUIs = [];
@@ -68,19 +71,19 @@ class UI {
 
     update() {
 
-        let dist = this._homeUIs[ this._currPage ].update();
+        let intersection = this._homeUIs[ this._currPage ].update();
 
         // Changes the size of pointers if an intersection occurs.
         let line0 = this._controllers[ 0 ].children[ 1 ];
         let line1 = this._controllers[ 1 ].children[ 1 ];
-        if ( !dist ) {
-            line0.scale.z = 5;
-            line1.scale.z = 5;
+        if ( !intersection ) {
+            line0.scale.z = INIT_POINTER_LEN;
+            line1.scale.z = INIT_POINTER_LEN;
             return;
         }
 
-        line0.scale.z = dist;
-        line1.scale.z = dist;
+        line0.scale.z = intersection.distance;
+        line1.scale.z = intersection.distance;
 
     }
 

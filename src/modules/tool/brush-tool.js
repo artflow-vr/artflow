@@ -29,6 +29,8 @@ import AbstractTool from './abstract-tool';
 import StrokeWithTex from './brush-strokes/stroke-with-tex';
 import StrokeWithoutTex from './brush-strokes/stroke-without-tex';
 
+const SIZE_FACTOR = 0.2;
+
 export default class BrushTool extends AbstractTool {
 
     constructor() {
@@ -46,7 +48,11 @@ export default class BrushTool extends AbstractTool {
         } );
 
         this.registerEvent( 'axisChanged', {
-            use: self.useAxisChanged.bind( self )
+            use: self.useAxisChanged.bind( self ),
+            release: function() {
+                console.log( 'realease' );
+                self._previousY = 0.0;
+            }
         } );
 
         this.registeredStrokes = {
@@ -85,7 +91,9 @@ export default class BrushTool extends AbstractTool {
 
     useAxisChanged( data ) {
 
-        this._helper.setLastSizePoint( data );
+        this.options.brushThickness =
+            data.controller.sizeMesh.scale.x * SIZE_FACTOR;
+        this._helper.setThickness( this.options.brushThickness );
 
     }
 }
