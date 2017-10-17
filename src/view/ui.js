@@ -1,6 +1,7 @@
 import VRUI from 'vr-ui';
 
-import MainView from '../view/main-view';
+import ColorUtils from '../utils/color';
+import EventDispatcher from '../utils/event-dispatcher';
 
 const INIT_POINTER_LEN = 3.5;
 const GUI_WIDTH = 0.4; // In Three.js units.
@@ -32,13 +33,18 @@ class UI {
 
         // Cache reference toward each line making the pointer mesh.
         // This allows to avoid retrieving them at each update.
-        this._line0 = null;
-        this._line1 = null;
+        this._lineMeshes = new Array( 2 );
+        this._tipMeshes = new Array( 2 );
 
         this._hoverContainer = null;
         this._hoverCursor = null;
 
         this._vr = false;
+
+        // Cache refrences to data extracted from the UI.
+        // This alow to avoid instanciating temporary values, that are often
+        // discarded.
+        this._hsv = { h : 0.0, s : 0.0, v : 0.5 };
 
     }
 
@@ -71,8 +77,6 @@ class UI {
         if ( this._vr ) {
             this._initControllers( controllers );
             this.triggerShow = this._triggerShowVR;
-            this._line0 = this._controllers[ 0 ].children[ 1 ];
-            this._line1 = this._controllers[ 1 ].children[ 1 ];
         }
 
         // Creates the initial UI page.
@@ -191,6 +195,7 @@ class UI {
         } );
         this._homeUIs[ this._currPage ].enabled = true;
         this._homeUIs[ this._currPage ].addInput( this._controllers[ nextController ] );
+        this._colorUI.enabled = true;
         this._colorUI.addInput( this._controllers[ nextController ] );
         setPointerVisibility( this._controllers[ nextController ], true );
 
@@ -232,14 +237,30 @@ class UI {
             linewidth: 3
         } );
 
-        let line = new THREE.Line( geometry, lineMat );
-        line.name = 'pointer';
-        line.scale.z = 5;
+        let line0 = new THREE.Line( geometry, lineMat );
+        line0.name = 'pointer';
+        line0.scale.z = 5;
 
-        this._controllers[ 0 ].add( line );
+        let line1 = line0.clone();
+
+        this._controllers[ 0 ].add( line0 );
         setPointerVisibility( this._controllers[ 0 ], false );
-        this._controllers[ 1 ].add( line.clone() );
+        this._controllers[ 1 ].add( line1 );
         setPointerVisibility( this._controllers[ 1 ], false );
+
+        // Keeps track of the pointer meshes, in order to show / hide
+        // them more efficiently.
+        this._lineMeshes[ 0 ] = line0;
+        this._lineMeshes[ 1 ] = line1;
+
+        // Keeps track of the tip meshes, in order to change their material
+        // more efficiently.
+        this._controllers[ 0 ].traverse( ( elt ) => {
+            if ( elt.name === 'tip' ) this._tipMeshes[ 0 ] = elt;
+        } );
+        this._controllers[ 1 ].traverse( ( elt ) => {
+            if ( elt.name === 'tip' ) this._tipMeshes[ 1 ] = elt;
+        } );
 
     }
 
@@ -338,7 +359,20 @@ class UI {
         let wheel = new VRUI.view.ImageButton( textures.colorWheel, {
             height: 0.65,
             aspectRatio: 1.0
+        } )
+        .onChange( ( object, data ) => {
+
+            if ( data.pressed ) {
+                let x = data.info.uv.x - 0.5;
+                let y = data.info.uv.y - 0.5;
+                this._hsv.s = ( Math.sqrt( x * x + y * y ) * 2.0 );
+                let angle = ( 180.0 * Math.atan2( y, x ) ) / Math.PI;
+                this._hsv.h = ( ( angle + 300.0 ) % 360.0 ) / 360;
+                this._updateColor( this._hsv );
+            }
+
         } );
+
         let slider = new VRUI.view.SliderView( {
             background: textures.slider,
             handle: textures.sliderButton
@@ -346,6 +380,11 @@ class UI {
             align: 'bottom',
             height: 0.2,
             width: 0.85
+        } ).onChange( ( object, data ) => {
+
+            this._hsv.v = 1.0 - data.value;
+            this._updateColor( this._hsv );
+
         } );
 
         layout.add( wheel, slider );
@@ -359,17 +398,27 @@ class UI {
         cursor moving on focused elements, or to deal with the pointers.
     */
 
+    _updateColor( ) {
+
+        let controller = ( this._prevController + 1 ) % 2;
+        this._tipMeshes[ controller ].material.color.setHSL(
+            this._hsv.h, this._hsv.s, this._hsv.v
+        );
+        EventDispatcher.dispatch( 'colorChange', this._hsv );
+
+    }
+
     _layoutHoverEnter( object, data ) {
 
-        this._line0.scale.z = data.info.distance;
-        this._line1.scale.z = data.info.distance;
+        this._lineMeshes[ 0 ].scale.z = data.info.distance;
+        this._lineMeshes[ 1 ].scale.z = data.info.distance;
 
     }
 
     _layoutHoverExit() {
 
-        this._line0.scale.z = INIT_POINTER_LEN;
-        this._line1.scale.z = INIT_POINTER_LEN;
+        this._lineMeshes[ 0 ].scale.z = INIT_POINTER_LEN;
+        this._lineMeshes[ 1 ].scale.z = INIT_POINTER_LEN;
 
     }
 

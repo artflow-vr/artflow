@@ -101,7 +101,7 @@ export default class BrushHelper {
 
         this._lastPoint = new THREE.Vector3( Number.NEGATIVE_INFINITY );
 
-        let mesh = new THREE.Mesh( this._geometry, this._material );
+        let mesh = new THREE.Mesh( this._geometry, this._material.clone() );
         mesh.drawMode = THREE.TriangleStripDrawMode;
         mesh.frustumCulled = false;
         mesh.vertices = this._vertices;
@@ -113,18 +113,21 @@ export default class BrushHelper {
     }
 
     setLastSizePoint( point ) {
+
         this._lastSizePoint = this._sizePoint;
         this._sizePoint = new THREE.Vector2( point[ 0 ], point[ 1 ] );
-
-        /*let dist = 0.0;
-        if ( this._lastSizePoint )
-            this._lastSizePoint.distanceTo( this._sizePoint );*/
 
     }
 
     setThickness( thickness ) {
 
         this._thickness = thickness / 2.0;
+
+    }
+
+    setColor( hsv ) {
+
+        this._material.color.setHSL( hsv.h, hsv.s, hsv.v );
 
     }
 

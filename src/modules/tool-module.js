@@ -93,15 +93,25 @@ class ToolModule {
 
         // TODO: Add onEnterChild & onExitChild event trigger.
 
-        // Registers trigger event for any tool
+        /*
+            The Code below registers every supported events, such as the
+            Vive and mouse button, color changes, UI selection...
+        */
+
+        // Registers events sent by the UI
+        EventDispatcher.register( 'colorChange', this._onColorChange.bind( this ) );
+
+        // Registers input events, coming either from the Vive, or from
+        // the mouse.
         EventDispatcher.registerFamily(
             'interact', this._getEventFamily( 'interact' )
         );
-
         EventDispatcher.registerFamily(
             'axisChanged', this._getEventFamily( 'axisChanged' )
         );
 
+        // Registers 'redo' and 'undo' events that can be trigger by
+        // the input, or from the UI.
         EventDispatcher.register( 'undo', () => {
 
             if ( this.undoStack.length === 0 ) return;
@@ -126,7 +136,12 @@ class ToolModule {
         // tools, it will allow them to be accessible every time.
         // TODO: Look at the parameter 'general' when registering a tool, in
         // order to avoid hardcode this registering.
-        this._generalTools.push( new Tool.TeleporterTool() );
+        let teleporter = new Tool.TeleporterTool();
+        MainView.addToMovingGroup( teleporter.worldGroup );
+        MainView.addToScene( teleporter.localGroup );
+
+        this._generalTools.push( teleporter );
+
         for ( let toolID in this._generalTools ) {
             let tool = this._generalTools[ toolID ];
             for ( let eventID in tool.listenTo ) {
@@ -148,9 +163,17 @@ class ToolModule {
 
     }
 
+    _onColorChange( color ) {
+
+        for ( let e in this._instance ) {
+            this._instance[ e ][ 0 ].triggerEvent( 'colorChanged', color );
+            this._instance[ e ][ 1 ].triggerEvent( 'colorChanged', color );
+        }
+
+    }
+
     _onUISelection( toolID, controllerID, evt ) {
 
-        console.log( evt );
         if ( evt.pressed )
             this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
 
@@ -162,14 +185,14 @@ class ToolModule {
             use: ( data ) => {
 
                 this._selected[ data.controllerID ].triggerEvent(
-                    eventID, 'use', data
+                    eventID, data, 'use'
                 );
 
             },
             trigger: ( data ) => {
 
                 let cmd = this._selected[ data.controllerID ].triggerEvent(
-                    eventID, 'trigger', data
+                    eventID, data, 'trigger'
                 );
                 if ( cmd ) this.undoStack.push( cmd );
 
@@ -182,7 +205,7 @@ class ToolModule {
             release: ( data ) => {
 
                 this._selected[ data.controllerID ].triggerEvent(
-                    eventID, 'release', data
+                    eventID, data, 'release'
                 );
 
             }

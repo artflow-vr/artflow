@@ -202,7 +202,7 @@ class Control {
         let controllerMesh = AssetManager.assets.model[ 'vive-controller' ];
         controllerMesh.traverse( function ( child ) {
 
-            if ( child instanceof THREE.Mesh ) {
+            if ( child instanceof THREE.Mesh && child.name !== 'tip' ) {
                 child.material.map = AssetManager.assets.texture[ 'controller-diffuse' ];
                 child.material.specularMap = AssetManager.assets.texture[ 'controller-specular' ];
                 child.material.needsUpdate = true;
@@ -211,8 +211,21 @@ class Control {
         } );
 
         this._controllers = new Array( 2 );
-        this._controllers[ 0 ] = new ViveController( 0, controllerMesh.clone() );
-        this._controllers[ 0 ].standingMatrix = renderer.vr.getStandingMatrix();
+
+        // Makes copy of certain materials / meshes.
+        // This allows us to modify for instance the color of the current
+        // controller using the UI, etc...
+        let meshes = [ controllerMesh.clone(), controllerMesh.clone() ];
+        for ( let i = 0; i < 2; ++i ) {
+            meshes[ i ].traverse( ( child ) => {
+
+                if ( child.name === 'tip' )
+                    child.material = child.material.clone();
+
+            } );
+            this._controllers[ i ] = new ViveController( 0, meshes[ i ] );
+            this._controllers[ i ].standingMatrix = renderer.vr.getStandingMatrix();
+        }
 
         this._controllers[ 1 ] = new ViveController( 1, controllerMesh.clone() );
         this._controllers[ 1 ].standingMatrix = renderer.vr.getStandingMatrix();
@@ -254,18 +267,6 @@ class Control {
             registerEventForController( 0, elt );
             registerEventForController( 1, elt );
         }
-        /*registerEventForController( 0, 'thumbpad' );
-        registerEventForController( 1, 'thumbpad' );
-        registerEventForController( 0, 'trigger' );
-        registerEventForController( 1, 'trigger' );
-        registerEventForController( 0, 'triggerup' );
-        registerEventForController( 1, 'triggerup' );
-        registerEventForController( 0, 'triggerdown' );
-        registerEventForController( 1, 'triggerdown' );
-        registerEventForController( 0, 'axisChanged' );
-        registerEventForController( 1, 'axisChanged' );
-        registerEventForController( 0, 'menu' );
-        registerEventForController( 1, 'menu' );*/
 
     }
 
