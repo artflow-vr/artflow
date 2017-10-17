@@ -139,7 +139,7 @@ class Parser {
       return null;
 
     let matches = str.match( re );
-    return matches !== null ? matches.map( clbk.bind( this ) ) : null;
+    return matches !== null ? matches.map( clbk, this ) : null;
 
   }
 
@@ -149,7 +149,7 @@ class Parser {
       return null;
 
     // Handle operations later.
-    let re = /([a-zA-Z+-])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/;
+    let re = /([a-zA-Z+-\[\]])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/;
     let matches = str.match( re );
     if ( !matches )
       return null;
@@ -161,7 +161,7 @@ class Parser {
 
   static parseLetters( str ) {
 
-    let re = /([a-zA-Z+-])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/g;
+    let re = /([a-zA-Z+-\[\]])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/g;
     return this.parseMultiple( str, re, this.parseLetter );
 
   }
@@ -217,20 +217,21 @@ class LSystem {
 
       for ( let k = 0; k < n; ++k ) {
         let newAxiom = [];
-        let found = false;
 
         for ( let i = 0; i < prevAxiom.length; ++i ) {
+          let found = false;
+
           for ( let j = 0; j < this.productions.length; ++j ) {
             if ( this.productions[ j ].match( prevAxiom, i ) ) {
               newAxiom = newAxiom.concat( this.productions[ j ]
-                                          .result( ) );
+                                          .result() );
               found = true;
               break;
             }
           }
 
           if ( !found )
-            newAxiom.push( this.axiom[ i ] );
+            newAxiom.push( prevAxiom[ i ] );
         }
 
         prevAxiom = newAxiom;
@@ -239,6 +240,21 @@ class LSystem {
     return prevAxiom;
   }
 
+  reverse( axiom ) {
+    let res = [];
+
+    for ( let i = axiom.length - 1; i >= 0; --i ) {
+      if ( axiom[ i ].symbol === '+' ) {
+        res.push( new Letter( '-', axiom[ i ].parameters ) );
+      } else if ( axiom[ i ].symbol === '-' ) {
+        res.push( new Letter( '+', axiom[ i ].parameters ) );
+      } else {
+        res.push( axiom[ i ] );
+      }
+    }
+
+    return res;
+  }
 }
 
 export {
