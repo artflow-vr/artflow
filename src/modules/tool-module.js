@@ -252,10 +252,16 @@ class ToolModule {
             uiTexture: AssetManager.assets.texture[ 'ui-tool-water' ],
             Tool: Tool.WaterTool
         } );
+        this.register( 'Tree', {
+            uiTexture: AssetManager.assets.texture[ 'ui-tool-tree' ],
+            Tool: Tool.TreeTool
+        } );
+
 
         this._instanciate( 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
         //this._instanciate( 'Particle' );
         this._instanciate( 'Water' );
+        this._instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
 
     }
 
