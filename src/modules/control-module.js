@@ -217,23 +217,27 @@ class Control {
         // controller using the UI, etc...
         let meshes = [ controllerMesh.clone(), controllerMesh.clone() ];
         for ( let i = 0; i < 2; ++i ) {
+            let tipMat = null;
             meshes[ i ].traverse( ( child ) => {
 
-                if ( child.name === 'tip' )
+                if ( child.name === 'tip' ) {
                     child.material = child.material.clone();
+                    tipMat = child.material;
+                }
 
             } );
-            this._controllers[ i ] = new ViveController( 0, meshes[ i ] );
-            this._controllers[ i ].standingMatrix = renderer.vr.getStandingMatrix();
+            meshes[ i ].traverse( ( child ) => {
+
+                if ( child.name === 'sizehint' )
+                    child.material = tipMat;
+
+            } );
+
+            let viveController = new ViveController( i, meshes[ i ] );
+            viveController.standingMatrix = renderer.vr.getStandingMatrix();
+            this._controllers[ i ] = viveController;
+            MainView.addToScene( this._controllers[ i ] );
         }
-
-        this._controllers[ 1 ] = new ViveController( 1, controllerMesh.clone() );
-        this._controllers[ 1 ].standingMatrix = renderer.vr.getStandingMatrix();
-
-        MainView.controllers = this._controllers;
-
-        MainView.addToScene( this._controllers[ 0 ] );
-        MainView.addToScene( this._controllers[ 1 ] );
 
     }
 

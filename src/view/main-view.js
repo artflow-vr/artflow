@@ -59,18 +59,13 @@ class Main {
         this._renderer = renderer;
         this._camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 100 );
 
-        console.log( vr );
         this._createInitialScene( vr );
 
         // Adds default cubemap as background of the scene
         // TODO: Update the THREE.JS version with the update handling background
         // on both eyes.
-        if ( !vr ) {
-            let cubemap = AssetManager.assets.cubemap.cubemap;
-            this._rootScene.background = cubemap;
-        } else {
-            renderer.setClearColor( 0xcccccc, 1 );
-        }
+        let cubemap = AssetManager.assets.cubemap.cubemap;
+        this._rootScene.background = cubemap;
 
         this._createLighting();
         this._createHTMLBackground();
@@ -127,6 +122,7 @@ class Main {
                 map: floorTex
             } )
         );
+        floor.position.y = -0.5;
         floor.rotateX( -Math.PI / 2 );
         this._group.add( floor );
 

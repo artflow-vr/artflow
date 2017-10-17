@@ -410,6 +410,7 @@ class UI {
 
     _layoutHoverEnter( object, data ) {
 
+        if ( !data ) return;
         this._lineMeshes[ 0 ].scale.z = data.info.distance;
         this._lineMeshes[ 1 ].scale.z = data.info.distance;
 
