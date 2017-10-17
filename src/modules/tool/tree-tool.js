@@ -128,7 +128,7 @@ export default class TreeTool extends AbstractTool {
 
         this._lSystem = new LSystem( this.axiom, this.grammar );
 
-        this._str = this._lSystem.derivate( 5 );
+        this._str = this._lSystem.derivate( 3 );
 
         this.step = 0.25;
 
@@ -157,6 +157,8 @@ export default class TreeTool extends AbstractTool {
     release( data ) {
 
         let tree = this.trees[ this.trees.length - 1 ];
+        if ( !tree ) return;
+
         tree.init( data, this.angle, this.step, this._str );
         this._draw( tree );
         this._interpretSbs( tree, 0 );
@@ -167,7 +169,7 @@ export default class TreeTool extends AbstractTool {
 
         let mesh = tree.helper.createMesh();
         this.worldGroup.addTHREEObject( mesh );
-        return new AddCommand( this.worldGroup, mesh );
+        //return new AddCommand( this.worldGroup, mesh );
 
     }
 

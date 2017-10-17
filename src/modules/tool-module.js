@@ -244,10 +244,10 @@ class ToolModule {
             uiTexture: AssetManager.assets.texture[ 'ui-tool-brush' ],
             Tool: Tool.BrushTool
         } );
-        /*this.register( 'Particle', {
+        this.register( 'Particle', {
             uiTexture: AssetManager.assets.texture[ 'ui-tool-particles' ],
             Tool: Tool.ParticleTool
-        } );*/
+        } );
         this.register( 'Water', {
             uiTexture: AssetManager.assets.texture[ 'ui-tool-water' ],
             Tool: Tool.WaterTool
@@ -259,9 +259,9 @@ class ToolModule {
 
 
         this._instanciate( 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
-        //this._instanciate( 'Particle' );
         this._instanciate( 'Water' );
         this._instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
+        this._instanciate( 'Particle' );
 
     }
 
