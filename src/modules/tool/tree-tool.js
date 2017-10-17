@@ -46,10 +46,14 @@ class State {
 
 class Tree {
 
-    constructor ( options ) {
+    constructor ( options, hsv ) {
 
         this.states = [];
         this.helper = new BrushHelper( options );
+
+        if ( hsv ) {
+            this.helper.setColor( hsv );
+        }
 
     }
 
@@ -108,6 +112,11 @@ export default class TreeTool extends AbstractTool {
             release: this.release.bind( this )
         } );
 
+        this.registerEvent( 'colorChanged', ( hsv ) => {
+            this._hsv = hsv;
+        } );
+
+        this._hsv = null;
 
         //this._lSystem = new LSystem( '--F[+F][-F[-F]F]F[+F][-F]', '' );
         //this._lSystem = new LSystem( 'F-F-F-F-F', 'F->F-F+F+FF-F-F+F' );
@@ -139,7 +148,7 @@ export default class TreeTool extends AbstractTool {
 
     trigger() {
 
-        let tree = new Tree( this.options );
+        let tree = new Tree( this.options, this._hsv );
         this.trees.push( tree );
         this._addMesh( tree );
 
