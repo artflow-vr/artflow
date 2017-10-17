@@ -77,9 +77,10 @@ ToolModule.register('MyNiceTool', toolDescription);
 
 #### All
 * [ ] Remove _movingGroup and add a dolly group above the camera
+* [ ] Use pow2 textures. It would be nice to reduce the number of requests, by merging textures together and using different UVs (for instance for the UI).
 
 #### Brushes
-* [ ] Add pressure
+* [X] Add pressure
 * [ ] Add strokes system
 * [ ] Move temporary allocation to initialization
 * [ ] Move Helper folder from `tool/` folder
