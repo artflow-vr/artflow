@@ -1,6 +1,10 @@
 import VRUI from 'vr-ui';
 
+import MainView from '../view/main-view';
+
 const INIT_POINTER_LEN = 3.5;
+const GUI_WIDTH = 0.4; // In Three.js units.
+const GUI_HEIGHT = 0.4; // In Three.js units
 
 let setPointerVisibility = ( element, visibility ) => {
     let child = null;
@@ -14,10 +18,10 @@ class UI {
 
     constructor() {
 
-        console.log( VRUI );
         this._currPage = 0;
         this._textures = null;
         this._homeUIs = [];
+        this._colorUI = null;
 
         this._show = false;
         this._pagesGroup = new THREE.Group();
@@ -25,6 +29,11 @@ class UI {
 
         this._prevController = null;
         this._controllers = null;
+
+        // Cache reference toward each line making the pointer mesh.
+        // This allows to avoid retrieving them at each update.
+        this._line0 = null;
+        this._line1 = null;
 
         this._hoverContainer = null;
         this._hoverCursor = null;
@@ -62,28 +71,28 @@ class UI {
         if ( this._vr ) {
             this._initControllers( controllers );
             this.triggerShow = this._triggerShowVR;
+            this._line0 = this._controllers[ 0 ].children[ 1 ];
+            this._line1 = this._controllers[ 1 ].children[ 1 ];
         }
 
         // Creates the initial UI page.
         this._createToolsUI();
 
+        // Creates the Color UI
+        this._colorUI = this._createColorUI( textures );
+        this._colorUI.refresh();
+        this._colorUI.root.group.rotation.y = - Math.PI / 2.0;
+        this._colorUI.root.group.position.x = 0.25;
+        this._colorUI.root.group.position.z = -0.2;
+        this._colorUI.root.group.position.y = 0.5;
+        this._pagesGroup.add( this._colorUI.root.group );
+
     }
 
     update() {
 
-        let intersection = this._homeUIs[ this._currPage ].update();
-
-        // Changes the size of pointers if an intersection occurs.
-        let line0 = this._controllers[ 0 ].children[ 1 ];
-        let line1 = this._controllers[ 1 ].children[ 1 ];
-        if ( !intersection ) {
-            line0.scale.z = INIT_POINTER_LEN;
-            line1.scale.z = INIT_POINTER_LEN;
-            return;
-        }
-
-        line0.scale.z = intersection.distance;
-        line1.scale.z = intersection.distance;
+        this._colorUI.update();
+        this._homeUIs[ this._currPage ].update();
 
     }
 
@@ -168,6 +177,7 @@ class UI {
                 if ( child instanceof THREE.Mesh ) child.visible = false;
             } );
             this._homeUIs[ this._currPage ].enabled = false;
+            this._colorUI.enabled = false;
             setPointerVisibility( this._controllers[ 0 ], false );
             setPointerVisibility( this._controllers[ 1 ], false );
             return;
@@ -181,6 +191,7 @@ class UI {
         } );
         this._homeUIs[ this._currPage ].enabled = true;
         this._homeUIs[ this._currPage ].addInput( this._controllers[ nextController ] );
+        this._colorUI.addInput( this._controllers[ nextController ] );
         setPointerVisibility( this._controllers[ nextController ], true );
 
         if ( controllerID === this._prevController ) return;
@@ -285,15 +296,15 @@ class UI {
 
     _createHomeUI ( background ) {
 
-        const guiWidth = 0.5; // In Three.js units.
-        const guiHeight = 0.5; // In Three.js units
-
         let layout = new VRUI.layout.VerticalLayout( {
             background: background,
             padding: {
                 top: 0.05
             }
-        } );
+        } )
+        .onHoverEnter( this._layoutHoverEnter.bind( this ) )
+        .onHoverExit( this._layoutHoverExit.bind( this ) );
+
         let gridLayout = new VRUI.layout.GridLayout( {
             height: 0.8,
             columns: 4,
@@ -311,15 +322,56 @@ class UI {
         } );
 
         layout.add( gridLayout );
-        return new VRUI.VRUI( layout, guiWidth, guiHeight );
+        return new VRUI.VRUI( layout, GUI_WIDTH, GUI_HEIGHT );
+
+    }
+
+    _createColorUI( textures ) {
+
+        let layout = new VRUI.layout.VerticalLayout( {
+            background: textures.background,
+            padding: { top: 0.06 }
+        } )
+        .onHoverEnter( this._layoutHoverEnter.bind( this ) )
+        .onHoverExit( this._layoutHoverExit.bind( this ) );
+
+        let wheel = new VRUI.view.ImageButton( textures.colorWheel, {
+            height: 0.65,
+            aspectRatio: 1.0
+        } );
+        let slider = new VRUI.view.SliderView( {
+            background: textures.slider,
+            handle: textures.sliderButton
+        }, {
+            align: 'bottom',
+            height: 0.2,
+            width: 0.85
+        } );
+
+        layout.add( wheel, slider );
+        return new VRUI.VRUI( layout, GUI_WIDTH, GUI_HEIGHT );
 
     }
 
     /*
-        The two methods below are the callbacks added to every buttons
-        in the UI. They allow to handle the transparent cursor moving on
-        focused elements.
+        The methods below are the callbacks added to every buttons
+        in the UI, or to each global laouts. They allow to handle the transparent
+        cursor moving on focused elements, or to deal with the pointers.
     */
+
+    _layoutHoverEnter( object, data ) {
+
+        this._line0.scale.z = data.info.distance;
+        this._line1.scale.z = data.info.distance;
+
+    }
+
+    _layoutHoverExit() {
+
+        this._line0.scale.z = INIT_POINTER_LEN;
+        this._line1.scale.z = INIT_POINTER_LEN;
+
+    }
 
     _buttonHoverEnter ( object ) {
 

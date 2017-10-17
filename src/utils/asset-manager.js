@@ -214,6 +214,18 @@ class Manager {
             this.load( 'ui/arrow-icon', '.png', TEXTURE, this._texturePath,
                 'ui-arrow-left' )
         );
+        promises.push(
+            this.load( 'ui/color-wheel', '.png', TEXTURE, this._texturePath,
+                'ui-color-wheel' )
+        );
+        promises.push(
+            this.load( 'ui/slider-bright', '.png', TEXTURE, this._texturePath,
+                'ui-slider' )
+        );
+        promises.push(
+            this.load( 'ui/slider-button', '.png', TEXTURE, this._texturePath,
+                'ui-slider-button' )
+        );
 
         /*
             Loads UI tool textures

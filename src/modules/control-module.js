@@ -117,7 +117,10 @@ class Control {
             background: AssetManager.assets.texture[ 'ui-background' ],
             arrowLeft: AssetManager.assets.texture[ 'ui-arrow-left' ],
             buttonBackground: AssetManager.assets.texture[ 'ui-button-back' ],
-            buttonHover: AssetManager.assets.texture[ 'ui-button-hover' ]
+            buttonHover: AssetManager.assets.texture[ 'ui-button-hover' ],
+            colorWheel: AssetManager.assets.texture[ 'ui-color-wheel' ],
+            slider: AssetManager.assets.texture[ 'ui-slider' ],
+            sliderButton: AssetManager.assets.texture[ 'ui-slider-button' ]
         };
         UI.init( uiTextures, this.vr ? this._controllers : null );
 
