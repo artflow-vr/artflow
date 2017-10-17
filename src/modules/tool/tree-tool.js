@@ -69,20 +69,23 @@ export default class TreeTool extends AbstractTool {
 
         this.mesh = null;
 
-        this._lSystem = new LSystem( '--F[+F][-F[-F]F]F[+F][-F]', '' );
+        //this._lSystem = new LSystem( '--F[+F][-F[-F]F]F[+F][-F]', '' );
         //this._lSystem = new LSystem( 'F-F-F-F-F', 'F->F-F+F+FF-F-F+F' );
+        this._lSystem = new LSystem( 'X', `X->F[+X][-X]FX
+                                           F->FF` );
+        this._str = this._lSystem.derivate( 5 );
 
-        this._step = 1;
+        this._step = 0.25;
 
-        this._angle = Math.PI / 4;
+        this._angle = ( 25.7 / 360 ) * 2 * Math.PI;
 
         this.interpretations = {
-            'F': this.drawForward,
-            'f': this.moveForward,
-            '+': this.turnLeft,
-            '-': this.turnRight,
-            '[': this.pushState,
-            ']': this.popState
+            'F': this.drawForward.bind( this ),
+            'f': this.moveForward.bind( this ),
+            '+': this.turnLeft.bind( this ),
+            '-': this.turnRight.bind( this ),
+            '[': this.pushState.bind( this ),
+            ']': this.popState.bind( this )
         };
 
         this.states = [];
@@ -98,23 +101,27 @@ export default class TreeTool extends AbstractTool {
 
     release( data ) {
 
-        let res = this._lSystem.derivate( 0 );
         let state = new State(
-          data.position.world.clone(), 0, this._step,
+          data.position.world.clone(), Math.PI / 2, this._step,
           data.orientation, data.pressure
         );
         this.states.push( state );
         this._draw( state );
-        this._interpret( res );
+        this._interpret();
         this.states.pop();
+
     }
 
-    _interpret( str ) {
+    _interpret() {
 
-        for ( let i = 0; i < str.length; ++i ) {
-            let newMesh = i + 1 < str.length && str[ i + 1 ].symbol !== ']'
-                          && str[ i + 1 ].symbol !== '[';
-            this.interpretations[ str[ i ].symbol ].call( this, newMesh );
+        for ( let i = 0; i < this._str.length; ++i ) {
+            let newMesh = i + 1 < this._str.length
+                          && this._str[ i + 1 ].symbol !== ']'
+                          && this._str[ i + 1 ].symbol !== '[';
+            let clbk = this.interpretations[ this._str[ i ].symbol ];
+            if ( clbk ) {
+                clbk( newMesh );
+            }
         }
 
     }
