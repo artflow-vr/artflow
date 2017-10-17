@@ -137,8 +137,8 @@ class ToolModule {
         // TODO: Look at the parameter 'general' when registering a tool, in
         // order to avoid hardcode this registering.
         let teleporter = new Tool.TeleporterTool();
-        MainView.addToMovingGroup( teleporter.worldGroup );
-        MainView.addToScene( teleporter.localGroup );
+        MainView.addToMovingGroup( teleporter.worldGroup.getObject() );
+        MainView.addToScene( teleporter.localGroup.getObject() );
 
         this._generalTools.push( teleporter );
 
@@ -244,17 +244,17 @@ class ToolModule {
             uiTexture: AssetManager.assets.texture[ 'ui-tool-brush' ],
             Tool: Tool.BrushTool
         } );
-        this.register( 'Particle', {
+        /*this.register( 'Particle', {
             uiTexture: AssetManager.assets.texture[ 'ui-tool-particles' ],
             Tool: Tool.ParticleTool
-        } );
+        } );*/
         this.register( 'Water', {
             uiTexture: AssetManager.assets.texture[ 'ui-tool-water' ],
             Tool: Tool.WaterTool
         } );
 
         this._instanciate( 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
-        this._instanciate( 'Particle' );
+        //this._instanciate( 'Particle' );
         this._instanciate( 'Water' );
 
     }

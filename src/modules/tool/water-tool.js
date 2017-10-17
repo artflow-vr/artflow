@@ -96,9 +96,9 @@ export default class WaterTool extends AbstractTool {
         /*this.localGroup.addTHREEObject( plane );
         this.localGroup.addTHREEObject( plane2 );
         this.localGroup.addTHREEObject( plane3 );*/
-        this.worldGroup.addTHREEObject( plane );
+        /*this.worldGroup.addTHREEObject( plane );
         this.worldGroup.addTHREEObject( plane2 );
-        this.worldGroup.addTHREEObject( plane3 );
+        this.worldGroup.addTHREEObject( plane3 );*/
 
     }
 
