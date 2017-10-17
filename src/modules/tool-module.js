@@ -78,7 +78,7 @@ class ToolModule {
 
     }
 
-    init() {
+    init( isVR ) {
 
         this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();
@@ -238,7 +238,7 @@ class ToolModule {
 
     }
 
-    _registerBasicTools() {
+    _registerBasicTools( isVR ) {
 
         this.register( 'Teleporter', {
             Tool: Tool.TeleporterTool
@@ -260,11 +260,10 @@ class ToolModule {
             Tool: Tool.TreeTool
         } );
 
-
-        this._instanciate( 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
+        this._instanciate( 'Brush', isVR );
+        this._instanciate( 'Particle' );
         this._instanciate( 'Water' );
         this._instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
-        this._instanciate( 'Particle' );
 
     }
 
