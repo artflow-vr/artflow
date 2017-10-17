@@ -8,7 +8,7 @@ import MathUtils from '../utils/math';
 
 const MIN_SIZE_SELECTION = 0.25;
 const MAX_SIZE_SELECTION = 1.5;
-const SIZE_SCALE_SPEED = 0.08;
+const SIZE_SCALE_SPEED = 0.15;
 
 export default class ViveController extends THREE.Object3D {
 
