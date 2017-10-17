@@ -33,7 +33,7 @@ const SIZE_FACTOR = 0.2;
 
 export default class BrushTool extends AbstractTool {
 
-    constructor() {
+    constructor( isVR ) {
 
         super();
 
@@ -56,8 +56,8 @@ export default class BrushTool extends AbstractTool {
         } );
 
         this.registeredStrokes = {
-            'with_tex': new StrokeWithTex(),
-            'without_tex': new StrokeWithoutTex()
+            'with_tex': new StrokeWithTex( isVR ),
+            'without_tex': new StrokeWithoutTex( isVR )
         };
 
         this.currentStroke = 'with_tex';

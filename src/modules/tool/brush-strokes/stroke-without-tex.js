@@ -28,23 +28,12 @@
 'use strict';
 
 import AbstractBrushStroke from '../abstract-brush-stroke';
-import BrushHelper from '../helper/brush-helper';
 
 export default class StrokeWithoutTex extends AbstractBrushStroke {
 
-    constructor() {
+    constructor( isVR ) {
 
-        super();
-
-        let options = {
-            maxSpread: 20,
-            brushThickness: 0.5,
-            enablePressure: false,
-            color: 0x808080,
-            materialId: 'material_without_tex'
-        };
-
-        this._helper = new BrushHelper( options );
+        super( isVR );
 
     }
 }
