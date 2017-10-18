@@ -65,17 +65,15 @@ class PrimitivesRenderer {
         this._positionsCamera = new THREE.OrthographicCamera( this._bufferWidth / - 2,
             this._bufferWidth / 2,
             this._bufferHeight / 2,
-            this._bufferHeight / - 2, 0.01, 1000 );
-        /*
+            this._bufferHeight / - 2, -10000, 10000 );
         this._velocitiesCamera = new THREE.OrthographicCamera( this._bufferWidth / - 2,
             this._bufferWidth / 2,
             this._bufferHeight / 2,
-            this._bufferHeight / - 2, 0.01, 1000 );
-        */
+            this._bufferHeight / - 2, -10000, 10000 );
 
         // Create scenes
         this._positionRTTScene = new THREE.Scene();
-        //this._velocityRTTScene = new THREE.Scene();
+        this._velocityRTTScene = new THREE.Scene();
 
         // Create render targets
         let renderTargetParams = {
@@ -85,63 +83,50 @@ class PrimitivesRenderer {
         };
         this._positionRT1 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
         this._positionRT2 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
-        /*
         this._velocityRT1 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
         this._velocityRT2 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
-        */
-
-        /*
-        this._velocityBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
-            this._bufferHeight, new THREE.Color( 0x000000 ) );
-        // this._velocityBufferTex1.needsUpdate = true;
-        this._velocityBufferTex2 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
-            this._bufferHeight, new THREE.Color( 0x000000 ) );
-        // this._velocityBufferTex2.needsUpdate = true;
-        */
 
         this._positionBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
             this._bufferHeight, new THREE.Color( 0x111111 ) );
-        console.log(this._positionBufferTex1);
         this._positionBufferTex1.needsUpdate = true;
-        //this._positionBufferTex1 = AssetManager.assets.texture.particle_position_in;
-        //this._positionBufferTex1.needsUpdate = true;
+        this._velocityBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
+            this._bufferHeight, new THREE.Color( 0x111111 ) );
+        this._velocityBufferTex1.needsUpdate = true;
 
         // Initialize RTT materials
         this._positionsTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
-                tPositionsMap : { type: 't', value: this._positionBufferTex1 },
+                tPositionsMap : { type: 't', value: this._positionRT2.texture },
+                tVelocitiesMap : { type: 't', value: this._velocityRT2.texture },
                 dt : { type: 'f', value: 0 }
             },
             vertexShader: PositionUpdate.vertex,
             fragmentShader: PositionUpdate.fragment
         } );
-        this._positionsTargetTextureMat.needsUpdate = true;
-        /*
         this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
-                tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
+                tPositionsMap : { type: 't', value: this._positionRT2.texture },
+                tVelocitiesMap : { type: 't', value: this._velocityRT2.texture },
                 dt : { type: 'f', value: 0 }
             },
             vertexShader: VelocityUpdate.vertex,
             fragmentShader: VelocityUpdate.fragment
         } );
-        */
-
+        this._velocitiesTargetTextureMat.needsUpdate = true;
 
         // Setup render-to-texture scene
         this._positionsTargetTextureGeo = new THREE.PlaneGeometry( this._bufferWidth, this._bufferHeight );
         this._positionsTargetTextureMesh = new THREE.Mesh( this._positionsTargetTextureGeo,
             this._positionsTargetTextureMat );
-        this._positionsTargetTextureMesh.position.z = 0;
+        this._positionsTargetTextureMesh.position.z = 1;
         this._positionRTTScene.add( this._positionsTargetTextureMesh );
 
-        /*
         this._velocitiesTargetTextureGeo = new THREE.PlaneGeometry( this._bufferWidth, this._bufferHeight );
         this._velocitiesTargetTextureMesh = new THREE.Mesh( this._velocitiesTargetTextureGeo,
             this._velocitiesTargetTextureMat );
-        this._velocitiesTargetTextureMesh.position.z = 0;
+        this._velocitiesTargetTextureMesh.position.z = 1;
         this._velocityRTTScene.add( this._velocitiesTargetTextureMesh );
-        */
+
         // Use to draw preview of velocity and/or position update
         this._debugPlaneMat = new THREE.ShaderMaterial( {
             uniforms: {
@@ -156,33 +141,22 @@ class PrimitivesRenderer {
     }
 
     update( dt ) {
-        /*
         this._velocitiesTargetTextureMesh.material.uniforms.dt.value = dt;
-        this._renderer.render( this._velocityRTTScene, this._velocitiesCamera, this._velocityRT2, true );
-        let sw = this._velocityRT2;
-        this._velocityRT2 = this._velocityRT1;
-        this._velocityRT1 = sw;
-        this._velocitiesTargetTextureMat.uniforms.tVelocitiesMap.value = this._velocityRT1.texture;
-        */
+        this._renderer.render( this._velocityRTTScene, this._velocitiesCamera, this._velocityRT1, true );
+        let sw = this._velocityRT1;
+        this._velocityRT1 = this._velocityRT2;
+        this._velocityRT2 = sw;
+        this._velocitiesTargetTextureMat.uniforms.tVelocitiesMap.value = this._velocityRT2.texture;
 
         this._positionsTargetTextureMesh.material.uniforms.dt.value = dt;
-        this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT2, true );
-        // FIXME: These two lines don't work. Find why the fucketty fuck.
-        // console.log( this._positionRT2 );
-        /*
-        this._debugPlaneMat.uniforms.tSprite.value = this._positionRT2.texture;
-        this._debugPlaneMat.needsUpdate = true;
-        */
-        //this._debugPlaneMat.uniforms.tSprite.value.needsUpdate = true;
+        this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT1, true );
+        sw = this._positionRT1;
+        this._positionRT1 = this._positionRT2;
+        this._positionRT2 = sw;
+        this._positionsTargetTextureMat.uniforms.tPositionsMap.value = this._positionRT2.texture;
 
-        /*
-        let sw = this._positionRT2;
-        this._positionRT2 = this._positionRT1;
-        this._positionRT1 = sw;
-        this._positionsTargetTextureMat.uniforms.tPositionsMap.value = this._positionRT1.texture;
-        */
-
-        // this._debugPlaneMesh.material.uniforms.tSprite.value.needsUpdate = true;
+        this._positionsTargetTextureMat.uniforms.tVelocitiesMap.value = this._velocityRT2.texture;
+        this._velocitiesTargetTextureMat.uniforms.tPositionsMap.value = this._positionRT2.texture;
 
         return this._positionRT2.texture;
     }
@@ -201,18 +175,6 @@ class ParticleContainer extends THREE.Object3D {
 
         // initialize position and velocity updater
         this._primitivesRenderer = new PrimitivesRenderer();
-        // this._updatedPositions = this._primitivesRenderer.update( 0 );
-
-        /*
-        this._primitivesRenderer._positionsTargetTextureMesh.scale.x = 0.01;
-        this._primitivesRenderer._positionsTargetTextureMesh.scale.y = 0.01;
-        this._primitivesRenderer._positionsTargetTextureMesh.scale.z = 0.01;
-        this._primitivesRenderer._positionsTargetTextureMesh.position.x = 1;
-        this._primitivesRenderer._positionsTargetTextureMesh.position.y = 1;
-        this._primitivesRenderer._positionsTargetTextureMesh.position.z = 0;
-        MainView.addToMovingGroup( this._primitivesRenderer._positionsTargetTextureMesh );
-        this._updatedPositions = this._primitivesRenderer.update( 0 );
-        */
 
         this._primitivesRenderer._debugPlaneMesh.scale.x = 0.01;
         this._primitivesRenderer._debugPlaneMesh.scale.y = 0.01;
