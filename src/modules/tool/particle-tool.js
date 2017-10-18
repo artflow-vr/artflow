@@ -99,11 +99,11 @@ class PrimitivesRenderer {
         // this._velocityBufferTex2.needsUpdate = true;
         */
 
-        /*
         this._positionBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
-            this._bufferHeight, new THREE.Color( 0x000000 ) );
-           */
-        this._positionBufferTex1 = AssetManager.assets.texture.particle_position_in;
+            this._bufferHeight, new THREE.Color( 0x111111 ) );
+        console.log(this._positionBufferTex1);
+        this._positionBufferTex1.needsUpdate = true;
+        //this._positionBufferTex1 = AssetManager.assets.texture.particle_position_in;
         //this._positionBufferTex1.needsUpdate = true;
 
         // Initialize RTT materials
@@ -115,6 +115,7 @@ class PrimitivesRenderer {
             vertexShader: PositionUpdate.vertex,
             fragmentShader: PositionUpdate.fragment
         } );
+        this._positionsTargetTextureMat.needsUpdate = true;
         /*
         this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
@@ -126,14 +127,6 @@ class PrimitivesRenderer {
         } );
         */
 
-        // Use to draw preview of velocity and/or position update
-        this._debugPlaneMat = new THREE.ShaderMaterial( {
-            uniforms: {
-                tSprite : { type: 't', value: this._positionBufferTex1 }
-            },
-            vertexShader: BaseShader.vertex,
-            fragmentShader: BaseShader.fragment
-        } );
 
         // Setup render-to-texture scene
         this._positionsTargetTextureGeo = new THREE.PlaneGeometry( this._bufferWidth, this._bufferHeight );
@@ -149,7 +142,14 @@ class PrimitivesRenderer {
         this._velocitiesTargetTextureMesh.position.z = 0;
         this._velocityRTTScene.add( this._velocitiesTargetTextureMesh );
         */
-
+        // Use to draw preview of velocity and/or position update
+        this._debugPlaneMat = new THREE.ShaderMaterial( {
+            uniforms: {
+                tSprite : { value: this._positionRT2.texture }
+            },
+            vertexShader: BaseShader.vertex,
+            fragmentShader: BaseShader.fragment
+        } );
         this._debugPlaneGeo = new THREE.PlaneGeometry( this._bufferWidth, this._bufferHeight );
         this._debugPlaneMesh = new THREE.Mesh( this._debugPlaneGeo,
             this._debugPlaneMat );
@@ -168,8 +168,12 @@ class PrimitivesRenderer {
         this._positionsTargetTextureMesh.material.uniforms.dt.value = dt;
         this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT2, true );
         // FIXME: These two lines don't work. Find why the fucketty fuck.
+        // console.log( this._positionRT2 );
+        /*
         this._debugPlaneMat.uniforms.tSprite.value = this._positionRT2.texture;
-        this._debugPlaneMat.uniforms.tSprite.needsUpdate = true;
+        this._debugPlaneMat.needsUpdate = true;
+        */
+        //this._debugPlaneMat.uniforms.tSprite.value.needsUpdate = true;
 
         /*
         let sw = this._positionRT2;
