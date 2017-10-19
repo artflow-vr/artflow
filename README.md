@@ -75,7 +75,21 @@ ToolModule.register('MyNiceTool', toolDescription);
 
 ### TODO
 
+#### All
+* [ ] Remove _movingGroup and add a dolly group above the camera
+* [ ] Use pow2 textures. It would be nice to reduce the number of requests, by merging textures together and using different UVs (for instance for the UI).
+
 #### Brushes
-* [ ] Add pressure
+* [X] Add pressure
 * [ ] Add strokes system
-* [ ] Change events in tools
+* [ ] Move temporary allocation to initialization
+* [ ] Move Helper folder from `tool/` folder
+* [ ] Remove call to ToolModule from BrushHelper. (The dependecy should come from the UI, or somewhere else).
+* [ ] Change stroke registration, by adding a `registerStroke` function, taking as parameter the description of a stroke. A stroke could be for instance described by a UI image, an update function to call, a material, and some predifined options (thickness, etc).
+
+#### Particles
+* [ ] Make a POC of GPU particles, without any interactions, but with options (color, glow, etc...)
+* [ ] Make a POC of GPU particles with depth buffer intereactions.
+
+#### Water
+* [ ] Add input to draw the water plane

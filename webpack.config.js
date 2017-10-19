@@ -8,16 +8,53 @@ let SRC = ROOT + '/src';
 let BUILD = 'build';
 
 let ENTRY_FILE = SRC + '/index.js';
-let OUTPUT_FILE = 'artflow-dist.js';
+let OUTPUT_FILE = 'artflow-dist';
 
-module.exports = {
- entry: ENTRY_FILE,
- output: {
+let env = require( 'dotenv' ).config();
+
+let plugins = [
+  new webpack.ProvidePlugin( {
+    'THREE': 'three',
+    'window.THREE': 'three'
+  } )
+];
+let loaders = [
+  {
+    test: /\.js$/,
+    exclude: /node_modules/,
+    loader: 'babel-loader',
+    query: {
+      presets: ['es2015']
+    }
+  }
+];
+
+let exp = {
+  entry: ENTRY_FILE,
+  output: {
     path: path.resolve( __dirname, BUILD + '/' ),
-    filename: OUTPUT_FILE,
-    publicPath: '/' + BUILD + '/'
+    filename: null,
+    publicPath: '/' + BUILD + '/',
+    library: 'Artflow'
   },
-  plugins: [
-    new webpack.HotModuleReplacementPlugin()
-  ]
+  module: {}
 };
+
+if ( !env.parsed || env.parsed.WEBPACK_CONFIG !== 'build' ) {
+    OUTPUT_FILE = OUTPUT_FILE + '.js';
+    plugins.push( new webpack.HotModuleReplacementPlugin() );
+} else {
+  OUTPUT_FILE = OUTPUT_FILE + '.min.js';
+  plugins.push( new webpack.optimize.UglifyJsPlugin( { minimize: true } ) );
+  loaders.push( {
+    test: /(\.jsx|\.js)$/,
+    loader: 'eslint-loader',
+    exclude: /node_modules/
+  } );
+}
+
+exp.output.filename = OUTPUT_FILE;
+exp.plugins = plugins;
+exp.module.loaders = loaders;
+
+module.exports = exp;

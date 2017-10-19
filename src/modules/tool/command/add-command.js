@@ -1,34 +1,36 @@
 'use strict';
 
-function AddCommand( view ) {
+export default class AddCommand {
 
-    this._view = view;
-    this._redomesh = null;
+    constructor( view ) {
+
+        this._view = view;
+        this._redomesh = null;
+    }
+
+    undo() {
+
+        let objects = this._view.object.children;
+        this._redomesh = objects.pop();
+
+    }
+
+    redo() {
+
+        let objects = this._view.object.children;
+        objects.push( this._redomesh );
+
+        this._redomesh = null;
+
+    }
+
+    clear() {
+
+        if ( this._redomesh === null ) return;
+
+        this._redomesh.geometry.dispose();
+        this._redomesh.material.dispose();
+
+    }
+
 }
-
-AddCommand.prototype.undo = function () {
-
-    let objects = this._view.object.children;
-    this._redomesh = objects.pop();
-
-};
-
-AddCommand.prototype.redo = function () {
-
-    let objects = this._view.object.children;
-    objects.push( this._redomesh );
-
-    this._redomesh = null;
-
-};
-
-AddCommand.prototype.clear = function () {
-
-    if ( this._redomesh === null ) return;
-
-    this._redomesh.geometry.dispose();
-    this._redomesh.material.dispose();
-
-};
-
-module.exports = AddCommand;

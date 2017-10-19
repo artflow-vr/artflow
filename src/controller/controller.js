@@ -1,6 +1,7 @@
-let FPSControls = require( './fps-controller' );
+import FPSControls from './fps-controller';
+import ViveController from './vive-controller';
 
-let controller = {};
-controller.FPSControls = FPSControls;
-
-module.exports = controller;
+export {
+    FPSControls,
+    ViveController
+};

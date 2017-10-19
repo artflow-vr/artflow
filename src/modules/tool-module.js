@@ -1,182 +1,270 @@
-'use strict';
+/**
+* ArtFlow application
+* https://github.com/artflow-vr/artflow
+*
+* MIT License
+*
+* Copyright (c) 2017 artflow
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
 
-let Tool = require( './tool/tool' );
+import * as Tool from './tool/tool';
+import * as Utils from '../utils/utils';
 
-let MainView = require( '../view/main-view' );
+import MainView from '../view/main-view';
+import UI from '../view/ui';
 
-let Utils = require( '../utils/utils' );
-let EventDispatcher = Utils.EventDispatcher;
 let AssetManager = Utils.AssetManager;
+let EventDispatcher = Utils.EventDispatcher;
 
-let ToolModule = module.exports;
+class ToolModule {
 
-// Contains every tool: brush, water, etc...
-// These tools are not instanciated, they represent only a blueprint.
-let _tools = {};
-let _instance = {};
+    constructor() {
 
-// Contains the tool for each controller. Whenever the user is not in VR,
-// only one tool is accessible at a time.
-let _selected = new Array( 2 );
+        // Contains every tool: brush, water, etc...
+        // These tools are not instanciated, they represent only a blueprint.
+        this._tools = {};
+        this._instance = {};
 
-// General tools should be accessible every time, even if they are not
-// currently selected.
-let _generalTools = [];
+        // Contains the tool for each controller. Whenever the user is not in VR,
+        // only one tool is accessible at a time.
+        this._selected = new Array( 2 );
 
-let undoStack = [];
-let redoStack = [];
+        // General tools should be accessible every time, even if they are not
+        // currently selected.
+        this._generalTools = [];
 
-/**
- * Registers a new tool into the tools library.
- *
- * @param  {String} toolID ID you want to give to the tool. e.g: 'Teleporter'.
- * @param  {Object} tool Object containing information on the tools. e.g:
- * {
- *     tool: [tool_constructor],
- *     options: [options_displayed_in_ui],
- *     general: [flag_generalt_tool],
- *     ...
- * }
- */
-ToolModule.register = function ( toolID, tool ) {
+        this.undoStack = [];
+        this.redoStack = [];
 
-    if ( toolID in _tools ) {
-        let errorMsg = 'you already registered the tool \'' + toolID + '\'';
-        throw Error( 'ToolModule: ' + errorMsg );
+        this.objectPool = null;
+
     }
 
-    _tools[ toolID ] = tool;
+    register( toolID, tool ) {
 
-};
-
-ToolModule.init = function () {
-
-    this._registerBasicTools();
-
-    // TODO: We have to instanciate the tools according to what the user
-    // selected. We should keep track of instanciated tool, to avoid
-    // making useless instanciation.
-    _instance.brush0.controllerID = 0;
-    _selected[ 0 ] = _instance.brush0;
-    _selected[ 1 ] = null;
-
-    // TODO: Add onEnterChild & onExitChild event trigger.
-
-    // Registers trigger event for any tool
-    EventDispatcher.registerFamily( 'interact', this._getEventFamily(
-        'interact' ) );
-    //EventDispatcher.registerFamily( 'thumbpad', this._getEventFamily( 'thumbpad' ) );
-
-    EventDispatcher.register( 'undo', function () {
-
-        if ( undoStack.length === 0 ) return;
-
-        let cmd = undoStack.pop();
-        cmd.undo();
-        redoStack.push( cmd );
-
-    } );
-
-    EventDispatcher.register( 'redo', function () {
-
-        if ( redoStack.length === 0 ) return;
-
-        let cmd = redoStack.pop();
-        cmd.redo();
-        undoStack.push( cmd );
-
-    } );
-
-    // For efficiency reason, we will register particular events for general
-    // tools, it will allow them to be accessible every time.
-    // TODO: Look at the parameter 'general' when registering a tool, in
-    // order to avoid hardcode this registering.
-    _generalTools.push( _instance.teleporter );
-    for ( let toolID in _generalTools ) {
-        let tool = _generalTools[ toolID ];
-        for ( let eventID in tool.listenTo ) {
-            EventDispatcher.registerFamily( eventID, tool.listenTo[ eventID ] );
+        if ( toolID in this._tools ) {
+            let errorMsg = 'you already registered the tool \'' + toolID +
+                '\'';
+            throw Error( 'ToolModule: ' + errorMsg );
         }
+
+        this._tools[ toolID ] = tool;
+
+        // Adds the tool to the UI if a texture was provided.
+        if ( tool.uiTexture ) {
+            UI.addTool( toolID, tool.uiTexture,
+                AssetManager.assets.texture[ 'ui-button-back' ],
+                this._onUISelection.bind( this )
+            );
+        }
+
     }
 
+    init() {
 
-};
+        this.objectPool = new Utils.ObjectPool();
+        this._registerBasicTools();
 
-/**
- * Updates every *instanciated* tools.
- *
- * @param  {Object} data Data provided by the ModuleManager.
- */
-ToolModule.update = function ( data ) {
+        // TODO: This is gross and this is a bug of the UI.
+        // It should be OK to refresh each time an element is added but
+        // it does not seem to work.
+        UI._homeUIs[ 0 ].refresh();
 
-    let tool = null;
-    for ( let toolID in _instance ) {
-        tool = _instance[ toolID ];
-        if ( tool.update ) tool.update( data );
-    }
+        this._selected[ 0 ] = this._instance.Brush[ 0 ];
+        this._selected[ 1 ] = this._instance.Brush[ 1 ];
 
-};
+        // TODO: Add onEnterChild & onExitChild event trigger.
 
-ToolModule._getEventFamily = function ( eventID ) {
+        /*
+            The Code below registers every supported events, such as the
+            Vive and mouse button, color changes, UI selection...
+        */
 
-    return {
-        use: function ( data ) {
+        // Registers events sent by the UI
+        EventDispatcher.register( 'colorChange', this._onColorChange.bind( this ) );
 
-            _selected[ data.controllerID ].triggerEvent( eventID, 'use',
-                data );
+        // Registers input events, coming either from the Vive, or from
+        // the mouse.
+        EventDispatcher.registerFamily(
+            'interact', this._getEventFamily( 'interact' )
+        );
+        EventDispatcher.registerFamily(
+            'axisChanged', this._getEventFamily( 'axisChanged' )
+        );
 
-        },
-        trigger: function ( data ) {
+        // Registers 'redo' and 'undo' events that can be trigger by
+        // the input, or from the UI.
+        EventDispatcher.register( 'undo', () => {
 
-            let cmd = _selected[ data.controllerID ].triggerEvent(
-                eventID, 'trigger', data );
-            if ( cmd ) undoStack.push( cmd );
+            if ( this.undoStack.length === 0 ) return;
 
-            for ( let i = redoStack.length - 1; i >= 0; --i ) {
-                let c = redoStack.pop();
-                if ( c.clear ) c.clear();
+            let cmd = this.undoStack.pop();
+            cmd.undo();
+            this.redoStack.push( cmd );
+
+        } );
+
+        EventDispatcher.register( 'redo', () => {
+
+            if ( this.redoStack.length === 0 ) return;
+
+            let cmd = this.redoStack.pop();
+            cmd.redo();
+            this.undoStack.push( cmd );
+
+        } );
+
+        // For efficiency reason, we will register particular events for general
+        // tools, it will allow them to be accessible every time.
+        // TODO: Look at the parameter 'general' when registering a tool, in
+        // order to avoid hardcode this registering.
+        let teleporter = new Tool.TeleporterTool();
+        MainView.addToMovingGroup( teleporter.worldGroup.getObject() );
+        MainView.addToScene( teleporter.localGroup.getObject() );
+
+        this._generalTools.push( teleporter );
+
+        for ( let toolID in this._generalTools ) {
+            let tool = this._generalTools[ toolID ];
+            for ( let eventID in tool.listenTo ) {
+                EventDispatcher.registerFamily(
+                    eventID, tool.listenTo[ eventID ]
+                );
             }
-
-        },
-        release: function ( data ) {
-
-            _selected[ data.controllerID ].triggerEvent( eventID,
-                'release', data );
-
         }
-    };
 
-};
-
-ToolModule._instanciate = function ( instanceID, toolID, options ) {
-
-    if ( !( toolID in _tools ) ) {
-        let errorMsg = 'Tool \'' + toolID + '\' is not registered yet.';
-        throw Error( 'ToolModule._instanciate(): ' + errorMsg );
     }
 
-    if ( instanceID in _instance ) {
-        let errorMsg = '\'' + instanceID + '\' already instanciated.';
-        throw Error( 'ToolModule._instanciate(): ' + errorMsg );
+    update( data ) {
+
+        let tool = null;
+        for ( let toolID in this._instance ) {
+            tool = this._instance[ toolID ];
+            if ( tool.update ) tool.update( data );
+        }
+
     }
 
-    let instance = new _tools[ toolID ]( options );
-    _instance[ instanceID ] = instance;
+    _onColorChange( color ) {
 
-    // Adds tool's view groups to the root scene and the moving group.
-    MainView.addToMovingGroup( instance.worldGroup.getObject() );
-    MainView.addToScene( instance.localGroup.getObject() );
+        for ( let e in this._instance ) {
+            this._instance[ e ][ 0 ].triggerEvent( 'colorChanged', color );
+            this._instance[ e ][ 1 ].triggerEvent( 'colorChanged', color );
+        }
 
-};
+    }
 
-ToolModule._registerBasicTools = function () {
+    _onUISelection( toolID, controllerID, evt ) {
 
-    this.register( 'Brush', Tool.BrushTool );
-    this.register( 'Teleporter', Tool.TeleporterTool );
+        if ( evt.pressed )
+            this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
 
-    this._instanciate( 'brush0', 'Brush', {
-        texture: AssetManager.assets.texture.brush1
-    } );
-    this._instanciate( 'teleporter', 'Teleporter' );
+    }
 
-};
+    _getEventFamily( eventID ) {
+
+        return {
+            use: ( data ) => {
+
+                this._selected[ data.controllerID ].triggerEvent(
+                    eventID, data, 'use'
+                );
+
+            },
+            trigger: ( data ) => {
+
+                let cmd = this._selected[ data.controllerID ].triggerEvent(
+                    eventID, data, 'trigger'
+                );
+                if ( cmd ) this.undoStack.push( cmd );
+
+                for ( let i = this.redoStack.length - 1; i >= 0; --i ) {
+                    let c = this.redoStack.pop();
+                    if ( c.clear ) c.clear();
+                }
+
+            },
+            release: ( data ) => {
+
+                this._selected[ data.controllerID ].triggerEvent(
+                    eventID, data, 'release'
+                );
+
+            }
+        };
+
+    }
+
+    _instanciate( toolID, options ) {
+
+        if ( !( toolID in this._tools ) ) {
+            let errorMsg = 'Tool \'' + toolID + '\' is not registered yet.';
+            throw Error( 'ToolModule._instanciate(): ' + errorMsg );
+        }
+
+        // The user can use two tool at the same time. We need two instances
+        // of each.
+        let instance = new Array( 2 );
+        instance[ 0 ] = new this._tools[ toolID ].Tool( options );
+        instance[ 1 ] = new this._tools[ toolID ].Tool( options );
+        this._instance[ toolID ] = instance;
+
+        // Adds tool's view groups to the root scene and the moving group.
+        MainView.addToMovingGroup( instance[ 0 ].worldGroup.getObject() );
+        MainView.addToMovingGroup( instance[ 1 ].worldGroup.getObject() );
+        MainView.addToScene( instance[ 0 ].localGroup.getObject() );
+        MainView.addToScene( instance[ 1 ].localGroup.getObject() );
+
+    }
+
+    _registerBasicTools() {
+
+        this.register( 'Teleporter', {
+            Tool: Tool.TeleporterTool
+        } );
+        this.register( 'Brush', {
+            uiTexture: AssetManager.assets.texture[ 'ui-tool-brush' ],
+            Tool: Tool.BrushTool
+        } );
+        this.register( 'Particle', {
+            uiTexture: AssetManager.assets.texture[ 'ui-tool-particles' ],
+            Tool: Tool.ParticleTool
+        } );
+        this.register( 'Water', {
+            uiTexture: AssetManager.assets.texture[ 'ui-tool-water' ],
+            Tool: Tool.WaterTool
+        } );
+        this.register( 'Tree', {
+            uiTexture: AssetManager.assets.texture[ 'ui-tool-tree' ],
+            Tool: Tool.TreeTool
+        } );
+
+
+        this._instanciate( 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
+        this._instanciate( 'Water' );
+        this._instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
+        this._instanciate( 'Particle' );
+
+    }
+
+}
+
+export default new ToolModule();

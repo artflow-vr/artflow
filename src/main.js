@@ -1,115 +1,140 @@
-let Main = module.exports;
+/**
+* ArtFlow application
+* https://github.com/artflow-vr/artflow
+*
+* MIT License
+*
+* Copyright (c) 2017 artflow
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
+import * as Artflow from './artflow';
 
-let THREE = window.THREE = require( 'three' );
-
-let Artflow = require( './artflow' );
 let ModuleManager = Artflow.modules.ModuleManager;
 let ControlModule = Artflow.modules.ControlModule;
-
 let AssetManager = Artflow.utils.AssetManager;
-
 let MainView = Artflow.view.MainView;
-
 let WebVR = Artflow.vr.WebVR;
 
-let renderer = null;
-let clock = null;
+class Main {
 
-let updateData = {
-    delta: 0.0,
-    controllers: [ null, null ]
-};
+    constructor() {
 
-Main.init = function ( w, h ) {
+        this._renderer = new THREE.WebGLRenderer( {
+            antialias: true
+        } );
 
-    renderer = new THREE.WebGLRenderer( {
-        antialias: true
-    } );
-    renderer.setPixelRatio( window.devicePixelRatio );
-    renderer.setSize( w, h );
-    document.body.appendChild( renderer.domElement );
+        this._clock = new THREE.Clock();
 
-    AssetManager.init()
-        .then( function () {
+        this._updateData = {
+            delta: 0.0,
+            controllers: [ null, null ]
+        };
 
-            WebVR.checkAvailability()
-                .then( function () {
-                    WebVR.getVRDisplay( function ( display ) {
+    }
 
-                        document.body.appendChild(
-                            WebVR.getButton( display,
-                                renderer.domElement )
-                        );
-                        renderer.vr.enabled = true;
-                        renderer.vr.standing = true;
-                        renderer.vr.setDevice( display );
+    init( w, h ) {
 
-                        ControlModule.vr = true;
-                        Main._initData( w, h );
+        this._renderer.setPixelRatio( window.devicePixelRatio );
+        this._renderer.setSize( w, h );
+        document.body.appendChild( this._renderer.domElement );
 
-                    } );
+        AssetManager.init().then( () => {
 
-                } )
-                .catch( function ( message ) {
+            WebVR.checkAvailability().then( () => {
+
+                WebVR.getVRDisplay( ( display ) => {
 
                     document.body.appendChild(
-                        WebVR.getMessageContainer( message )
+                        WebVR.getButton( display,this._renderer.domElement )
                     );
-                    Main._initData( w, h );
+                    this._renderer.vr.enabled = true;
+                    this._renderer.vr.standing = true;
+                    this._renderer.vr.setDevice( display );
+
+                    ModuleManager.vr = true;
+                    this._initData( w, h );
 
                 } );
 
+            } )
+            .catch( ( message ) => {
+
+                document.body.appendChild(
+                    WebVR.getMessageContainer( message )
+                );
+                this._initData( w, h );
+
+            } );
+
         } )
-        .catch( function ( error ) {
+        .catch( ( error ) => {
 
             throw Error( error );
 
         } );
 
+    }
 
-};
+    resize( w, h ) {
 
-Main.resize = function ( w, h ) {
+        ModuleManager.resize( w, h );
+        MainView.resize( w, h );
+        this._renderer.setSize( w, h );
 
-    ModuleManager.resize( w, h );
-    MainView.resize( w, h );
-    renderer.setSize( w, h );
+    }
 
-};
+    _update() {
 
-Main._update = function () {
+        let controllers = ControlModule.getControllersData();
 
-    let controllers = ControlModule.getControllersData();
+        this._updateData.delta = this._clock.getDelta();
+        this._updateData.controllers[ 0 ] = controllers[ 0 ];
+        this._updateData.controllers[ 1 ] = controllers[ 1 ];
 
-    updateData.delta = clock.getDelta();
-    updateData.controllers[ 0 ] = controllers[ 0 ];
-    updateData.controllers[ 1 ] = controllers[ 1 ];
+        ModuleManager.update( this._updateData );
 
-    ModuleManager.update( updateData );
+    }
 
-};
+    _render() {
 
-Main._render = function () {
+        MainView.render();
 
-    MainView.render();
+    }
 
-};
+    _animate() {
 
-Main._animate = function () {
+        this._update();
+        this._render();
 
-    Main._update();
-    Main._render();
+    }
 
-};
+    _initData( w, h ) {
 
-Main._initData = function ( w, h ) {
+        MainView.init( w, h, this._renderer, ModuleManager.vr );
+        ModuleManager.init();
 
-    clock = new THREE.Clock();
+        this.resize( w, h );
+        this._renderer.animate( this._animate.bind( this ) );
 
-    MainView.init( w, h, renderer, ControlModule.vr );
-    ModuleManager.init();
+    }
 
-    Main.resize( w, h );
-    renderer.animate( Main._animate );
+}
 
-};
+export default new Main();

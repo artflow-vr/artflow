@@ -1,87 +1,81 @@
-'use strict';
-
-let THREE = window.THREE;
-
 /**
- * Wrapper on THREE.Group(), containing utils method to apply material, change
- * the visibility of the group, or move its position.
- *
- * @constructor
- */
-function THREEView() {
+* ArtFlow application
+* https://github.com/artflow-vr/artflow
+*
+* MIT License
+*
+* Copyright (c) 2017 artflow
+*
+* Permission is hereby granted, free of charge, to any person obtaining a copy
+* of this software and associated documentation files (the "Software"), to deal
+* in the Software without restriction, including without limitation the rights
+* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+* copies of the Software, and to permit persons to whom the Software is
+* furnished to do so, subject to the following conditions:
+*
+* The above copyright notice and this permission notice shall be included in all
+* copies or substantial portions of the Software.
+*
+* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+* SOFTWARE.
+*/
 
-    this.object = new THREE.Group();
+export default class THREEView {
 
-}
-/**
- * Adds a THREE.JS Object3D to the group contained in this instance.
- *
- * @param  {THREE.Object3D} obj object to add to the group.
- */
-THREEView.prototype.addTHREEObject = function ( obj ) {
+    constructor() {
 
-    if ( !( obj instanceof THREE.Object3D ) ) {
-        let errorMsg = 'addTHREEObject() was not given a THREE.JS object.';
-        throw Error( 'THREEView: ' + errorMsg );
+        this.object = new THREE.Group();
+
     }
 
-    this.object.add( obj );
+    addTHREEObject( obj ) {
 
-};
+        if ( !( obj instanceof THREE.Object3D ) ) {
+            let errorMsg = 'addTHREEObject() was not given a THREE.JS object.';
+            throw Error( 'THREEView: ' + errorMsg );
+        }
 
-/**
- * Travers the object in order to apply a given material to every mesh.
- *
- * @param  {THREE.Material} material Material to apply.
- */
-THREEView.prototype.applyMaterial = function ( material ) {
+        this.object.add( obj );
 
-    this.object.traverse( function ( child ) {
+    }
 
-        if ( child instanceof THREE.Mesh ) child.material =
-            material;
+    applyMaterial( material ) {
 
-    } );
+        this.object.traverse( function ( child ) {
 
-};
-/**
- * Sets the position of the group.
- *
- * @param  {THREE.Vector3} position Target position.
- * It is good to note that the given position is not changed, the three
- * components are copied one by one.
- */
-THREEView.prototype.setPos = function ( position ) {
+            if ( child instanceof THREE.Mesh ) child.material = material;
 
-    this.object.position.x = position.x;
-    this.object.position.y = position.y;
-    this.object.position.z = position.z;
+        } );
 
-};
+    }
 
-/**
- * Sets group to visible or invisible.
- *
- * @param  {boolean} trigger True to display the group. False otherwise.
- */
-THREEView.prototype.setVisible = function ( trigger ) {
+    setPos( position ) {
 
-    this.object.traverse( function ( child ) {
+        this.object.position.x = position.x;
+        this.object.position.y = position.y;
+        this.object.position.z = position.z;
 
-        if ( child instanceof THREE.Object3D ) child.visible =
-            trigger;
+    }
 
-    } );
+    setVisible( trigger ) {
 
-};
+        this.object.traverse( function ( child ) {
 
-/**
- * Returns the THREE.Group object from the instance.
- */
-THREEView.prototype.getObject = function () {
+            if ( child instanceof THREE.Object3D ) child.visible = trigger;
 
-    return this.object;
+        } );
 
-};
+    }
 
-module.exports = THREEView;
+    getObject() {
+
+        return this.object;
+
+    }
+
+}
