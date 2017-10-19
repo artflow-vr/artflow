@@ -86,17 +86,20 @@ class PrimitivesRenderer {
         this._velocityRT1 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
         this._velocityRT2 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
 
+        /*
         this._positionBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
             this._bufferHeight, new THREE.Color( 0x111111 ) );
+        */
+        this._positionBufferTex1 = AssetManager.assets.texture.particle_position_in;
         this._positionBufferTex1.needsUpdate = true;
         this._velocityBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
-            this._bufferHeight, new THREE.Color( 0x111111 ) );
+            this._bufferHeight, new THREE.Color( 0.5, 0.5, 0.5 ) );
         this._velocityBufferTex1.needsUpdate = true;
 
         // Initialize RTT materials
         this._positionsTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
-                tPositionsMap : { type: 't', value: this._positionRT2.texture },
+                tPositionsMap : { type: 't', value: this._positionBufferTex1 },
                 tVelocitiesMap : { type: 't', value: this._velocityRT2.texture },
                 dt : { type: 'f', value: 0 }
             },
@@ -106,7 +109,7 @@ class PrimitivesRenderer {
         this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
                 tPositionsMap : { type: 't', value: this._positionRT2.texture },
-                tVelocitiesMap : { type: 't', value: this._velocityRT2.texture },
+                tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
                 dt : { type: 'f', value: 0 }
             },
             vertexShader: VelocityUpdate.vertex,
@@ -148,6 +151,7 @@ class PrimitivesRenderer {
         this._velocityRT2 = sw;
         this._velocitiesTargetTextureMat.uniforms.tVelocitiesMap.value = this._velocityRT2.texture;
 
+        this._positionsTargetTextureMat.uniforms.tVelocitiesMap.value = this._velocityRT2.texture;
         this._positionsTargetTextureMesh.material.uniforms.dt.value = dt;
         this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT1, true );
         sw = this._positionRT1;
@@ -155,8 +159,8 @@ class PrimitivesRenderer {
         this._positionRT2 = sw;
         this._positionsTargetTextureMat.uniforms.tPositionsMap.value = this._positionRT2.texture;
 
-        this._positionsTargetTextureMat.uniforms.tVelocitiesMap.value = this._velocityRT2.texture;
         this._velocitiesTargetTextureMat.uniforms.tPositionsMap.value = this._positionRT2.texture;
+        this._debugPlaneMat.uniforms.tSprite.value = this._positionRT2.texture;
 
         return this._positionRT2.texture;
     }

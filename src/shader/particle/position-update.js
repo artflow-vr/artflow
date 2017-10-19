@@ -43,9 +43,10 @@ module.exports = {
         'varying vec2 a_uv;',
 
         'void main() {',
-        '   vec4 velocity = texture2D( tVelocitiesMap, a_uv );',
         '   vec4 position = texture2D( tPositionsMap, a_uv );',
-        '	gl_FragColor = velocity + vec4(0.5, 0.0, 0.0, 0.0);',
+        '   vec4 velocity = texture2D( tVelocitiesMap, a_uv );',
+        '   vec4 velocity_centered = velocity - vec4(0.5, 0.5, 0.5, 0.0);',
+        '	gl_FragColor =  position - velocity_centered;',
         '}'
 
     ].join( '\n' )

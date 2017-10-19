@@ -45,7 +45,7 @@ module.exports = {
         'void main() {',
         '   vec4 velocity = texture2D( tVelocitiesMap, a_uv );',
         '   vec4 position = texture2D( tPositionsMap, a_uv );',
-        '	gl_FragColor = velocity + vec4(0.0, 0.01, 0.0, 0.0);',
+        '	gl_FragColor = velocity;',
         '}'
 
     ].join( '\n' )
