@@ -6,6 +6,9 @@
 
 **ArtFlow** is greatly influenced by [Tilt Brush](https://www.tiltbrush.com/), and [A-Painter](https://github.com/aframevr/a-painter).
 
+[![ArtFlow Video](https://user-images.githubusercontent.com/8783766/31792707-36e8d1b2-b51d-11e7-9dfc-9b411258deb0.png)
+](https://youtu.be/QyUaBjSxGXc)
+
 ## Local Execution
 
 ### Dependencies
