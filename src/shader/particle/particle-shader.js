@@ -29,21 +29,25 @@ module.exports = {
     vertex: [
         'attribute float size;',
         'attribute vec2 idx;',
+        'varying vec2 a_idx;',
         'uniform sampler2D tPositions;',
 
         'void main() {',
         '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
         '	gl_PointSize = size;',
+        '	a_idx = idx;',
         '}'
 
     ].join( '\n' ),
 
     fragment: [
         'uniform sampler2D tSprite;',
+        'varying vec2 a_idx;',
 
         'void main() {',
         '	vec4 tex = texture2D( tSprite, gl_PointCoord );',
         '	gl_FragColor = vec4( tex );',
+        //'	gl_FragColor = vec4( a_idx.x / 512.0, a_idx.y / 512.0, 0.0, 1.0 );',
         '}'
 
     ].join( '\n' )

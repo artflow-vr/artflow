@@ -42,18 +42,19 @@ class PrimitivesRenderer {
         // Set up RTTs
         this.initPositionRenderPass();
 
-        // Set up indices
-        this.availableX = 0;
-        this.availableY = 0;
+        this._indices = [];
+        this.initIndicesArray();
+    }
+
+    initIndicesArray() {
+        for ( let i = 511; i >= 0; i-- )
+            for ( let j = 511; j >= 0; j-- )
+                this._indices.push( i * 512 + j );
     }
 
     getAvailableIndex() {
-        let idx = { x: this.availableX, y: this.availableY };
-        if ( this.availableX++ >= 512 ) {
-            this.availableX = 0;
-            this.availableY++;
-        }
-        return idx;
+        let idx = this._indices.pop();
+        return { x: idx % 512, y: Math.floor( idx / 512 ) };
     }
 
     initPositionRenderPass() {
@@ -93,14 +94,14 @@ class PrimitivesRenderer {
         this._positionBufferTex1 = AssetManager.assets.texture.particle_position_in;
         this._positionBufferTex1.needsUpdate = true;
         this._velocityBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
-            this._bufferHeight, new THREE.Color( 0.5, 0.5, 0.5 ) );
+            this._bufferHeight, new THREE.Color( 0.5, 0.5, 0.495 ) );
         this._velocityBufferTex1.needsUpdate = true;
 
         // Initialize RTT materials
         this._positionsTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
                 tPositionsMap : { type: 't', value: this._positionBufferTex1 },
-                tVelocitiesMap : { type: 't', value: this._velocityRT2.texture },
+                tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
                 dt : { type: 'f', value: 0 }
             },
             vertexShader: PositionUpdate.vertex,
@@ -108,7 +109,7 @@ class PrimitivesRenderer {
         } );
         this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
-                tPositionsMap : { type: 't', value: this._positionRT2.texture },
+                tPositionsMap : { type: 't', value: this._positionBufferTex1 },
                 tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
                 dt : { type: 'f', value: 0 }
             },
@@ -234,7 +235,6 @@ class ParticleContainer extends THREE.Object3D {
         let i = this._particleCursor;
 
         let idx = this._primitivesRenderer.getAvailableIndex();
-        // console.log( idx );
         let idxAttribute = this.particleShaderGeo.getAttribute( 'idx' );
         idxAttribute.needsUpdate = true;
         idxAttribute.array[ i * 2 ] = idx.x;
