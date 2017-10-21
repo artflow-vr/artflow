@@ -244,12 +244,9 @@ class ParticleContainer extends THREE.Object3D {
         // position
         let positionStartAttribute = this.particleShaderGeo.getAttribute( 'position' );
         positionStartAttribute.needsUpdate = true;
-        positionStartAttribute.array[ i * 3 ] = position.x
-            + ( this._particleSystem.getRandom() * positionRandomness );
-        positionStartAttribute.array[ i * 3 + 1 ] = position.y
-            + ( this._particleSystem.getRandom() * positionRandomness );
-        positionStartAttribute.array[ i * 3 + 2 ] = position.z
-            + ( this._particleSystem.getRandom() * positionRandomness );
+        positionStartAttribute.array[ i * 3 ] = position.x;
+        positionStartAttribute.array[ i * 3 + 1 ] = position.y;
+        positionStartAttribute.array[ i * 3 + 2 ] = position.z;
 
         // size
         let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );

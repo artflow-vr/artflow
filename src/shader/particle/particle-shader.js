@@ -33,7 +33,9 @@ module.exports = {
         'uniform sampler2D tPositions;',
 
         'void main() {',
-        '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
+        '	vec3 position_offset = texture2D( tPositions, vec2(idx.x / 512.0, idx.y / 512.0)).xyz;',
+        '	position_offset = (position_offset - 0.5) * 2.0;',
+        '	gl_Position = projectionMatrix * modelViewMatrix * vec4( ( position + position_offset ) * 1.0, 1.0 );',
         '	gl_PointSize = size;',
         '	a_idx = idx;',
         '}'
