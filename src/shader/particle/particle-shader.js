@@ -43,11 +43,13 @@ module.exports = {
     fragment: [
         'uniform sampler2D tSprite;',
         'varying vec2 a_idx;',
+        'uniform sampler2D tPositions;',
 
         'void main() {',
-        '	vec4 tex = texture2D( tSprite, gl_PointCoord );',
+        //'	vec4 tex = texture2D( tSprite, gl_PointCoord );',
+        '	vec4 tex = texture2D( tPositions, vec2(a_idx.x / 512.0, a_idx.y / 512.0));',
         '	gl_FragColor = vec4( tex );',
-        //'	gl_FragColor = vec4( a_idx.x / 512.0, a_idx.y / 512.0, 0.0, 1.0 );',
+        //'	gl_FragColor = vec4( a_idx.x / 512.0, a_idx.y * 100.0 / 512.0, 0.0, 1.0 );',
         '}'
 
     ].join( '\n' )

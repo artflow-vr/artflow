@@ -235,6 +235,7 @@ class ParticleContainer extends THREE.Object3D {
         let i = this._particleCursor;
 
         let idx = this._primitivesRenderer.getAvailableIndex();
+        console.log(idx);
         let idxAttribute = this.particleShaderGeo.getAttribute( 'idx' );
         idxAttribute.needsUpdate = true;
         idxAttribute.array[ i * 2 ] = idx.x;
@@ -272,6 +273,7 @@ class ParticleContainer extends THREE.Object3D {
     update() {
         let elapsedTime = this._clock.getElapsedTime();
         this._updatedPositions = this._primitivesRenderer.update( elapsedTime );
+        this.particleShaderMat.uniforms.tPositionsMap = this._updatedPositions;
         this._clock.start();
         let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
         sizeAttribute.needsUpdate = true;
