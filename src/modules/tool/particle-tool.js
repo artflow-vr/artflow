@@ -88,11 +88,9 @@ class PrimitivesRenderer {
         this._velocityRT1 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
         this._velocityRT2 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
 
-        /*
-        this._positionBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
-            this._bufferHeight, new THREE.Color( 0.5, 0.5, 0.5 ) );
-            */
-        this._positionBufferTex1 = AssetManager.assets.texture.particle_position_in;
+        this._positionBufferTex1 = THREE.ImageUtils.generateRandomDataTexture( this._bufferWidth,
+            this._bufferHeight );
+        // this._positionBufferTex1 = AssetManager.assets.texture.particle_position_in;
         this._positionBufferTex1.needsUpdate = true;
         this._velocityBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
             this._bufferHeight, new THREE.Color( 0.5, 0.495, 0.5 ) );
