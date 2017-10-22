@@ -39,6 +39,8 @@ module.exports = {
     fragment: [
         'uniform sampler2D tVelocitiesMap;',
         'uniform sampler2D tPositionsMap;',
+        'uniform sampler2D tInitialPositionsMap;',
+        'uniform sampler2D tInitialVelocitiesMap;',
         'uniform float dt;',
         'varying vec2 a_uv;',
 

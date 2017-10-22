@@ -35,8 +35,8 @@ import MainView from '../../view/main-view';
 
 class PrimitivesRenderer {
     constructor( options ) {
-        this.options = options;
-
+        // this._bufferWidth = Math.floor( options.particlesPerEmitter );
+        // this._bufferHeight = Math.floor( options.particlesPerEmitter );
         this._renderer = MainView._renderer;
 
         // Set up RTTs
@@ -44,6 +44,9 @@ class PrimitivesRenderer {
 
         this._indices = [];
         this.initIndicesArray();
+    }
+
+    _getNextPowerTwo( nb ) {
     }
 
     initIndicesArray() {
@@ -90,10 +93,14 @@ class PrimitivesRenderer {
 
         this._positionBufferTex1 = THREE.ImageUtils.generateRandomDataTexture( this._bufferWidth,
             this._bufferHeight );
-        // this._positionBufferTex1 = AssetManager.assets.texture.particle_position_in;
+        this._positionInitialTex = THREE.ImageUtils.copyDataTexture( this._positionBufferTex1,
+            this._bufferWidth, this._bufferHeight );
         this._positionBufferTex1.needsUpdate = true;
+
         this._velocityBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
             this._bufferHeight, new THREE.Color( 0.5, 0.495, 0.5 ) );
+        this._velocityInitialTex = THREE.ImageUtils.copyDataTexture( this._velocityBufferTex1,
+            this._bufferWidth, this._bufferHeight );
         this._velocityBufferTex1.needsUpdate = true;
 
         // Initialize RTT materials
@@ -101,6 +108,8 @@ class PrimitivesRenderer {
             uniforms: {
                 tPositionsMap : { type: 't', value: this._positionBufferTex1 },
                 tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
+                tInitialVelocitiesMap : { type: 't', value: this._velocityInitialTex },
+                tInitialPositionsMap : { type: 't', value: this._positionInitialTex },
                 dt : { type: 'f', value: 0 }
             },
             vertexShader: PositionUpdate.vertex,
@@ -110,6 +119,8 @@ class PrimitivesRenderer {
             uniforms: {
                 tPositionsMap : { type: 't', value: this._positionBufferTex1 },
                 tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
+                tInitialVelocitiesMap : { type: 't', value: this._velocityInitialTex },
+                tInitialPositionsMap : { type: 't', value: this._positionInitialTex },
                 dt : { type: 'f', value: 0 }
             },
             vertexShader: VelocityUpdate.vertex,
@@ -144,6 +155,7 @@ class PrimitivesRenderer {
     }
 
     update( dt ) {
+        this._debugPlaneMat.uniforms.tSprite.value = this._positionRT2.texture;
         this._velocitiesTargetTextureMesh.material.uniforms.dt.value = dt;
         this._renderer.render( this._velocityRTTScene, this._velocitiesCamera, this._velocityRT1, true );
         let sw = this._velocityRT1;
@@ -160,7 +172,6 @@ class PrimitivesRenderer {
         this._positionsTargetTextureMat.uniforms.tPositionsMap.value = this._positionRT2.texture;
 
         this._velocitiesTargetTextureMat.uniforms.tPositionsMap.value = this._positionRT2.texture;
-        this._debugPlaneMat.uniforms.tSprite.value = this._positionRT2.texture;
 
         return this._positionRT2.texture;
     }

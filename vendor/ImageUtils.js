@@ -51,3 +51,24 @@ THREE.ImageUtils.generateRandomDataTexture = function ( width, height ) {
     return texture;
 
 };
+
+THREE.ImageUtils.copyDataTexture = function ( source, width, height ) {
+
+    let size = width * height;
+    //let data = new Float32Array( 4 * size );
+    let data = new Float32Array( 4 * size );
+
+    for ( let i = 0; i < size; i ++ ) {
+        data[ i ] = source.image.data[ i ];
+        data[ i + 1 ] = source.image.data[ i + 1 ];
+        data[ i + 2 ] = source.image.data[ i + 2 ];
+        data[ i + 3 ] = source.image.data[ i + 3 ];
+    }
+
+    //let texture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat, THREE.FloatType );
+    let texture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat, THREE.FloatType );
+    texture.needsUpdate = true;
+
+    return texture;
+
+};

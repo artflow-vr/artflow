@@ -39,14 +39,19 @@ module.exports = {
     fragment: [
         'uniform sampler2D tVelocitiesMap;',
         'uniform sampler2D tPositionsMap;',
+        'uniform sampler2D tInitialPositionsMap;',
+        'uniform sampler2D tInitialVelocitiesMap;',
         'uniform float dt;',
         'varying vec2 a_uv;',
 
         'void main() {',
         '   vec4 position = texture2D( tPositionsMap, a_uv );',
+        '   vec4 initialPosition = texture2D( tInitialPositionsMap, a_uv );',
         '   vec4 velocity = texture2D( tVelocitiesMap, a_uv );',
         '   vec4 velocity_centered = velocity - vec4(0.5, 0.5, 0.5, 0.0);',
-        '   vec4 position_updated =  vec4((position + velocity_centered * dt * 10.0).xyz, position.a - 0.005);',
+        '   vec4 position_updated =  vec4((position + velocity_centered * dt * 10.0).xyz, position.a - 0.001);',
+        '   if ( position_updated.a <= 0.0 )',
+        '       position_updated = initialPosition;',
         '	gl_FragColor =  position_updated;',
         '}'
 
