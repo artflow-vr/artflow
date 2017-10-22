@@ -7,21 +7,23 @@
 THREE.ImageUtils.generateDataTexture = function ( width, height, color ) {
 
     let size = width * height;
-    let data = new Uint8Array( 4 * size );
+    //let data = new Float32Array( 4 * size );
+    let data = new Float32Array( 4 * size );
 
-    let r = Math.floor( color.r * 255 );
-    let g = Math.floor( color.g * 255 );
-    let b = Math.floor( color.b * 255 );
+    let r = color.r;
+    let g = color.g;
+    let b = color.b;
 
     for ( let i = 0; i < size; i ++ ) {
         data[ i * 4 ] 	  = r;
         data[ i * 4 + 1 ] = g;
         data[ i * 4 + 2 ] = b;
-        data[ i * 4 + 3 ] = 255;
+        data[ i * 4 + 3 ] = 1.0;
 
     }
 
-    let texture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat );
+    //let texture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat, THREE.FloatType );
+    let texture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat, THREE.FloatType );
     texture.needsUpdate = true;
 
     return texture;
