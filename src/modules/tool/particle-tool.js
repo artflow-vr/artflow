@@ -78,6 +78,7 @@ class PrimitivesRenderer {
 
         // Create render targets
         let renderTargetParams = {
+            type:THREE.FloatType,
             minFilter:THREE.LinearFilter,
             stencilBuffer:false,
             depthBuffer:false
@@ -89,12 +90,12 @@ class PrimitivesRenderer {
 
         /*
         this._positionBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
-            this._bufferHeight, new THREE.Color( 0x111111 ) );
-        */
+            this._bufferHeight, new THREE.Color( 0.5, 0.5, 0.5 ) );
+            */
         this._positionBufferTex1 = AssetManager.assets.texture.particle_position_in;
         this._positionBufferTex1.needsUpdate = true;
         this._velocityBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
-            this._bufferHeight, new THREE.Color( 0.5, 0.5, 0.495 ) );
+            this._bufferHeight, new THREE.Color( 0.5, 0.495, 0.5 ) );
         this._velocityBufferTex1.needsUpdate = true;
 
         // Initialize RTT materials
@@ -167,7 +168,7 @@ class PrimitivesRenderer {
     }
 }
 
-class ParticleContainer extends THREE.Object3D {
+class ParticleEmitter extends THREE.Object3D {
     constructor( maxParticles, particleSystem ) {
         super();
 
@@ -175,8 +176,6 @@ class ParticleContainer extends THREE.Object3D {
         this._particleCursor = 0;
         this._DPR = window.devicePixelRatio;
         this._particleSystem = particleSystem;
-        this._clock = new THREE.Clock();
-        this._clock.start();
 
         // initialize position and velocity updater
         this._primitivesRenderer = new PrimitivesRenderer();
@@ -235,7 +234,6 @@ class ParticleContainer extends THREE.Object3D {
         let i = this._particleCursor;
 
         let idx = this._primitivesRenderer.getAvailableIndex();
-        console.log(idx);
         let idxAttribute = this.particleShaderGeo.getAttribute( 'idx' );
         idxAttribute.needsUpdate = true;
         idxAttribute.array[ i * 2 ] = idx.x;
@@ -267,16 +265,14 @@ class ParticleContainer extends THREE.Object3D {
         super.add( this.particleGeometry );
     }
 
-    update() {
-        let elapsedTime = this._clock.getElapsedTime();
-        this._updatedPositions = this._primitivesRenderer.update( elapsedTime );
+    update( delta ) {
+        this._updatedPositions = this._primitivesRenderer.update( delta );
         this.particleShaderMat.uniforms.tPositionsMap = this._updatedPositions;
-        this._clock.start();
         let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
         sizeAttribute.needsUpdate = true;
         let i = 0;
         for ( i; i <= this._particleCursor; i++ ) {
-            sizeAttribute.array[ i ] = sizeAttribute.array[ i ] - elapsedTime * 10;
+            sizeAttribute.array[ i ] = sizeAttribute.array[ i ] - delta * 10;
             if ( sizeAttribute.array[ i ] <= 0 )
                 sizeAttribute.array[ i ] = this.startSize + this._particleSystem.getRandom() * this.sizeRandomness;
         }
@@ -293,19 +289,19 @@ super( options );
             brushSize: 1,
             thickness: 10,
             particlesPerContainer: 100000,
-            particleContainers: 1
+            maxParticleEmitters: 1
         } );
 
         this._brushSize = this.options.brushSize;
         this._thickness = this.options.thickness;
-        this._particleContainers = 1;
-        this._particlesPerContainer = 100000;
+        this._maxParticleEmitters = 100;
+        this._particlesPerEmitter = 20;
         this._particleCursor = 0;
         this._particleMaxCount = 0;
         this.rand = [];
 
         // Initializing particles
-        this.particleContainers = [];
+        this._particleEmitters = [];
 
         this.initCursorMesh();
 
@@ -321,15 +317,15 @@ super( options );
             trigger: this.trigger.bind( this ),
             release: this.release.bind( this )
         } );
-
-        this.initParticleContainers();
     }
 
-    initParticleContainers() {
-        for ( let i = 0; i < this._particleContainers; i ++ ) {
-            let c = new ParticleContainer( this._particlesPerContainer, this );
-            this.particleContainers.push( c );
+    _spawnParticleEmitter() {
+        if ( this._particleEmitters.length < this._maxParticleEmitters ) {
+            let c = new ParticleEmitter( this._particlesPerEmitter, this );
+            this._particleEmitters.push( c );
             this.worldGroup.addTHREEObject( c );
+            for ( let i = 0; i < this._particlesPerEmitter; i++ )
+                c.spawnParticle( this._cursorMesh.position );
         }
     }
 
@@ -353,18 +349,8 @@ super( options );
         this.worldGroup.addTHREEObject( this._cursorMesh );
     }
 
-    spawnParticle( position ) {
-        this._particleCursor ++;
-        if ( this._particleCursor >= this._particleMaxCount )
-            this._particleCursor = 1;
-        let currentContainer = this.particleContainers[ Math.floor( this._particleCursor / this._particlesPerContainer ) ];
-        currentContainer.spawnParticle( position );
-        this.worldGroup.addTHREEObject( currentContainer );
-    }
-
     use( data ) {
         this._updateBrush( data.position.world );
-        this.spawnParticle( data.position.world );
     }
 
     _updateBrush( pointCoords ) {
@@ -373,16 +359,16 @@ super( options );
         this._cursorMesh.position.z = pointCoords.z;
     }
 
-    update() {
-        for ( let i = 0; i < this._particleContainers; i ++ )
-            this.particleContainers[ i ].update();
+    update( delta ) {
+        for ( let i = 0; i < this._particleEmitters.length; i ++ )
+            this._particleEmitters[ i ].update( delta.delta );
     }
 
-    // At first click
     trigger() {
     }
 
     release() {
+        this._spawnParticleEmitter();
     }
 
 }
