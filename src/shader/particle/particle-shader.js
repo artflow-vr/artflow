@@ -31,13 +31,16 @@ module.exports = {
         'attribute vec2 idx;',
         'varying vec2 a_idx;',
         'uniform sampler2D tPositions;',
+        'uniform float pointMaxSize;',
+        'uniform float brushSize;',
+        'uniform float particlesTexWidth;',
 
         'void main() {',
-        '	vec4 position_v = texture2D( tPositions, vec2(idx.x / 512.0, idx.y / 512.0));',
+        '	vec4 position_v = texture2D( tPositions, vec2(idx.x / particlesTexWidth, idx.y / particlesTexWidth));',
         '	vec3 position_offset = position_v.xyz;',
-        '	gl_PointSize = position_v.a * 20.0;',
-        '	position_offset = (position_offset - 0.5) * 10.0;',
-        '	gl_Position = projectionMatrix * modelViewMatrix * vec4( ( position + position_offset ) * 1.0, 1.0 );',
+        '	gl_PointSize = position_v.a * pointMaxSize;',
+        '	position_offset = (position_offset - 0.5) * brushSize;',
+        '	gl_Position = projectionMatrix * modelViewMatrix * vec4( ( position + position_offset ), 1.0 );',
         '	a_idx = idx;',
         '}'
 
@@ -50,9 +53,7 @@ module.exports = {
 
         'void main() {',
         '	vec4 tex = texture2D( tSprite, gl_PointCoord );',
-        //'	vec4 tex = texture2D( tPositions, vec2(a_idx.x / 512.0, a_idx.y / 512.0));',
         '	gl_FragColor = vec4( tex );',
-        //'	gl_FragColor = vec4( a_idx.x / 512.0, a_idx.y * 100.0 / 512.0, 0.0, 1.0 );',
         '}'
 
     ].join( '\n' )

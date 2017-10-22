@@ -35,6 +35,7 @@ import MainView from '../../view/main-view';
 
 class PrimitivesRenderer {
     constructor( options ) {
+        this.options = options;
         this._bufferWidth = PrimitivesRenderer._getNextPowerTwo( Math.floor(
             Math.sqrt( options.maxParticlesPerEmitter ) ) );
         this._bufferHeight = PrimitivesRenderer._getNextPowerTwo( Math.floor(
@@ -113,6 +114,8 @@ class PrimitivesRenderer {
                 tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
                 tInitialVelocitiesMap : { type: 't', value: this._velocityInitialTex },
                 tInitialPositionsMap : { type: 't', value: this._positionInitialTex },
+                normVelocity: { type: 'f', value: this.options.normVelocity },
+                lifespanEntropy : { type: 'f', value: this.options.lifespanEntropy },
                 dt : { type: 'f', value: 0 }
             },
             vertexShader: PositionUpdate.vertex,
@@ -198,7 +201,8 @@ class ParticleEmitter extends THREE.Object3D {
         this._primitivesRenderer._debugPlaneMesh.position.x = 1;
         this._primitivesRenderer._debugPlaneMesh.position.y = 1;
         this._primitivesRenderer._debugPlaneMesh.position.z = 0;
-        MainView.addToMovingGroup( this._primitivesRenderer._debugPlaneMesh );
+        if ( this._particleSystem.options.debugPlane )
+            MainView.addToMovingGroup( this._primitivesRenderer._debugPlaneMesh );
         this._updatedPositions = this._primitivesRenderer.update( 0 );
 
         // geometry
@@ -219,7 +223,11 @@ class ParticleEmitter extends THREE.Object3D {
             depthWrite: false,
             uniforms: {
                 tSprite: { type: 't', value: this._particleTexture },
-                tPositions: { type: 't', value: this._updatedPositions }
+                tPositions: { type: 't', value: this._updatedPositions },
+                pointMaxSize: { type: 'f', value: this._particleSystem.options.pointMaxSize },
+                brushSize: { type: 'f', value: this._particleSystem.options.brushSize },
+                particlesTexWidth: { type: 'f', value: Math.floor(
+                    Math.sqrt( this._particleSystem.options.maxParticlesPerEmitter ) ) }
             },
             blending: THREE.AdditiveBlending,
             vertexShader: ParticleShader.vertex,
@@ -273,14 +281,18 @@ class ParticleEmitter extends THREE.Object3D {
 export default class ParticleTool extends AbstractTool {
 
     constructor( options ) {
-super( options );
+    super( options );
 
         this.setOptionsIfUndef( {
-            brushSize: 1,
+            brushSize: 3,
             thickness: 10,
             initialParticlesPerEmitter: 20,
             maxParticlesPerEmitter: 512 * 512,
-            maxEmitters: 20
+            maxEmitters: 20,
+            pointMaxSize: 20,
+            normVelocity: 10,  // FIXME: Initialization when lifespan hits 0
+            lifespanEntropy: 0.001,
+            debugPlane: false
         } );
 
         this._brushSize = this.options.brushSize;
@@ -327,7 +339,7 @@ super( options );
 
     initCursorMesh() {
         this._cursorMesh = new THREE.Mesh(
-            new THREE.SphereGeometry( this.options.brushSize, 16, 16, 0,
+            new THREE.SphereGeometry( this.options.brushSize / 2, 16, 16, 0,
                 Math.PI * 2, 0, Math.PI * 2 ),
             new THREE.MeshBasicMaterial( {
                 color: 0xfff0000,
