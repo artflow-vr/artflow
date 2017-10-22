@@ -35,8 +35,11 @@ import MainView from '../../view/main-view';
 
 class PrimitivesRenderer {
     constructor( options ) {
-        // this._bufferWidth = Math.floor( options.particlesPerEmitter );
-        // this._bufferHeight = Math.floor( options.particlesPerEmitter );
+        this._bufferWidth = PrimitivesRenderer._getNextPowerTwo( Math.floor(
+            Math.sqrt( options.maxParticlesPerEmitter ) ) );
+        this._bufferHeight = PrimitivesRenderer._getNextPowerTwo( Math.floor(
+            Math.sqrt( options.maxParticlesPerEmitter ) ) );
+        console.log( this._bufferWidth, this._bufferHeight );
         this._renderer = MainView._renderer;
 
         // Set up RTTs
@@ -46,25 +49,25 @@ class PrimitivesRenderer {
         this.initIndicesArray();
     }
 
-    _getNextPowerTwo( nb ) {
+    static _getNextPowerTwo( nb ) {
+        let i = 1;
+        while ( i < nb )
+            i *= 2;
+        return i;
     }
 
     initIndicesArray() {
-        for ( let i = 511; i >= 0; i-- )
-            for ( let j = 511; j >= 0; j-- )
-                this._indices.push( i * 512 + j );
+        for ( let i = this._bufferHeight - 1; i >= 0; i-- )
+            for ( let j = this._bufferWidth - 1; j >= 0; j-- )
+                this._indices.push( i * this._bufferWidth + j );
     }
 
     getAvailableIndex() {
         let idx = this._indices.pop();
-        return { x: idx % 512, y: Math.floor( idx / 512 ) };
+        return { x: idx % this._bufferWidth, y: Math.floor( idx / this._bufferWidth ) };
     }
 
     initPositionRenderPass() {
-        // Init buffer textures
-        this._bufferWidth = 512;
-        this._bufferHeight = 512;
-
         // Set up cameras
         this._positionsCamera = new THREE.OrthographicCamera( this._bufferWidth / - 2,
             this._bufferWidth / 2,
@@ -187,7 +190,7 @@ class ParticleEmitter extends THREE.Object3D {
         this._particleSystem = particleSystem;
 
         // initialize position and velocity updater
-        this._primitivesRenderer = new PrimitivesRenderer();
+        this._primitivesRenderer = new PrimitivesRenderer( this._particleSystem.options );
 
         this._primitivesRenderer._debugPlaneMesh.scale.x = 0.01;
         this._primitivesRenderer._debugPlaneMesh.scale.y = 0.01;
@@ -204,12 +207,6 @@ class ParticleEmitter extends THREE.Object3D {
         // position
         this.particleShaderGeo.addAttribute( 'position',
             new THREE.BufferAttribute( new Float32Array( this._particleMaxCount * 3 ), 3 ).setDynamic( true ) );
-
-        // size
-        this.particleShaderGeo.addAttribute( 'size',
-            new THREE.BufferAttribute( new Float32Array( this._particleMaxCount ), 1 ).setDynamic( true ) );
-        this.startSize = this._DPR * 10;
-        this.sizeRandomness = 10;
 
         // index in data textures
         this.particleShaderGeo.addAttribute( 'idx',
@@ -237,9 +234,6 @@ class ParticleEmitter extends THREE.Object3D {
 
         this.color = new THREE.Color();
 
-        // setup reasonable default values for all arguments
-        let positionRandomness = 1;
-
         let i = this._particleCursor;
 
         let idx = this._primitivesRenderer.getAvailableIndex();
@@ -254,11 +248,6 @@ class ParticleEmitter extends THREE.Object3D {
         positionStartAttribute.array[ i * 3 ] = position.x;
         positionStartAttribute.array[ i * 3 + 1 ] = position.y;
         positionStartAttribute.array[ i * 3 + 2 ] = position.z;
-
-        // size
-        let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
-        sizeAttribute.needsUpdate = true;
-        sizeAttribute.array[ i ] = this.startSize + this._particleSystem.getRandom() * this.sizeRandomness;
 
         // counter and cursor
         this._particleCursor++;
@@ -277,14 +266,6 @@ class ParticleEmitter extends THREE.Object3D {
     update( delta ) {
         this._updatedPositions = this._primitivesRenderer.update( delta );
         this.particleShaderMat.uniforms.tPositionsMap = this._updatedPositions;
-        let sizeAttribute = this.particleShaderGeo.getAttribute( 'size' );
-        sizeAttribute.needsUpdate = true;
-        let i = 0;
-        for ( i; i <= this._particleCursor; i++ ) {
-            sizeAttribute.array[ i ] = sizeAttribute.array[ i ] - delta * 10;
-            if ( sizeAttribute.array[ i ] <= 0 )
-                sizeAttribute.array[ i ] = this.startSize + this._particleSystem.getRandom() * this.sizeRandomness;
-        }
     }
 
 }
@@ -297,16 +278,16 @@ super( options );
         this.setOptionsIfUndef( {
             brushSize: 1,
             thickness: 10,
-            particlesPerContainer: 100000,
-            maxParticleEmitters: 1
+            initialParticlesPerEmitter: 20,
+            maxParticlesPerEmitter: 512 * 512,
+            maxEmitters: 20
         } );
 
         this._brushSize = this.options.brushSize;
         this._thickness = this.options.thickness;
-        this._maxParticleEmitters = 100;
-        this._particlesPerEmitter = 20;
+        this._maxEmitters = this.options.maxEmitters;
+        this._particlesPerEmitter = this.options.initialParticlesPerEmitter;
         this._particleCursor = 0;
-        this._particleMaxCount = 0;
         this.rand = [];
 
         // Initializing particles
@@ -329,7 +310,7 @@ super( options );
     }
 
     _spawnParticleEmitter() {
-        if ( this._particleEmitters.length < this._maxParticleEmitters ) {
+        if ( this._particleEmitters.length < this._maxEmitters ) {
             let c = new ParticleEmitter( this._particlesPerEmitter, this );
             this._particleEmitters.push( c );
             this.worldGroup.addTHREEObject( c );
