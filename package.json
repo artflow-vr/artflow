@@ -4,7 +4,7 @@
   "description": "3D drawing software",
   "main": "index.js",
   "scripts": {
-    "build": "npm run beautify && npm run lint && webpack --progress --config webpack.config.js",
+    "build": "npm run lint && webpack --progress --config webpack.config.js",
     "build-dev": "webpack --progress --config webpack.config.js",
     "dev": "webpack-dev-server --hot --inline",
     "beautify": "find src -name '*.js' | xargs js-beautify --replace --config .jsbeautifyrc",

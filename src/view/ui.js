@@ -1,6 +1,5 @@
 import VRUI from 'vr-ui';
 
-import ColorUtils from '../utils/color';
 import EventDispatcher from '../utils/event-dispatcher';
 
 const INIT_POINTER_LEN = 3.5;
