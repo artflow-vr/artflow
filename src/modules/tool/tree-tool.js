@@ -169,7 +169,7 @@ export default class TreeTool extends AbstractTool {
 
         let mesh = tree.helper.createMesh();
         this.worldGroup.addTHREEObject( mesh );
-        //return new AddCommand( this.worldGroup, mesh );
+        return new AddCommand( this.worldGroup, mesh );
 
     }
 
