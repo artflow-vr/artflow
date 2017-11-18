@@ -32,10 +32,11 @@ import { LSystem } from '../../utils/l-system';
 
 class State {
 
-    constructor( pos, angle, step , orientation, pressure ) {
+    constructor( pos, angle, hlu, step , orientation, pressure ) {
 
         this.pos = pos;
         this.angle = angle;
+        this.hlu = hlu;
         this.step = step;
         this.orientation = orientation;
         this.pressure = pressure;
@@ -59,20 +60,24 @@ class Tree {
 
     init( data, angle, step, str ) {
 
+        let m = new THREE.Matrix3();
+        m.set( 0, -1, 0,
+               1, 0, 0,
+               0, 0, 1 );
+
         this.pushState(
-            data.position.world, Math.PI / 2, step, data.orientation,
-            data.pressure
+            data.position.world, angle, m, step, data.orientation, data.pressure
         );
-        this.angle = angle;
+
         this.step = step;
         this.str = str;
 
     }
 
-    pushState( pos, angle, step, orientation, pressure ) {
+    pushState( pos, angle, hlu, step, orientation, pressure ) {
 
         let state = new State(
-            pos.clone(), angle, step, orientation.clone(), pressure
+            pos.clone(), angle, hlu.clone(), step, orientation.clone(), pressure
         );
         this.states.push( state );
 
@@ -121,24 +126,39 @@ export default class TreeTool extends AbstractTool {
         //this._lSystem = new LSystem( '--F[+F][-F[-F]F]F[+F][-F]', '' );
         //this._lSystem = new LSystem( 'F-F-F-F-F', 'F->F-F+F+FF-F-F+F' );
 
-        this.axiom = 'X';
+        this.axiom = 'F+F+F+F^FF+F+F+F\FF+F+F+F';
 
-        this.grammar = `X->F[+X][-X]FX
-                        F->FF`;
+        //this.grammar = `F->F[-EF[&&&A]]E[+F[^^^A]]
+                        //F<E->F[&F[+++A]][^F[---A]]`;
+        //this.grammar = `X->F[+X][-X]FX
+                        //F->FF`;
+        //this.grammar = `F->FF-[-F+F+F]+[+F-F-F]`;
+
+        this.grammar = `A->B-F+CFC+F-D&F^D-F+&&CFC+F+B\/\/
+                        B->A&F^CFB^F^D^^-F-D^|F^B|FC^F^A\/\/
+                        C->|D^|F^B-F+C^F^A&&FA&F^C+F+B^F^D\/\/
+                        D->|CFB-F+B|FA&F^A&&FB-F+B|FC\/\/`;
 
         this._lSystem = new LSystem( this.axiom, this.grammar );
 
-        this._str = this._lSystem.derivate( 3 );
+        this._str = this._lSystem.derivate( 0 );
 
-        this.step = 0.25;
+        this.step = 0.5;
 
-        this.angle = ( 25.7 / 360 ) * 2 * Math.PI;
+        //this.angle = ( 25 / 360 ) * 2 * Math.PI;
+        //this.angle = ( 27.5 / 360 ) * 2 * Math.PI;
+        this.angle = Math.PI / 2;
 
         this.interpretations = {
             'F': this.drawForward.bind( this ),
             'f': this.moveForward.bind( this ),
-            '+': this.turnLeft.bind( this ),
-            '-': this.turnRight.bind( this ),
+            '+': this.turnLeft.bind( this, 1.0 ),
+            '-': this.turnLeft.bind( this, -1.0 ),
+            '&': this.turnDown.bind( this, 1.0 ),
+            '^': this.turnDown.bind( this, -1.0 ),
+            '\\': this.rollLeft.bind( this, 1.0 ),
+            '/': this.rollLeft.bind( this, -1.0 ),
+            '|': this.turnAround.bind( this ),
             '[': this.pushState.bind( this ),
             ']': this.popState.bind( this )
         };
@@ -157,6 +177,7 @@ export default class TreeTool extends AbstractTool {
     release( data ) {
 
         let tree = this.trees[ this.trees.length - 1 ];
+
         if ( !tree ) return;
 
         tree.init( data, this.angle, this.step, this._str );
@@ -173,47 +194,60 @@ export default class TreeTool extends AbstractTool {
 
     }
 
-    //_interpret( tree ) {
+    _interpret( tree ) {
 
-        //for ( let i = 0; i < tree.str.length; ++i ) {
-            //let newMesh = i + 1 < tree.str.length
-                          //&& tree.str[ i + 1 ].symbol !== ']'
-                          //&& tree.str[ i + 1 ].symbol !== '[';
-            //let clbk = this.interpretations[ tree.str[ i ].symbol ];
-            //if ( clbk ) {
-                //clbk( tree, newMesh );
-            //}
-        //}
+        let newMesh = false;
 
-        //this.trees.pop();
+        for ( let i = 0; i < tree.str.length; ++i ) {
+            newMesh = i + 1 < tree.str.length
+                      && ( tree.str[ i ].symbol === ']'
+                      || tree.str[ i ].symbol === '[' )
+                      && tree.str[ i + 1 ].symbol !== ']'
+                      && tree.str[ i + 1 ].symbol !== '[';
+            let clbk = this.interpretations[ tree.str[ i ].symbol ];
 
-    //}
+            if ( clbk ) {
+                clbk( tree, newMesh );
+            }
+        }
 
-    _interpretSbs( tree, i ) {
+        this.trees.pop();
 
-        if ( i >= tree.str.length ) {
+    }
+
+    _interpretSbs( tree, idx ) {
+
+        if ( idx >= tree.str.length ) {
             this.trees.slice( this.trees.indexOf( tree ) );
             return;
         }
 
-        let newMesh = i + 1 < tree.str.length
+        let newMesh = false;
+        let i = idx;
+
+        for ( ; i < tree.str.length && !newMesh; ++i ) {
+            newMesh = i + 1 < tree.str.length
+                      && ( tree.str[ i ].symbol === ']'
+                      || tree.str[ i ].symbol === '[' )
                       && tree.str[ i + 1 ].symbol !== ']'
                       && tree.str[ i + 1 ].symbol !== '[';
-        let clbk = this.interpretations[ tree.str[ i ].symbol ];
+            let clbk = this.interpretations[ tree.str[ i ].symbol ];
 
-        if ( clbk ) {
-            clbk( tree, newMesh );
+            if ( clbk ) {
+                clbk( tree, newMesh );
+            }
         }
 
-        setTimeout( this._interpretSbs.bind( this, tree, i + 1 ), 3 );
+        setTimeout( this._interpretSbs.bind( this, tree, i ), 3 );
 
     }
 
     _movePos( tree ) {
 
         let state = tree.peekState();
-        state.pos.x += state.step * Math.cos( state.angle );
-        state.pos.y += state.step * Math.sin( state.angle );
+        state.pos.x += state.step * state.hlu.elements[ 0 ];
+        state.pos.y += state.step * state.hlu.elements[ 1 ];
+        state.pos.z += state.step * state.hlu.elements[ 2 ];
 
     }
 
@@ -240,22 +274,80 @@ export default class TreeTool extends AbstractTool {
 
     }
 
-    turnLeft( tree ) {
+    _updateAngle( tree, rmat ) {
 
-        tree.peekState().angle -= tree.angle;
+        tree.peekState().hlu.multiply( rmat );
 
     }
 
-    turnRight( tree ) {
+    _getRuMatrix( angle ) {
 
-       tree.peekState().angle += tree.angle;
+        let m = new THREE.Matrix3();
+        let c = Math.cos( angle );
+        let s = Math.sin( angle );
+
+        m.set(
+            c, s, 0,
+            -s, c, 0,
+            0, 0, 1
+        );
+
+        return m;
+
+    }
+
+    turnLeft( sign, tree ) {
+
+        let a = tree.peekState().angle * sign;
+        let m = this._getRuMatrix( a );
+        this._updateAngle( tree, m );
+
+    }
+
+    turnAround( tree ) {
+
+        let m = this._getRuMatrix( Math.PI );
+        this._updateAngle( tree, m );
+    }
+
+
+    turnDown( sign, tree ) {
+
+        let m = new THREE.Matrix3();
+        let a = sign * tree.peekState().angle;
+        let c = Math.cos( a );
+        let s = Math.sin( a );
+
+        m.set(
+            c, 0, -s,
+            0, 1, 0,
+            s, 0, c
+        );
+
+        this._updateAngle( tree, m );
+    }
+
+    rollLeft( sign, tree ) {
+
+        let m = new THREE.Matrix3();
+        let a = sign * tree.peekState().angle;
+        let c = Math.cos( a );
+        let s = Math.sin( a );
+
+        m.set(
+            1, 0, 0,
+            0, c, -s,
+            0, s, c
+        );
+
+        this._updateAngle( tree, m );
     }
 
     pushState( tree, newMesh ) {
 
         let state = tree.peekState();
         tree.pushState(
-            state.pos, state.angle, state.step, state.orientation,
+            state.pos, state.angle, state.hlu, state.step, state.orientation,
             state.pressure
         );
 
@@ -287,10 +379,10 @@ TreeTool.registeredBrushes = [ {
     },
     {
         maxSpread: 20,
-        brushThickness: 0.5,
+        brushThickness: 0.2,
         texture: null,
         enablePressure: true,
-        color: 0x808080,
+        color: 0x45220a,
         materialId: 'material_without_tex'
     }
 ];
