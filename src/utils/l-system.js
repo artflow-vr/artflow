@@ -149,7 +149,7 @@ class Parser {
       return null;
 
     // Handle operations later.
-    let re = /([a-zA-Z+-\[\]])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/;
+    let re = /([a-zA-Z+-\[\]^&])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/;
     let matches = str.match( re );
     if ( !matches )
       return null;
@@ -161,7 +161,7 @@ class Parser {
 
   static parseLetters( str ) {
 
-    let re = /([a-zA-Z+-\[\]])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/g;
+    let re = /([a-zA-Z+-\[\]^&])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/g;
     return this.parseMultiple( str, re, this.parseLetter );
 
   }
