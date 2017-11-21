@@ -22,6 +22,7 @@ class UI {
         this._textures = null;
         this._homeUIs = [];
         this._colorUI = null;
+        this._itemsUI = {};
 
         // This variable allows us to know if *any* of all the UI
         // is targeted by the cursor.
@@ -104,7 +105,10 @@ class UI {
 
     }
 
-    addTool( toolID, toolTexture, toolBackground, callback ) {
+    addTool( tool, toolBackground, callback ) {
+
+        let toolID = tool.id;
+        let toolTexture = tool.data.uiTexture;
 
         if ( !toolTexture ) {
             let warnMsg = 'provided texture is undefined.';
@@ -135,23 +139,24 @@ class UI {
 
         } );
 
-        // Adds the button to the GUI GridLayout.
-        // If the GridLayout is full, this creates a new page (so a new GUI).
-        let nbElts = GUI.root._elements[ 0 ]._elements.length;
-        let maxElts = GUI.root._elements[ 0 ].nbRows * GUI.root._elements[ 0 ].nbColumns;
-        if ( nbElts === maxElts ) {
-            GUI = this._createToolsUI( this._textures );
-            this._homeUIs.push( GUI );
-            // Hides added page
-            GUI.root.group.traverse ( function ( child ) {
-                if ( child instanceof THREE.Mesh ) {
-                    child.visible = false;
-                }
-            } );
-        }
-
         let grid = GUI.root._elements[ 0 ];
         grid.add( button );
+
+        // Creates a grid for each tool added.
+        let items = tool.data.Tool.items;
+        if ( items ) {
+            this._itemsUI[ toolID ] = this._createGridUI( this.textures.background );
+            let root = this._itemsUI[ toolID ].root._elements[ 0 ];
+            for ( let item of items ) {
+                let buttonItem = new VRUI.view.ImageButton( item.uiTexture, {
+                    height: 0.4,
+                    aspectRatio: 1.0,
+                    padding: { top: 0.1, bottom: 0.1, left: 0.1, right: 0.1 },
+                    background: toolBackground
+                } );
+                root.add( buttonItem );
+            }
+        }
 
     }
 
@@ -285,7 +290,7 @@ class UI {
     _createToolsUI() {
 
         let textures = this._textures;
-        let homeUI = this._createHomeUI( textures.background );
+        let homeUI = this._createGridUI( textures.background );
         homeUI.root.add(
             this._createArrowLine( textures.arrowLeft, textures.buttonBackground )
         );
@@ -294,6 +299,16 @@ class UI {
 
         this._homeUIs.push( homeUI );
         this._pagesGroup.add( homeUI.root.group );
+
+    }
+
+    _createItemsUI() {
+
+        this._itemsUI = this._createGridUI( this._textures.background );
+        this._itemsUI.root.group.rotation.y = Math.PI / 2.0;
+        this._itemsUI.root.group.position.x = - 0.25;
+        this._itemsUI.root.group.position.z = 0.2;
+        this._itemsUI.root.group.position.y = - 0.5;
 
     }
 
@@ -333,7 +348,7 @@ class UI {
 
     }
 
-    _createHomeUI ( background ) {
+    _createGridUI ( background ) {
 
         let layout = new VRUI.layout.VerticalLayout( {
             background: background,
