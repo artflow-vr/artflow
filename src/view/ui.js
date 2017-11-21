@@ -23,6 +23,11 @@ class UI {
         this._homeUIs = [];
         this._colorUI = null;
 
+        // This variable allows us to know if *any* of all the UI
+        // is targeted by the cursor.
+        // This is really important to stop event propagation.
+        this._hoverAnyUI = false;
+
         this._show = false;
         this._pagesGroup = new THREE.Group();
         this._pagesGroup.name = 'ui';
@@ -94,8 +99,8 @@ class UI {
 
     update() {
 
-        this._colorUI.update();
-        this._homeUIs[ this._currPage ].update();
+        this._hoverAnyUI = this._homeUIs[ this._currPage ].update();
+        this._hoverAnyUI = this._hoverAnyUI || this._colorUI.update();
 
     }
 
@@ -147,6 +152,20 @@ class UI {
 
         let grid = GUI.root._elements[ 0 ];
         grid.add( button );
+
+    }
+
+    isHoverUI() {
+
+        return this._hoverAnyUI;
+
+    }
+
+    setPressed( trigger ) {
+
+        for ( let ui of this._homeUIs ) ui.setPressed( trigger );
+
+        this._colorUI.setPressed( trigger );
 
     }
 
