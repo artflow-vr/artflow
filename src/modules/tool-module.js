@@ -58,23 +58,108 @@ class ToolModule {
 
     }
 
+    /**
+     * Registers a new tool template that will be instancied by the ArtFlow
+     * engine.
+     *
+     * @param {string} toolID - string used to map the tool.
+     * @param {Object} tool - Object containing the tool associated UI texture,
+     * as well as the tool prototype. The texture should be a THREE.Texture.
+     * e.g:
+     *
+     *  {
+     *      uiTexture: AssetManager.assets.texture[ 'ui-tool-brush' ],
+     *      Tool: Tool.BrushTool
+     *  }
+     *
+     */
     register( toolID, tool ) {
 
         if ( toolID in this._tools ) {
             let errorMsg = 'you already registered the tool \'' + toolID +
                 '\'';
-            throw Error( 'ToolModule: ' + errorMsg );
+            throw Error( 'ToolModule: register(): ' + errorMsg );
         }
 
         this._tools[ toolID ] = tool;
 
         // Adds the tool to the UI if a texture was provided.
         if ( tool.uiTexture ) {
-            UI.addTool( toolID, tool.uiTexture,
+            UI.addTool( { id: toolID, data: tool },
                 AssetManager.assets.texture[ 'ui-button-back' ],
                 this._onUISelection.bind( this )
             );
         }
+
+    }
+
+    /**
+     * Registers a new tool item template that will be instancied by the tool
+     * itself according to its needs.
+     *
+     * @param {string} toolID - id of the tool to which the item belong.
+     * @param {Object} item - Object containing the item associated UI texture,
+     * as well as the item data. The data is a simple JavaScript Object that
+     * the tool will use in its own manner.
+     * e.g:
+     *
+     *  {
+     *      uiTexture: AssetManager.assets.texture[ 'ui-brush-leaves' ],
+     *      item: {
+     *         size: 1.0,
+     *         ...
+     *      }
+     *  }
+     *
+     */
+    registerToolItem( toolID, itemID, item ) {
+
+        let tool = this._tools[ toolID ];
+        if ( !tool ) {
+            let warnMsg = 'trying to register an item for non existing \'';
+            warnMsg += toolID + '\' tool.';
+            console.warn( 'ToolModule: registerToolItem(): ' + warnMsg );
+            return;
+        }
+
+        // The items object is not yet created, we build it.
+        if ( !tool.items )
+            tool.items = {};
+        else if ( itemID in tool.items ) {
+            let warnMsg = 'trying to register an already-register item for ';
+            warnMsg += 'tool \'' + toolID + '\'';
+            console.warn( 'ToolModule: registerToolItem(): ' + warnMsg );
+            return;
+        }
+
+        tool.items[ itemID ] = item;
+
+    }
+
+    /**
+     * Register several items by using an items map. This function is a wrapper
+     * above the `registerToolItem' method.
+     *
+     * @param {string} toolID - id of the tool to which the items belong.
+     * @param {Object} items - Map in which each key represent an item, and
+     * where the key value is a JavaScript object containing the item associated
+     * UI texture, as well as the item data.
+     * e.g:
+     *  {
+     *      leaves: {
+     *          uiTexture: AssetManager.assets.texture[ 'ui-brush-leaves' ],
+     *          item: {
+     *              size: 1.0,
+     *              ...
+     *          }
+     *      },
+     *      ...
+     *  }
+     */
+    registerToolItems( toolID, items ) {
+
+        for ( let itemID in items )
+            this.registerToolItem( toolID, itemID, items[ itemID ] );
 
     }
 
