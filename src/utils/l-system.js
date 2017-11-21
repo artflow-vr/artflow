@@ -36,13 +36,8 @@ class Letter {
 
   match( rhs ) {
 
-    if ( this.symbol !== rhs.symbol )
-      return false;
-
-    if ( this.parameters.length !== rhs.parameters.length )
-      return false;
-
-    return true;
+    return this.symbol === rhs.symbol
+      && this.parameters.length === rhs.parameters.length;
 
   }
 
@@ -83,8 +78,9 @@ class Production {
     if ( !this.pred.match( l ) )
       return false;
 
-    if ( this.leftCtx && !this.matchLeftCtx( axiom, index ) )
+    if ( this.leftCtx && !this.matchLeftCtx( axiom, index ) ) {
       return false;
+    }
 
     if ( this.rightCtx && !this.matchRightCtx( axiom, index ) )
       return false;
@@ -107,19 +103,47 @@ class Production {
 
   }
 
+  _isBracket( l ) {
+
+    return l === '[' || l === ']';
+
+  }
+
   matchLeftCtx( axiom, index ) {
 
-    return this.matchLetters( this.leftCtx,
-                              axiom.slice( index - this.leftCtx.length,
-                                           index ) );
+    let aIdx = index - 1;
+    let cLen = this.leftCtx.length;
+    let cIdx = cLen - 1;
 
+    for ( ; aIdx >= 0 && cIdx >= 0; --aIdx, --cIdx ) {
+
+      while ( aIdx >= 0 && this._isBracket( axiom[ aIdx ] ) )
+        --aIdx;
+
+      if ( aIdx < 0  && !axiom[ aIdx ].match( this.leftCtx[ cIdx ] ) )
+        return false;
+    }
+
+    return true;
   }
 
   matchRightCtx( axiom, index ) {
 
-    return this.matchLetters( this.rightCtx,
-                              axiom.slice( index + 1,
-                                           index + this.rightCtx.length + 1 ) );
+    let aLen = axiom.length;
+    let aIdx = index + 1;
+    let cLen = this.leftCtx.length;
+    let cIdx = 0;
+
+    for ( ; aIdx < aLen && cIdx < cLen; ++aIdx, ++cIdx ) {
+
+      while ( aIdx < aLen && this._isBracket( axiom[ aIdx ] ) )
+        ++aIdx;
+
+      if ( aIdx >= aLen  && !axiom[ aIdx ].match( this.leftCtx[ cIdx ] ) )
+        return false;
+    }
+
+    return true;
 
   }
 
@@ -179,7 +203,7 @@ class Parser {
     if ( !str )
       return null;
 
-    let re = /(.+<)?(.+)(>.+)?(:.+)?->({[0-9]+})?(.+)/;
+    let re = /(?:(.+)<)?(.+)(?:>(.+))?(:.+)?->({[0-9]+})?(.+)/;
     let matches = str.match( re );
     if ( !matches )
       return null;
