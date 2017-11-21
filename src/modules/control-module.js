@@ -96,21 +96,6 @@ class Control {
 
     init( vr ) {
 
-        this.vr = vr;
-        // If VR is activated, we will registers other events,
-        // display meshes for controllers, etc...
-        if ( this.vr ) {
-            this._initVRControllers();
-            this._registerControllerEvents();
-            this.update = this._updateVR;
-        } else {
-            this._initKeyboardMouse();
-            this._registerKeyboardMouseEvents();
-            this.update = this._updateNOVR;
-            MainView.getCamera().position.y = 1.5;
-            MainView.backgroundView.toggleVisibility( true );
-        }
-
         // Creates the UI and add initial offsets.
         // The UI will grow when new item will be registered.
         let uiTextures = {
@@ -122,7 +107,46 @@ class Control {
             slider: AssetManager.assets.texture[ 'ui-slider' ],
             sliderButton: AssetManager.assets.texture[ 'ui-slider-button' ]
         };
-        UI.init( uiTextures, this.vr ? this._controllers : null );
+
+        this.vr = vr;
+        // If VR is activated, we will registers other events,
+        // display meshes for controllers, etc...
+        if ( this.vr ) {
+            this._initVRControllers();
+            this._registerControllerEvents();
+            this.update = this._updateVR;
+            UI.init( uiTextures, this._controllers );
+
+            let triggerLambda = () => {
+                if ( UI.isHoverUI() ) {
+                    UI.setPressed( true );
+                    return false;
+                }
+                return true;
+            };
+
+            EventDispatcher.registerFamily( this._controllerToAction.trigger, {
+                    use: triggerLambda,
+                    trigger: triggerLambda,
+                    release: () => {
+                        if ( UI.isHoverUI() ) {
+                            UI.setPressed( false );
+                            return false;
+                        }
+                        return true;
+                    }
+                }, 0
+            );
+
+        } else {
+            this._initKeyboardMouse();
+            this._registerKeyboardMouseEvents();
+            this.update = this._updateNOVR;
+            MainView.getCamera().position.y = 1.5;
+            MainView.backgroundView.toggleVisibility( true );
+
+            UI.init( uiTextures, null );
+        }
 
         // Registers event for menu openning
         EventDispatcher.registerFamily(

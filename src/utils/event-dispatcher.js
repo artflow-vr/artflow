@@ -29,43 +29,72 @@ class EventDispatcher {
 
     constructor() {
 
-        this._events = {};
+        const MAX_NB_PRIORITY = 3;
+        // Array containing, for each priority, a list of items that
+        // contain a list of callbacks.
+        this._events = new Array( MAX_NB_PRIORITY );
+        for ( let i = 0; i < MAX_NB_PRIORITY; ++i ) this._events[ i ] = {};
+
+        //this._stoppedEvents = {};
 
     }
 
-    register( eventID, callback ) {
+    register( eventID, callback, priority = 0 ) {
 
         if ( !callback ) {
             let warnMsg = 'trying to register `' + eventID + '\' with undefined callback';
             console.warn( 'EventDispatcher.register(): ' + warnMsg );
             return;
         }
-        if ( this._events[ eventID ] === undefined ||
-            this._events[ eventID ] === null ) {
-            this._events[ eventID ] = [];
+
+        if ( this._events[ priority ][ eventID ] === undefined ||
+            this._events[ priority ][ eventID ] === null ) {
+            this._events[ priority ][ eventID ] = [];
         }
 
-        this._events[ eventID ].push( callback );
+        this._events[ priority ][ eventID ].push( callback );
+        //this._stoppedEvents[ priority ][ eventID ] = false;
 
     }
 
-    registerFamily( eventID, callbacks ) {
+    registerFamily( eventID, callbacks, priority = 0 ) {
 
         if ( callbacks.use )
-            this.register( eventID, callbacks.use );
+            this.register( eventID, callbacks.use, priority );
         if ( callbacks.release )
-            this.register( eventID + 'Up', callbacks.release );
+            this.register( eventID + 'Up', callbacks.release, priority );
         if ( callbacks.trigger )
-            this.register( eventID + 'Down', callbacks.trigger );
+            this.register( eventID + 'Down', callbacks.trigger,priority );
 
     }
 
     dispatch( eventID, data ) {
 
-        let events = this._events[ eventID ];
-        if ( events === undefined || events === null ) return;
+        let stopProp = false;
 
-        for ( let callbackID in events ) events[ callbackID ]( data );
+        for ( let priority of this._events ) {
+            let events = priority[ eventID ];
+            if ( events === undefined || events === null ) continue;
+
+            for ( let callback of events ) {
+                let ret = callback( data );
+                stopProp = ret !== undefined && !ret;
+            }
+
+            if ( stopProp ) return;
+        }
+
+    }
+
+    stopPropagation( eventID ) {
+
+        this._stoppedEvents[ eventID ] = true;
+
+    }
+
+    enablePropagation( eventID ) {
+
+        this._stoppedEvents[ eventID ] = false;
 
     }
 

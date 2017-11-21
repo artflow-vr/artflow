@@ -104,10 +104,10 @@ class ToolModule {
         // Registers input events, coming either from the Vive, or from
         // the mouse.
         EventDispatcher.registerFamily(
-            'interact', this._getEventFamily( 'interact' )
+            'interact', this._getEventFamily( 'interact' ), 1
         );
         EventDispatcher.registerFamily(
-            'axisChanged', this._getEventFamily( 'axisChanged' )
+            'axisChanged', this._getEventFamily( 'axisChanged' ), 1
         );
 
         // Registers 'redo' and 'undo' events that can be trigger by
@@ -146,7 +146,7 @@ class ToolModule {
             let tool = this._generalTools[ toolID ];
             for ( let eventID in tool.listenTo ) {
                 EventDispatcher.registerFamily(
-                    eventID, tool.listenTo[ eventID ]
+                    eventID, tool.listenTo[ eventID ], 1
                 );
             }
         }
