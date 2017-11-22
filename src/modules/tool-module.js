@@ -172,6 +172,18 @@ class ToolModule {
 
     }
 
+    register2( toolID, tool ) {
+
+        if ( toolID in this._tools ) {
+            let errorMsg = 'you already registered the tool \'' + toolID +
+                '\'';
+            throw Error( 'ToolModule: ' + errorMsg );
+        }
+
+        this._tools[ toolID ] = tool;
+
+    }
+
     init() {
 
         this.objectPool = new Utils.ObjectPool();
@@ -336,6 +348,23 @@ class ToolModule {
         MainView.addToMovingGroup( instance[ 1 ].worldGroup.getObject() );
         MainView.addToScene( instance[ 0 ].localGroup.getObject() );
         MainView.addToScene( instance[ 1 ].localGroup.getObject() );
+
+    }
+
+    _instanciate2( instanceID, toolID, options ) {
+
+        if ( !( toolID in this._tools ) ) {
+            let errorMsg = 'Tool \'' + toolID + '\' is not registered yet.';
+            throw Error( 'ToolModule._instanciate(): ' + errorMsg );
+        }
+
+        if ( instanceID in this._instance ) {
+            let errorMsg = '\'' + instanceID + '\' already instanciated.';
+            throw Error( 'ToolModule._instanciate(): ' + errorMsg );
+        }
+
+        let instance = new Tool.ToolContainer( this._tools[ toolID ], options );
+        this._instance[ instanceID ] = instance;
 
     }
 

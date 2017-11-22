@@ -322,12 +322,14 @@ export default class ParticleTool extends AbstractTool {
             this.rand.push( Math.random() - 0.5 );
         }
 
+        /*
         // Bind functions to events
         this.registerEvent( 'interact', {
             use: this.use.bind( this ),
             trigger: this.trigger.bind( this ),
             release: this.release.bind( this )
         } );
+        */
     }
 
     _spawnParticleEmitter() {
@@ -376,6 +378,7 @@ export default class ParticleTool extends AbstractTool {
     }
 
     trigger() {
+        console.log("hey");
     }
 
     release() {
