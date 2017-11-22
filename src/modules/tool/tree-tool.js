@@ -126,28 +126,31 @@ export default class TreeTool extends AbstractTool {
         //this._lSystem = new LSystem( '--F[+F][-F[-F]F]F[+F][-F]', '' );
         //this._lSystem = new LSystem( 'F-F-F-F-F', 'F->F-F+F+FF-F-F+F' );
 
-        this.axiom = 'F+F+F+F^FF+F+F+F\FF+F+F+F';
+        //this.axiom = 'F+F+F+F^FF+F+F+F\FF+F+F+F|FFF';
+        this.axiom = 'F';
+        //this.axiom = 'A';
 
-        //this.grammar = `F->F[-EF[&&&A]]E[+F[^^^A]]
-                        //F<E->F[&F[+++A]][^F[---A]]`;
+        this.grammar = `F->F[-EF]E[+F]
+                        F<E->F[&F][^F]`;
+
         //this.grammar = `X->F[+X][-X]FX
                         //F->FF`;
         //this.grammar = `F->FF-[-F+F+F]+[+F-F-F]`;
 
-        this.grammar = `A->B-F+CFC+F-D&F^D-F+&&CFC+F+B\/\/
-                        B->A&F^CFB^F^D^^-F-D^|F^B|FC^F^A\/\/
-                        C->|D^|F^B-F+C^F^A&&FA&F^C+F+B^F^D\/\/
-                        D->|CFB-F+B|FA&F^A&&FB-F+B|FC\/\/`;
+        //this.grammar = `A->B-F+CFC+F-D&F^D-F+&&CFC+F+B\/\/
+                        //B->A&F^CFB^F^D^^-F-D^|F^B|FC^F^A\/\/
+                        //C->|D^|F^B-F+C^F^A&&FA&F^C+F+B^F^D\/\/
+                        //D->|CFB-F+B|FA&F^A&&FB-F+B|FC\/\/`;
 
         this._lSystem = new LSystem( this.axiom, this.grammar );
 
-        this._str = this._lSystem.derivate( 0 );
+        this._str = this._lSystem.derivate( 3 );
 
-        this.step = 0.5;
+        this.step = 1;
 
-        //this.angle = ( 25 / 360 ) * 2 * Math.PI;
+        this.angle = ( 25 / 360 ) * 2 * Math.PI;
         //this.angle = ( 27.5 / 360 ) * 2 * Math.PI;
-        this.angle = Math.PI / 2;
+        //this.angle = Math.PI / 2;
 
         this.interpretations = {
             'F': this.drawForward.bind( this ),
