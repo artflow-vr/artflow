@@ -6,6 +6,7 @@ export default class StrokeWithoutTex extends AbstractBrushStroke {
 
     constructor( isVR ) {
 
-        super( isVR );
+        super( isVR, 'material_without_tex' );
 
+    }
 }

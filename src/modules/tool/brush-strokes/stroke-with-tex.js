@@ -8,4 +8,5 @@ export default class StrokeWithTex extends AbstractBrushStroke {
 
         super( isVR );
 
+    }
 }
