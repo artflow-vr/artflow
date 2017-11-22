@@ -120,7 +120,7 @@ class Production {
       while ( aIdx >= 0 && this._isBracket( axiom[ aIdx ] ) )
         --aIdx;
 
-      if ( aIdx < 0  && !axiom[ aIdx ].match( this.leftCtx[ cIdx ] ) )
+      if ( aIdx < 0 && !axiom[ aIdx ].match( this.leftCtx[ cIdx ] ) )
         return false;
     }
 
@@ -139,7 +139,7 @@ class Production {
       while ( aIdx < aLen && this._isBracket( axiom[ aIdx ] ) )
         ++aIdx;
 
-      if ( aIdx >= aLen  && !axiom[ aIdx ].match( this.leftCtx[ cIdx ] ) )
+      if ( aIdx >= aLen && !axiom[ aIdx ].match( this.leftCtx[ cIdx ] ) )
         return false;
     }
 
