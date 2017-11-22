@@ -25,15 +25,44 @@
 * SOFTWARE.
 */
 
-'use strict';
+module.exports = {
 
-import AbstractBrushStroke from '../abstract-brush-stroke';
+    uniforms: THREE.UniformsUtils.merge(
+        [
+            THREE.UniformsLib.lights,
+            {
+                uTime: {
+                    value: 0.0
+                }
+                /*vResolution: {
+                    type: 'v2',
+                    value: new THREE.Vector2()
+                }*/
+            }
+        ]
+    ),
 
-export default class StrokeWithoutTex extends AbstractBrushStroke {
+    vertex: [
 
-    constructor( isVR ) {
+        'uniform float uTime;',
 
-        super( isVR, 'material_without_tex' );
+        'void main()	{',
+        '   vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );',
+        '   gl_Position = projectionMatrix * mvPosition;',
+        '}'
 
-    }
-}
+    ].join( '\n' ),
+
+    fragment: [
+
+        'uniform float uTime;',
+
+        'void main()	{',
+        '   float x = mod(uTime + gl_FragCoord.x, 20.) < 10. ? 1. : 0.;',
+        '   float y = mod(uTime + gl_FragCoord.y, 20.) < 10. ? 1. : 0.;',
+        '   gl_FragColor = vec4(vec3(min(x, y)), 1.);',
+        '}'
+
+    ].join( '\n' )
+
+};

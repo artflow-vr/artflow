@@ -29,11 +29,18 @@
 
 import AbstractBrushStroke from '../abstract-brush-stroke';
 
-export default class StrokeWithoutTex extends AbstractBrushStroke {
+export default class StrokeAnimatedTest extends AbstractBrushStroke {
 
     constructor( isVR ) {
 
-        super( isVR, 'material_without_tex' );
+        super( isVR, 'material_test_shader' );
 
+    }
+
+    update( data ) {
+
+        this._helper._material.uniforms.uTime.value += 0.001;
+
+        console.log( this._helper._material.uniforms.uTime.value );
     }
 }

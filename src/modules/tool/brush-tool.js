@@ -28,6 +28,7 @@
 import AbstractTool from './abstract-tool';
 import StrokeWithTex from './brush-strokes/stroke-with-tex';
 import StrokeWithoutTex from './brush-strokes/stroke-without-tex';
+import StrokeAnimatedTest from './brush-strokes/stroke-animated-test';
 
 const SIZE_FACTOR = 0.2;
 
@@ -57,10 +58,11 @@ export default class BrushTool extends AbstractTool {
 
         this.registeredStrokes = {
             'with_tex': new StrokeWithTex( isVR ),
-            'without_tex': new StrokeWithoutTex( isVR )
+            'without_tex': new StrokeWithoutTex( isVR ),
+            'test_anim' : new StrokeAnimatedTest( isVR )
         };
 
-        this.currentStroke = 'with_tex';
+        this.currentStroke = 'test_anim';
 
     }
 
@@ -70,10 +72,10 @@ export default class BrushTool extends AbstractTool {
 
     }
 
-    update() {
+    update( data ) {
 
-    for ( let s in this.registeredStrokes )
-        this.registeredStrokes[ s ].update( {} );
+        for ( let s in this.registeredStrokes )
+            this.registeredStrokes[ s ].update( data );
 
     }
 
