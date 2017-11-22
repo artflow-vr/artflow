@@ -96,21 +96,6 @@ class Control {
 
     init( vr ) {
 
-        this.vr = vr;
-        // If VR is activated, we will registers other events,
-        // display meshes for controllers, etc...
-        if ( this.vr ) {
-            this._initVRControllers();
-            this._registerControllerEvents();
-            this.update = this._updateVR;
-        } else {
-            this._initKeyboardMouse();
-            this._registerKeyboardMouseEvents();
-            this.update = this._updateNOVR;
-            MainView.getCamera().position.y = 1.5;
-            MainView.backgroundView.toggleVisibility( true );
-        }
-
         // Creates the UI and add initial offsets.
         // The UI will grow when new item will be registered.
         let uiTextures = {
@@ -122,7 +107,46 @@ class Control {
             slider: AssetManager.assets.texture[ 'ui-slider' ],
             sliderButton: AssetManager.assets.texture[ 'ui-slider-button' ]
         };
-        UI.init( uiTextures, this.vr ? this._controllers : null );
+
+        this.vr = vr;
+        // If VR is activated, we will registers other events,
+        // display meshes for controllers, etc...
+        if ( this.vr ) {
+            this._initVRControllers();
+            this._registerControllerEvents();
+            this.update = this._updateVR;
+            UI.init( uiTextures, this._controllers );
+
+            let triggerLambda = () => {
+                if ( UI.isHoverUI() ) {
+                    UI.setPressed( true );
+                    return false;
+                }
+                return true;
+            };
+
+            EventDispatcher.registerFamily( this._controllerToAction.trigger, {
+                    use: triggerLambda,
+                    trigger: triggerLambda,
+                    release: () => {
+                        if ( UI.isHoverUI() ) {
+                            UI.setPressed( false );
+                            return false;
+                        }
+                        return true;
+                    }
+                }, 0
+            );
+
+        } else {
+            this._initKeyboardMouse();
+            this._registerKeyboardMouseEvents();
+            this.update = this._updateNOVR;
+            MainView.getCamera().position.y = 1.5;
+            MainView.backgroundView.toggleVisibility( true );
+
+            UI.init( uiTextures, null );
+        }
 
         // Registers event for menu openning
         EventDispatcher.registerFamily(
@@ -202,7 +226,7 @@ class Control {
         let controllerMesh = AssetManager.assets.model[ 'vive-controller' ];
         controllerMesh.traverse( function ( child ) {
 
-            if ( child instanceof THREE.Mesh ) {
+            if ( child instanceof THREE.Mesh && child.name !== 'tip' ) {
                 child.material.map = AssetManager.assets.texture[ 'controller-diffuse' ];
                 child.material.specularMap = AssetManager.assets.texture[ 'controller-specular' ];
                 child.material.needsUpdate = true;
@@ -211,16 +235,33 @@ class Control {
         } );
 
         this._controllers = new Array( 2 );
-        this._controllers[ 0 ] = new ViveController( 0, controllerMesh.clone() );
-        this._controllers[ 0 ].standingMatrix = renderer.vr.getStandingMatrix();
 
-        this._controllers[ 1 ] = new ViveController( 1, controllerMesh.clone() );
-        this._controllers[ 1 ].standingMatrix = renderer.vr.getStandingMatrix();
+        // Makes copy of certain materials / meshes.
+        // This allows us to modify for instance the color of the current
+        // controller using the UI, etc...
+        let meshes = [ controllerMesh.clone(), controllerMesh.clone() ];
+        for ( let i = 0; i < 2; ++i ) {
+            let tipMat = null;
+            meshes[ i ].traverse( ( child ) => {
 
-        MainView.controllers = this._controllers;
+                if ( child.name === 'tip' ) {
+                    child.material = child.material.clone();
+                    tipMat = child.material;
+                }
 
-        MainView.addToScene( this._controllers[ 0 ] );
-        MainView.addToScene( this._controllers[ 1 ] );
+            } );
+            meshes[ i ].traverse( ( child ) => {
+
+                if ( child.name === 'sizehint' )
+                    child.material = tipMat;
+
+            } );
+
+            let viveController = new ViveController( i, meshes[ i ] );
+            viveController.standingMatrix = renderer.vr.getStandingMatrix();
+            this._controllers[ i ] = viveController;
+            MainView.addToScene( this._controllers[ i ] );
+        }
 
     }
 
@@ -254,18 +295,6 @@ class Control {
             registerEventForController( 0, elt );
             registerEventForController( 1, elt );
         }
-        /*registerEventForController( 0, 'thumbpad' );
-        registerEventForController( 1, 'thumbpad' );
-        registerEventForController( 0, 'trigger' );
-        registerEventForController( 1, 'trigger' );
-        registerEventForController( 0, 'triggerup' );
-        registerEventForController( 1, 'triggerup' );
-        registerEventForController( 0, 'triggerdown' );
-        registerEventForController( 1, 'triggerdown' );
-        registerEventForController( 0, 'axisChanged' );
-        registerEventForController( 1, 'axisChanged' );
-        registerEventForController( 0, 'menu' );
-        registerEventForController( 1, 'menu' );*/
 
     }
 

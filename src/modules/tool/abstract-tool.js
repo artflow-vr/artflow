@@ -84,22 +84,34 @@ export default class Tool {
 
         if ( options === undefined || options === null ) return;
 
-        for ( let k in options ) {
+        for ( let k in options )
             if ( !( k in this.options ) ) this.options[ k ] = options[ k ];
-        }
 
     }
 
-    triggerEvent( eventID, status, data ) {
+    triggerEvent( eventID, data, status ) {
 
         if ( !this.enabled ) return;
 
         if ( !( eventID in this.listenTo ) ) return;
 
-        // console.log( 'called' );
+        let callback = this.listenTo[ eventID ];
+        if ( !callback ) return;
 
-        let callback = this.listenTo[ eventID ][ status ];
-        if ( callback ) callback( data );
+        // The event is of the form:
+        // {
+        //      use: ...,
+        //      trigger: ...,
+        //      release: ...
+        // }
+
+        if ( typeof callback !== 'function' ) {
+            if ( callback[ status ] ) callback[ status ]( data );
+            return;
+        }
+
+        // The event is a function
+        callback( data );
 
     }
 

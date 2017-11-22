@@ -51,10 +51,15 @@ export default class BrushTool extends AbstractTool {
         this.registerEvent( 'axisChanged', {
             use: self.useAxisChanged.bind( self ),
             release: function() {
-                console.log( 'realease' );
                 self._previousY = 0.0;
             }
         } );
+
+        this.registerEvent( 'colorChanged', ( hsv ) => {
+            self.setColor( hsv )
+        } );
+
+        this.mesh = null;
 
         this.registeredStrokes = {
             'with_tex': new StrokeWithTex( isVR ),
@@ -96,6 +101,12 @@ export default class BrushTool extends AbstractTool {
         this.options.brushThickness =
             data.controller.sizeMesh.scale.x * SIZE_FACTOR;
         this._helper.setThickness( this.options.brushThickness );
+
+    }
+
+    setColor( hsv ) {
+
+        this.registeredStrokes[ this.currentStroke ].setColor( hsv );
 
     }
 }

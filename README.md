@@ -6,6 +6,9 @@
 
 **ArtFlow** is greatly influenced by [Tilt Brush](https://www.tiltbrush.com/), and [A-Painter](https://github.com/aframevr/a-painter).
 
+[![ArtFlow Video](https://user-images.githubusercontent.com/8783766/31792707-36e8d1b2-b51d-11e7-9dfc-9b411258deb0.png)
+](https://youtu.be/QyUaBjSxGXc)
+
 ## Local Execution
 
 ### Dependencies
@@ -77,9 +80,10 @@ ToolModule.register('MyNiceTool', toolDescription);
 
 #### All
 * [ ] Remove _movingGroup and add a dolly group above the camera
+* [ ] Use pow2 textures. It would be nice to reduce the number of requests, by merging textures together and using different UVs (for instance for the UI).
 
 #### Brushes
-* [ ] Add pressure
+* [X] Add pressure
 * [ ] Add strokes system
 * [ ] Move temporary allocation to initialization
 * [ ] Move Helper folder from `tool/` folder
