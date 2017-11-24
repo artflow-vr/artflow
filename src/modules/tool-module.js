@@ -168,11 +168,6 @@ class ToolModule {
         this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();
 
-        // TODO: This is gross and this is a bug of the UI.
-        // It should be OK to refresh each time an element is added but
-        // it does not seem to work.
-        UI._homeUIs[ 0 ].refresh();
-
         this._selected[ 0 ] = this._instance.Brush[ 0 ];
         this._selected[ 1 ] = this._instance.Brush[ 1 ];
 

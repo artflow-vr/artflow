@@ -86,20 +86,12 @@ export default class FPSControls {
 
         if ( this.fixedHeight ) this._movingWorld.position.y = 0;
 
-        this._mouseX = 0;
-        this._mouseY = 0;
-
     }
 
     moveView( event ) {
 
-        this._mouseX = event.movementX ||
-            event.mozMovementX ||
-            event.webkitMovementX || 0;
-
-        this._mouseY = event.movementY ||
-            event.mozMovementY ||
-            event.webkitMovementY || 0;
+        this._mouseX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+        this._mouseY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
     }
 

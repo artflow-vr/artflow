@@ -84,12 +84,8 @@ class Control {
         };
 
         this._controllerToAction = {
-            thumbpad: 'thumbpad',
-            trigger: 'interact',
-            triggerdown: 'interactDown',
-            triggerup: 'interactUp',
-            axisChanged: 'axisChanged',
-            menu: 'menu'
+            thumbpad: 'thumbpad', trigger: 'interact', triggerdown: 'interactDown',
+            triggerup: 'interactUp', axisChanged: 'axisChanged', menu: 'menu'
         };
 
     }
@@ -126,8 +122,7 @@ class Control {
             };
 
             EventDispatcher.registerFamily( this._controllerToAction.trigger, {
-                    use: triggerLambda,
-                    trigger: triggerLambda,
+                    use: triggerLambda, trigger: triggerLambda,
                     release: () => {
                         if ( UI.isHoverUI() ) {
                             UI.setPressed( false );
@@ -145,7 +140,7 @@ class Control {
             MainView.getCamera().position.y = 1.5;
             MainView.backgroundView.toggleVisibility( true );
 
-            UI.init( uiTextures, null );
+            UI.init( uiTextures, null, MainView._camera, MainView._renderer );
         }
 
         // Registers event for menu openning
@@ -156,9 +151,6 @@ class Control {
                 }
             }
         );
-
-        // UI._homeUIs[ 0 ].root.group.rotation.x = Math.PI * 0.5;
-        // MainView.controllers[ 0 ].add( UI._homeUIs[ 0 ].root.group );
 
     }
 
@@ -387,6 +379,7 @@ class Control {
                     EventDispatcher.dispatch( 'redo' );
                     break;
                 case 65:
+                case 81:
                     this._fpsController.left = true;
                     break; // A
                 case 68:
@@ -403,9 +396,12 @@ class Control {
                     break; // Z
             }
         }, false );
+
         document.addEventListener( 'keyup', ( event ) => {
+
             switch ( event.keyCode ) {
                 case 65:
+                case 81:
                     this._fpsController.left = false;
                     break; // A
                 case 68:
