@@ -48,7 +48,7 @@ export default class Tool {
         // affected by teleportation.
         this.worldGroup = new ThreeView();
 
-        // ID of the controller the tool is currently selected by.
+        // ID of the controller the tool is cur rently selected by.
         this.controllerID = -1;
 
         // Contains options that can be modified in the UI. eg:

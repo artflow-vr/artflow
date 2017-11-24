@@ -125,7 +125,7 @@ export default class WaterTool extends AbstractTool {
 WaterTool.items = {
 
     plane: {
-        uiTexture
+        uiTexture: ''
     }
 
 };
