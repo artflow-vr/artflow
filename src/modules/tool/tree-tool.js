@@ -72,6 +72,7 @@ class Tree {
         this.str = str;
         this.curIdx = 0;
         this.newMesh = false;
+        this.time = 0;
 
     }
 
@@ -192,6 +193,9 @@ export default class TreeTool extends AbstractTool {
         };
 
         this.trees = [];
+
+        this.timePerSymbol = 10;
+
     }
 
     trigger() {
@@ -218,7 +222,7 @@ export default class TreeTool extends AbstractTool {
         let toRemove = [];
 
         for ( let i = 0; i < this.trees.length; ++i ) {
-            if ( this._interpretNext( i ) )
+            if ( this._interpretNext( i, data.delta ) )
                 toRemove.push( i );
         }
 
@@ -236,10 +240,16 @@ export default class TreeTool extends AbstractTool {
     }
 
 
-    _interpretNext( treeIdx ) {
+    _interpretNext( treeIdx, delta ) {
 
         let tree = this.trees[ treeIdx ];
         if ( !tree || !tree.str ) return false;
+
+        tree.time += delta;
+
+        if ( !( tree.time / this.timePerSymbol ) ) return false;
+
+        tree.time %= this.timePerSymbol;
 
         let i = tree.curIdx;
         tree.newMesh |= tree.str[ i ].symbol === ']'
