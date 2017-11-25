@@ -78,17 +78,13 @@ class Production {
     if ( !this.pred.match( l ) )
       return false;
 
-    if ( this.leftCtx && !this.matchLeftCtx( axiom, index ) ) {
+    if ( this.leftCtx && !this.matchLeftCtx( axiom, index ) )
       return false;
-    }
 
     if ( this.rightCtx && !this.matchRightCtx( axiom, index ) )
       return false;
 
-    if ( this.cond && !this.cond( axiom, index ) )
-      return false;
-
-    return true;
+    return !( this.cond && !this.cond( axiom, index ) )
 
   }
 
@@ -228,18 +224,21 @@ class Parser {
 
 class LSystem {
 
-    constructor( axiom, productions ) {
+    constructor( axiom, productions, default_angle, default_n ) {
 
       this.axiom = Parser.parseLetters( axiom );
       this.productions = Parser.parseProductions( productions );
+      this.default_angle = default_angle;
+      this.default_n = default_n;
 
     }
 
     derivate( n ) {
 
+      let n_ite = n === undefined ? this.default_n : n;
       let prevAxiom = JSON.parse( JSON.stringify( this.axiom ) );
 
-      for ( let k = 0; k < n; ++k ) {
+      for ( let k = 0; k < n_ite; ++k ) {
         let newAxiom = [];
 
         for ( let i = 0; i < prevAxiom.length; ++i ) {

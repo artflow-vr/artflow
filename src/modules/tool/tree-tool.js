@@ -123,34 +123,59 @@ export default class TreeTool extends AbstractTool {
 
         this._hsv = null;
 
-        //this._lSystem = new LSystem( '--F[+F][-F[-F]F]F[+F][-F]', '' );
-        //this._lSystem = new LSystem( 'F-F-F-F-F', 'F->F-F+F+FF-F-F+F' );
 
-        //this.axiom = 'F+F+F+F^FF+F+F+F\FF+F+F+F|FFF';
-        this.axiom = 'F';
-        //this.axiom = 'A';
+        this.lSystems = {};
 
-        this.grammar = `F->F[-EF]E[+F]
-                        F<E->F[&F][^F]`;
+        this.lSystems[ 'bush' ] = new LSystem(
+            'A',
+            `A->[&FLA]\/\/\/\/\/[&FLA]\/\/\/\/\/\/\/[&FLA]
+             F->S\/\/\/\/\/F
+             S->F`,
+            22.5 / 180.0 * Math.PI,
+            7
+        );
 
-        //this.grammar = `X->F[+X][-X]FX
-                        //F->FF`;
-        //this.grammar = `F->FF-[-F+F+F]+[+F-F-F]`;
+        this.lSystems[ 'hilbert_cube' ] = new LSystem(
+            'A',
+            `A->B-F+CFC+F-D&F^D-F+&&CFC+F+B\/\/
+             B->A&F^CFB^F^D^^-F-D^|F^B|FC^F^A\/\/
+             C->|D^|F^B-F+C^F^A&&FA&F^C+F+B^F^D\/\/
+             D->|CFB-F+B|FA&F^A&&FB-F+B|FC\/\/`,
+             Math.PI / 2.0,
+             2
+        );
 
-        //this.grammar = `A->B-F+CFC+F-D&F^D-F+&&CFC+F+B\/\/
-                        //B->A&F^CFB^F^D^^-F-D^|F^B|FC^F^A\/\/
-                        //C->|D^|F^B-F+C^F^A&&FA&F^C+F+B^F^D\/\/
-                        //D->|CFB-F+B|FA&F^A&&FB-F+B|FC\/\/`;
+        this.lSystems[ 'context_sensitive' ] = new LSystem(
+            'F',
+            `F->F[-EF]E[+F]
+             F<E->F[&F][^F]`,
+             25.0 / 180.0  * Math.PI,
+             4
+        );
 
-        this._lSystem = new LSystem( this.axiom, this.grammar );
+        this.lSystems[ 'simple_tree' ] = new LSystem(
+            'X',
+            `X->F[+X][-X]FX
+             F->FF`,
+             25.7 / 180.0 * Math.PI,
+             5
+        );
 
-        this._str = this._lSystem.derivate( 3 );
+        this.lSystems[ 'tilt_tree' ] = new LSystem(
+            'F',
+            `F->FF-[-F+F+F]+[+F-F-F]`,
+            22.5 / 180.0 * Math.PI,
+            4
+        );
 
-        this.step = 1;
 
-        this.angle = ( 25 / 360 ) * 2 * Math.PI;
-        //this.angle = ( 27.5 / 360 ) * 2 * Math.PI;
-        //this.angle = Math.PI / 2;
+        this._lSystem = this.lSystems[ 'simple_tree' ];
+
+        this._str = this._lSystem.derivate();
+
+        this.step = 0.1;
+
+        this.angle = this._lSystem.default_angle;
 
         this.interpretations = {
             'F': this.drawForward.bind( this ),
