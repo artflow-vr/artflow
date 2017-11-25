@@ -72,6 +72,7 @@ class Tree {
         this.step = step;
         this.str = str;
         this.curIdx = 0;
+        this.newMesh = false;
 
     }
 
@@ -169,7 +170,6 @@ export default class TreeTool extends AbstractTool {
             4
         );
 
-
         this._lSystem = this.lSystems[ 'simple_tree' ];
 
         this._str = this._lSystem.derivate();
@@ -243,12 +243,11 @@ export default class TreeTool extends AbstractTool {
         if ( !tree || !tree.str ) return false;
 
         let i = tree.curIdx;
-        let newMesh = i + 1 < tree.str.length
-                      && tree.str[ i ].symbol === ']'
-                      && tree.str[ i + 1 ].symbol !== ']';
+        tree.newMesh |= tree.str[ i ].symbol === ']'
+                        || tree.str[ i ].symbol === 'f';
 
         let clbk = this.interpretations[ tree.str[ i ].symbol ];
-        if ( clbk ) clbk( tree, newMesh );
+        if ( clbk ) clbk( tree );
 
         return ++tree.curIdx >= tree.str.length;
 
@@ -274,6 +273,12 @@ export default class TreeTool extends AbstractTool {
 
     drawForward( tree ) {
 
+        if ( tree.newMesh ) {
+            this._addMesh( tree );
+            this._draw( tree );
+            tree.newMesh = false;
+        }
+
         this._movePos( tree );
         this._draw( tree );
 
@@ -281,7 +286,6 @@ export default class TreeTool extends AbstractTool {
 
     moveForward( tree ) {
 
-        this._addMesh( tree );
         this._movePos( tree );
 
     }
@@ -355,7 +359,7 @@ export default class TreeTool extends AbstractTool {
         this._updateAngle( tree, m );
     }
 
-    pushState( tree, newMesh ) {
+    pushState( tree ) {
 
         let state = tree.peekState();
         tree.pushState(
@@ -363,21 +367,11 @@ export default class TreeTool extends AbstractTool {
             state.pressure
         );
 
-        if ( newMesh ) {
-            this._addMesh( tree );
-            this._draw( tree );
-        }
-
     }
 
-    popState( tree, newMesh ) {
+    popState( tree ) {
 
         tree.popState();
-
-        if ( newMesh ) {
-            this._addMesh( tree );
-            this._draw( tree );
-        }
 
     }
 }
