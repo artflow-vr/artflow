@@ -69,7 +69,6 @@ class Tree {
             data.position.world, angle, m, step, data.orientation, data.pressure
         );
 
-        this.step = step;
         this.str = str;
         this.curIdx = 0;
         this.newMesh = false;
@@ -128,7 +127,7 @@ export default class TreeTool extends AbstractTool {
 
         this.lSystems = {};
 
-        this.lSystems[ 'bush' ] = new LSystem(
+        this.lSystems.bush = new LSystem(
             'A',
             `A->[&FLA]\/\/\/\/\/[&FLA]\/\/\/\/\/\/\/[&FLA]
              F->S\/\/\/\/\/F
@@ -137,7 +136,7 @@ export default class TreeTool extends AbstractTool {
             7
         );
 
-        this.lSystems[ 'hilbert_cube' ] = new LSystem(
+        this.lSystems.hilbertCube = new LSystem(
             'A',
             `A->B-F+CFC+F-D&F^D-F+&&CFC+F+B\/\/
              B->A&F^CFB^F^D^^-F-D^|F^B|FC^F^A\/\/
@@ -147,15 +146,15 @@ export default class TreeTool extends AbstractTool {
              2
         );
 
-        this.lSystems[ 'context_sensitive' ] = new LSystem(
+        this.lSystems.contextSensitive = new LSystem(
             'F',
             `F->F[-EF]E[+F]
              F<E->F[&F][^F]`,
-             25.0 / 180.0  * Math.PI,
+             25.0 / 180.0 * Math.PI,
              4
         );
 
-        this.lSystems[ 'simple_tree' ] = new LSystem(
+        this.lSystems.simpleTree = new LSystem(
             'X',
             `X->F[+X][-X]FX
              F->FF`,
@@ -163,20 +162,20 @@ export default class TreeTool extends AbstractTool {
              5
         );
 
-        this.lSystems[ 'tilt_tree' ] = new LSystem(
+        this.lSystems.tiltTree = new LSystem(
             'F',
-            `F->FF-[-F+F+F]+[+F-F-F]`,
+            'F->FF-[-F+F+F]+[+F-F-F]',
             22.5 / 180.0 * Math.PI,
             4
         );
 
-        this._lSystem = this.lSystems[ 'simple_tree' ];
+        this._lSystem = this.lSystems.simpleTree;
 
         this._str = this._lSystem.derivate();
 
         this.step = 0.1;
 
-        this.angle = this._lSystem.default_angle;
+        this.angle = this._lSystem.defaultAngle;
 
         this.interpretations = {
             'F': this.drawForward.bind( this ),
@@ -324,6 +323,7 @@ export default class TreeTool extends AbstractTool {
 
         let m = this._getRuMatrix( Math.PI );
         this._updateAngle( tree, m );
+
     }
 
 

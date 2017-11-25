@@ -84,7 +84,7 @@ class Production {
     if ( this.rightCtx && !this.matchRightCtx( axiom, index ) )
       return false;
 
-    return !( this.cond && !this.cond( axiom, index ) )
+    return !( this.cond && !this.cond( axiom, index ) );
 
   }
 
@@ -224,21 +224,21 @@ class Parser {
 
 class LSystem {
 
-    constructor( axiom, productions, default_angle, default_n ) {
+    constructor( axiom, productions, defaultAngle, defaultN ) {
 
       this.axiom = Parser.parseLetters( axiom );
       this.productions = Parser.parseProductions( productions );
-      this.default_angle = default_angle;
-      this.default_n = default_n;
+      this.defaultAngle = defaultAngle;
+      this.defaultN = defaultN;
 
     }
 
     derivate( n ) {
 
-      let n_ite = n === undefined ? this.default_n : n;
+      let nIte = n === undefined ? this.defaultN : n;
       let prevAxiom = JSON.parse( JSON.stringify( this.axiom ) );
 
-      for ( let k = 0; k < n_ite; ++k ) {
+      for ( let k = 0; k < nIte; ++k ) {
         let newAxiom = [];
 
         for ( let i = 0; i < prevAxiom.length; ++i ) {
