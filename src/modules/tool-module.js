@@ -155,12 +155,15 @@ class ToolModule {
 
     update( data ) {
 
+        let tools = null;
         let tool = null;
-        for ( let toolID in this._instance ) {
-            tool = this._instance[ toolID ];
-            if ( tool.update ) tool.update( data );
-        }
 
+        for ( let toolsID in this._instance ) {
+            tools = this._instance[ toolsID ];
+
+            for ( tool of tools )
+                if ( tool.update ) tool.update( data );
+        }
     }
 
     _onColorChange( color ) {
