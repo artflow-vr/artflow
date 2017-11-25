@@ -71,6 +71,7 @@ class Tree {
 
         this.step = step;
         this.str = str;
+        this.curIdx = 0;
 
     }
 
@@ -210,7 +211,20 @@ export default class TreeTool extends AbstractTool {
 
         tree.init( data, this.angle, this.step, this._str );
         this._draw( tree );
-        this._interpretSbs( tree, 0 );
+
+    }
+
+    update( data ) {
+
+        let toRemove = [];
+
+        for ( let i = 0; i < this.trees.length; ++i ) {
+            if ( this._interpretNext( i ) )
+                toRemove.push( i );
+        }
+
+        for ( let i of toRemove )
+          this.trees.splice( i, 1 );
 
     }
 
@@ -222,51 +236,21 @@ export default class TreeTool extends AbstractTool {
 
     }
 
-    _interpret( tree ) {
 
-        let newMesh = false;
+    _interpretNext( treeIdx ) {
 
-        for ( let i = 0; i < tree.str.length; ++i ) {
-            newMesh = i + 1 < tree.str.length
-                      && ( tree.str[ i ].symbol === ']'
-                      || tree.str[ i ].symbol === '[' )
-                      && tree.str[ i + 1 ].symbol !== ']'
-                      && tree.str[ i + 1 ].symbol !== '[';
-            let clbk = this.interpretations[ tree.str[ i ].symbol ];
+        let tree = this.trees[ treeIdx ];
+        if ( !tree || !tree.str ) return false;
 
-            if ( clbk ) {
-                clbk( tree, newMesh );
-            }
-        }
+        let i = tree.curIdx;
+        let newMesh = i + 1 < tree.str.length
+                      && tree.str[ i ].symbol === ']'
+                      && tree.str[ i + 1 ].symbol !== ']';
 
-        this.trees.pop();
+        let clbk = this.interpretations[ tree.str[ i ].symbol ];
+        if ( clbk ) clbk( tree, newMesh );
 
-    }
-
-    _interpretSbs( tree, idx ) {
-
-        if ( idx >= tree.str.length ) {
-            this.trees.slice( this.trees.indexOf( tree ) );
-            return;
-        }
-
-        let newMesh = false;
-        let i = idx;
-
-        for ( ; i < tree.str.length && !newMesh; ++i ) {
-            newMesh = i + 1 < tree.str.length
-                      && ( tree.str[ i ].symbol === ']'
-                      || tree.str[ i ].symbol === '[' )
-                      && tree.str[ i + 1 ].symbol !== ']'
-                      && tree.str[ i + 1 ].symbol !== '[';
-            let clbk = this.interpretations[ tree.str[ i ].symbol ];
-
-            if ( clbk ) {
-                clbk( tree, newMesh );
-            }
-        }
-
-        setTimeout( this._interpretSbs.bind( this, tree, i ), 3 );
+        return ++tree.curIdx >= tree.str.length;
 
     }
 
