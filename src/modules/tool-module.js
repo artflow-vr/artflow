@@ -67,18 +67,6 @@ class ToolModule {
 
     }
 
-    register2( toolID, tool ) {
-
-        if ( toolID in this._tools ) {
-            let errorMsg = 'you already registered the tool \'' + toolID +
-                '\'';
-            throw Error( 'ToolModule: ' + errorMsg );
-        }
-
-        this._tools[ toolID ] = tool;
-
-    }
-
     init() {
 
         this.objectPool = new Utils.ObjectPool();
@@ -205,33 +193,16 @@ class ToolModule {
 
     }
 
-    _instanciate2( instanceID, toolID, options ) {
-
-        if ( !( toolID in this._tools ) ) {
-            let errorMsg = 'Tool \'' + toolID + '\' is not registered yet.';
-            throw Error( 'ToolModule._instanciate(): ' + errorMsg );
-        }
-
-        if ( instanceID in this._instance ) {
-            let errorMsg = '\'' + instanceID + '\' already instanciated.';
-            throw Error( 'ToolModule._instanciate(): ' + errorMsg );
-        }
-
-        let instance = new Tool.ToolContainer( this._tools[ toolID ], options );
-        this._instance[ instanceID ] = instance;
-
-    }
-
     _registerBasicTools() {
 
         this.register( 'Brush', Tool.BrushTool );
-        this.register2( 'Particle', Tool.ParticleTool );
+        this.register( 'Particle', Tool.ParticleTool );
         this.register( 'Teleporter', Tool.TeleporterTool );
         this.register( 'Water', Tool.WaterTool );
 
         this._instanciate( 'brush0', 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
 
-        this._instanciate2( 'particle0', 'Particle' );
+        this._instanciate( 'particle0', 'Particle' );
         this._instanciate( 'teleporter', 'Teleporter' );
         this._instanciate( 'water', 'Water' );
 

@@ -29,12 +29,10 @@ import BrushTool from './brush-tool';
 import ParticleTool from './particle-tool';
 import WaterTool from './water-tool';
 import TeleporterTool from './teleporter-tool';
-import ToolContainer from './tool-container';
 
 export {
     BrushTool,
     ParticleTool,
     WaterTool,
     TeleporterTool,
-    ToolContainer
 };

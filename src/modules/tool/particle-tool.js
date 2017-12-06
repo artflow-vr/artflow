@@ -28,8 +28,10 @@
 import AbstractTool from './abstract-tool';
 import { AssetManager } from '../../utils/asset-manager';
 import ParticleShader from '../../shader/particle/particle-shader';
+import ParticleShader2 from '../../shader/particle/particle-shader2';
 import PositionUpdate from '../../shader/particle/position-update';
 import VelocityUpdate from '../../shader/particle/velocity-update';
+import VelocityUpdate2 from '../../shader/particle/velocity-update2';
 import BaseShader from '../../shader/particle/base-shader';
 import MainView from '../../view/main-view';
 
@@ -118,8 +120,8 @@ class PrimitivesRenderer {
                 lifespanEntropy : { type: 'f', value: this.options.lifespanEntropy },
                 dt : { type: 'f', value: 0 }
             },
-            vertexShader: PositionUpdate.vertex,
-            fragmentShader: PositionUpdate.fragment
+            vertexShader: this.options.positionUpdate.vertex,
+            fragmentShader: this.options.positionUpdate.fragment
         } );
         this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
@@ -129,8 +131,8 @@ class PrimitivesRenderer {
                 tInitialPositionsMap : { type: 't', value: this._positionInitialTex },
                 dt : { type: 'f', value: 0 }
             },
-            vertexShader: VelocityUpdate.vertex,
-            fragmentShader: VelocityUpdate.fragment
+            vertexShader: this.options.velocityUpdate.vertex,
+            fragmentShader: this.options.velocityUpdate.fragment
         } );
         this._velocitiesTargetTextureMat.needsUpdate = true;
 
@@ -187,6 +189,8 @@ class ParticleEmitter extends THREE.Object3D {
     constructor( maxParticles, particleSystem ) {
         super();
 
+        this.options = particleSystem.options;
+
         this._particleMaxCount = maxParticles || 100000;
         this._particleCursor = 0;
         this._DPR = window.devicePixelRatio;
@@ -230,8 +234,8 @@ class ParticleEmitter extends THREE.Object3D {
                     Math.sqrt( this._particleSystem.options.maxParticlesPerEmitter ) ) }
             },
             blending: THREE.AdditiveBlending,
-            vertexShader: ParticleShader.vertex,
-            fragmentShader: ParticleShader.fragment
+            vertexShader: this.options.particleShader.vertex,
+            fragmentShader: this.options.particleShader.fragment
         } );
         this.position.set( 0, 0, 0 );
 
@@ -283,17 +287,10 @@ export default class ParticleTool extends AbstractTool {
     constructor( options ) {
     super( options );
 
-        this.setOptionsIfUndef( {
-            brushSize: 3,
-            thickness: 10,
-            initialParticlesPerEmitter: 20,
-            maxParticlesPerEmitter: 512 * 512,
-            maxEmitters: 20,
-            pointMaxSize: 20,
-            normVelocity: 10,  // FIXME: Initialization when lifespan hits 0
-            lifespanEntropy: 0.001,
-            debugPlane: false
-        } );
+        this.setOptionsIfUndef(
+            ParticleTool.registeredParticles[ 0 ]
+        );
+        // this.options += ParticleTool.registeredParticles[ 0 ];
 
         this._brushSize = this.options.brushSize;
         this._thickness = this.options.thickness;
@@ -313,14 +310,12 @@ export default class ParticleTool extends AbstractTool {
             this.rand.push( Math.random() - 0.5 );
         }
 
-        /*
         // Bind functions to events
         this.registerEvent( 'interact', {
             use: this.use.bind( this ),
             trigger: this.trigger.bind( this ),
             release: this.release.bind( this )
         } );
-        */
     }
 
     _spawnParticleEmitter() {
@@ -369,7 +364,6 @@ export default class ParticleTool extends AbstractTool {
     }
 
     trigger() {
-        console.log("hey");
     }
 
     release() {
@@ -377,3 +371,48 @@ export default class ParticleTool extends AbstractTool {
     }
 
 }
+
+ParticleTool.registeredParticles = [
+    {
+        brushSize: 3,
+        thickness: 10,
+        initialParticlesPerEmitter: 20,
+        maxParticlesPerEmitter: 512 * 512,
+        maxEmitters: 20,
+        pointMaxSize: 20,
+        normVelocity: 10,  // FIXME: Initialization when lifespan hits 0
+        lifespanEntropy: 0.001,
+        debugPlane: false,
+        particleShader: ParticleShader,
+        positionUpdate: PositionUpdate,
+        velocityUpdate: VelocityUpdate
+    },
+    {
+        brushSize: 3,
+        thickness: 10,
+        initialParticlesPerEmitter: 20,
+        maxParticlesPerEmitter: 512 * 512,
+        maxEmitters: 20,
+        pointMaxSize: 20,
+        normVelocity: 10,
+        lifespanEntropy: 0.001,
+        debugPlane: false,
+        particleShader: ParticleShader2,
+        positionUpdate: PositionUpdate,
+        velocityUpdate: VelocityUpdate2
+    },
+    {
+        brushSize: 3,
+        thickness: 10,
+        initialParticlesPerEmitter: 20,
+        maxParticlesPerEmitter: 512 * 512,
+        maxEmitters: 20,
+        pointMaxSize: 20,
+        normVelocity: 10,
+        lifespanEntropy: 0.001,
+        debugPlane: false,
+        particleShader: ParticleShader,
+        positionUpdate: PositionUpdate,
+        velocityUpdate: VelocityUpdate
+    }
+];
