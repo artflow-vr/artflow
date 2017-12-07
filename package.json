@@ -36,6 +36,6 @@
     "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
-    "vr-ui": "^0.0.8"
+    "vr-ui": "^0.0.9"
   }
 }
