@@ -53,10 +53,10 @@ export default class StrokeAnimatedTest extends AbstractBrushStroke {
 
     update( data ) {
 
-        if (this._helper._mesh !== null)
-        {
-            this._helper._mesh.material.uniforms.uTime.value %= 6;
-            this._helper._mesh.material.uniforms.uTime.value += 0.1;
+        for (let m in this._helper._meshes) {
+            let m2 = this._helper._meshes[ m ];
+            m2.material.uniforms.uTime.value %= 100;
+            m2.material.uniforms.uTime.value += 0.1;
         }
 
     }
@@ -65,7 +65,7 @@ export default class StrokeAnimatedTest extends AbstractBrushStroke {
 
         this._helper.addPoint( data.position.world, data.orientation, data.pressure );
 
-        this._helper._material.uniforms.uTime.value += 0.001;
+        this._helper._material.uniforms.uTime.value += 1.001;
 
     }
 }

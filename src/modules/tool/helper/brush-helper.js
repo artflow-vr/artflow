@@ -43,7 +43,7 @@ export default class BrushHelper {
         this._geometry = null;
         this._vertices = null;
         this._normals = null;
-        this._mesh = null;
+        this._meshes = [];
         this._uvs = null;
         this._uv = 0;
         this._delta = this.options.delta;
@@ -110,7 +110,7 @@ export default class BrushHelper {
         mesh.uvs = this._uvs;
         mesh.normals = this._normals;
 
-        this._mesh = mesh;
+        this._meshes.push( mesh );
 
         return mesh;
 
