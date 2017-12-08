@@ -175,9 +175,14 @@ class Manager {
             this.load( 'water_normal', '.png', TEXTURE, this._texturePath )
         );
 
-        /*
-            Loads UI assets
-        */
+        this._loadUIAssets( promises );
+
+        return Promise.all( promises );
+
+    }
+
+    _loadUIAssets( promises ) {
+
         promises.push(
             this.load( 'ui/background', '.png', TEXTURE, this._texturePath,
                 'ui-background' )
@@ -189,6 +194,10 @@ class Manager {
         promises.push(
             this.load( 'ui/button-hover', '.png', TEXTURE, this._texturePath,
                 'ui-button-hover' )
+        );
+        promises.push(
+            this.load( 'ui/home-icon', '.png', TEXTURE, this._texturePath,
+                'ui-home' )
         );
         promises.push(
             this.load( 'ui/arrow-icon', '.png', TEXTURE, this._texturePath,
@@ -207,9 +216,7 @@ class Manager {
                 'ui-slider-button' )
         );
 
-        /*
-            Loads UI tool textures
-        */
+        // Loads tool textures
         for ( let elt of ['brush', 'particles', 'water', 'tree'] ) {
             promises.push(
                 this.load( 'ui/tools/' + elt + '-icon', '.png',
@@ -217,7 +224,15 @@ class Manager {
             );
         }
 
-        return Promise.all( promises );
+        //
+        // Particle items
+        //
+        promises.push(
+            this.load(
+                'ui/items/brush/unified', '.png',
+                TEXTURE, this._texturePath, 'brush-item-unified'
+            )
+        );
 
     }
 

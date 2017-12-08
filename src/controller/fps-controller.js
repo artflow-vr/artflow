@@ -71,35 +71,32 @@ export default class FPSControls {
         this.rightDir.crossVectors( UP_DIR, this._forwardDir );
 
         if ( this.forward )
-            this._movingWorld.translateOnAxis( this._forwardDir, -
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this._forwardDir, - actualMoveSpeed
+            );
+
         if ( this.backward )
-            this._movingWorld.translateOnAxis( this._forwardDir,
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this._forwardDir, actualMoveSpeed
+            );
 
         if ( this.left )
-            this._movingWorld.translateOnAxis( this.rightDir, -
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this.rightDir, - actualMoveSpeed
+            );
         if ( this.right )
-            this._movingWorld.translateOnAxis( this.rightDir,
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this.rightDir, actualMoveSpeed
+            );
 
         if ( this.fixedHeight ) this._movingWorld.position.y = 0;
-
-        this._mouseX = 0;
-        this._mouseY = 0;
 
     }
 
     moveView( event ) {
 
-        this._mouseX = event.movementX ||
-            event.mozMovementX ||
-            event.webkitMovementX || 0;
-
-        this._mouseY = event.movementY ||
-            event.mozMovementY ||
-            event.webkitMovementY || 0;
+        this._mouseX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+        this._mouseY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
     }
 
