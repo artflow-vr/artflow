@@ -84,12 +84,12 @@ class ToolModule {
         this._tools[ toolID ] = tool;
 
         // Adds the tool to the UI if a texture was provided.
-        if ( tool.uiTexture ) {
-            UI.addTool( { id: toolID, data: tool },
-                AssetManager.assets.texture[ 'ui-button-back' ],
-                this._onUISelection.bind( this )
-            );
-        }
+        if ( !tool.uiTexture ) return;
+
+        UI.addTool( { id: toolID, data: tool },
+            AssetManager.assets.texture[ 'ui-button-back' ],
+            this._onUISelection.bind( this )
+        );
 
     }
 
@@ -134,6 +134,15 @@ class ToolModule {
 
         tool.items[ itemID ] = item;
 
+        // Adds the tool to the UI if a texture was provided.
+        if ( !item.uiTexture ) return;
+
+        let buttonBackground = AssetManager.assets.texture[ 'ui-button-back' ];
+        UI.addToolItem(
+            toolID, { id: itemID, data: item },
+            buttonBackground, this._onItemSelection.bind( this )
+        );
+
     }
 
     /**
@@ -167,6 +176,7 @@ class ToolModule {
 
         this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();
+        this._registerBasicItems();
 
         this._selected[ 0 ] = this._instance.Brush[ 0 ];
         this._selected[ 1 ] = this._instance.Brush[ 1 ];
@@ -237,15 +247,13 @@ class ToolModule {
 
     update( data ) {
 
-        let tools = null;
-        let tool = null;
-
-        for ( let toolsID in this._instance ) {
-            tools = this._instance[ toolsID ];
-
-            for ( tool of tools )
-                if ( tool.update ) tool.update( data );
+        let instances = null;
+        for ( let toolID in this._instance ) {
+            instances = this._instance[ toolID ];
+            instances[ 0 ]._update( data );
+            instances[ 1 ]._update( data );
         }
+
     }
 
     _onColorChange( color ) {
@@ -259,8 +267,19 @@ class ToolModule {
 
     _onUISelection( toolID, controllerID, evt ) {
 
-        if ( evt.pressed )
-            this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
+        if ( !evt.pressed ) return;
+
+        this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
+        // TODO: handle onExit.
+        this._selected[ controllerID ]._onEnter();
+
+    }
+
+    _onItemSelection( itemID, controllerID, evt ) {
+
+        if ( !evt.pressed ) return;
+
+        this._selected[ controllerID ]._onItemChanged( itemID );
 
     }
 
@@ -347,6 +366,18 @@ class ToolModule {
         this._instanciate( 'Water' );
         this._instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
         this._instanciate( 'Particle' );
+
+    }
+
+    _registerBasicItems() {
+
+        //
+        // PARTICLES
+        //
+        this.registerToolItem( 'Particle', 'default', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+            data: null // You can pass extra data here
+        } );
 
     }
 

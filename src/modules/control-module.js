@@ -100,6 +100,7 @@ class Control {
         // The UI will grow when new item will be registered.
         let uiTextures = {
             background: AssetManager.assets.texture[ 'ui-background' ],
+            home: AssetManager.assets.texture[ 'ui-home' ],
             arrowLeft: AssetManager.assets.texture[ 'ui-arrow-left' ],
             buttonBackground: AssetManager.assets.texture[ 'ui-button-back' ],
             buttonHover: AssetManager.assets.texture[ 'ui-button-hover' ],
@@ -122,10 +123,7 @@ class Control {
             this._registerKeyboardMouseEvents();
             MainView.getCamera().position.y = 1.5;
             MainView.backgroundView.toggleVisibility( true );
-            UI.init(
-                uiTextures, null, MainView._camera,
-                MainView._renderer, MainView._group
-            );
+            UI.init( uiTextures, null );
         }
         this._initUI( this.vr );
 

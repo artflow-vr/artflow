@@ -71,18 +71,23 @@ export default class FPSControls {
         this.rightDir.crossVectors( UP_DIR, this._forwardDir );
 
         if ( this.forward )
-            this._movingWorld.translateOnAxis( this._forwardDir, -
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this._forwardDir, - actualMoveSpeed
+            );
+
         if ( this.backward )
-            this._movingWorld.translateOnAxis( this._forwardDir,
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this._forwardDir, actualMoveSpeed
+            );
 
         if ( this.left )
-            this._movingWorld.translateOnAxis( this.rightDir, -
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this.rightDir, - actualMoveSpeed
+            );
         if ( this.right )
-            this._movingWorld.translateOnAxis( this.rightDir,
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this.rightDir, actualMoveSpeed
+            );
 
         if ( this.fixedHeight ) this._movingWorld.position.y = 0;
 
