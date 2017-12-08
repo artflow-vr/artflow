@@ -102,7 +102,7 @@ export default class WaterTool extends AbstractTool {
 
     }
 
-    update() {
+    update( data ) {
 
         this.worldGroup.object.traverse( function ( child ) {
 

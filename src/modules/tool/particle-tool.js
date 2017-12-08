@@ -118,7 +118,7 @@ export default class ParticleTool extends AbstractTool {
         this._cursorMesh.position.z = pointCoords.z;
     }
 
-    update() {}
+    update( data ) {}
 
     trigger() {}
 
