@@ -2,6 +2,7 @@
 
 import AddCommand from './command/add-command';
 import BrushHelper from './helper/brush-helper';
+
 export default class AbstractBrushStroke {
 
     constructor( isVR, materialId = 'material_with_tex' ) {
