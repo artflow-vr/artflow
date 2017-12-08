@@ -36,16 +36,11 @@ export default class BrushTool extends AbstractTool {
 
     constructor( isVR ) {
 
-        super( options );
+        super();
 
-    this.registeredStrokes = {
-        with_tex : new StrokeWithTex(),
-        without_tex : new StrokeWithoutTex()
-    };
+        //AbstractTool.call( this, null );
 
-        this.setOptionsIfUndef( BrushTool.registeredBrushes[ 0 ] );
-
-        this._helper = new BrushHelper( this.options );
+        this.registeredStrokes = null;
 
         let self = this;
         this.registerEvent( 'interact', {
@@ -59,6 +54,12 @@ export default class BrushTool extends AbstractTool {
                 self._previousY = 0.0;
             }
         } );
+
+        this.registerEvent( 'colorChanged', ( hsv ) => {
+            self.setColor( hsv )
+        } );
+
+        this.mesh = null;
 
         this.registeredStrokes = {
             'with_tex': new StrokeWithTex( isVR ),
@@ -79,24 +80,19 @@ export default class BrushTool extends AbstractTool {
     update( data ) {
 
         for ( let s in this.registeredStrokes )
-           this.registeredStrokes[ s ].update( data );
+            this.registeredStrokes[ s ].update( data );
 
-        }
+    }
 
     use( data ) {
 
-        this._helper.addPoint(
-            data.position.world, data.orientation, data.pressure
-        );
+        this.registeredStrokes[ this.currentStroke ].use( data );
 
     }
 
     trigger() {
 
-        this.mesh = this._helper.createMesh();
-        this.worldGroup.addTHREEObject( this.mesh );
-
-        return new AddCommand( this.worldGroup, this.mesh );
+        this.registeredStrokes[ this.currentStroke ].trigger( this );
 
     }
 
@@ -108,6 +104,9 @@ export default class BrushTool extends AbstractTool {
 
     }
 
-}
+    setColor( hsv ) {
 
-module.exports = BrushTool;
+        this.registeredStrokes[ this.currentStroke ].setColor( hsv );
+
+    }
+}
