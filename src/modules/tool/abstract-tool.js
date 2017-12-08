@@ -70,14 +70,6 @@ export default class Tool {
         }*/
         this.listenTo = {};
 
-        // Registers only method defined in the child
-        if ( this.update !== undefined )
-            Tool.prototype.updateChild = Tool.prototype._update;
-        if ( this.onEnter !== undefined )
-            Tool.prototype.onEnterChild = Tool.prototype._onEnter;
-        if ( this.onExit !== undefined )
-            Tool.prototype.onExitChild = Tool.prototype._onExit;
-
     }
 
     setOptionsIfUndef( options ) {
@@ -129,20 +121,32 @@ export default class Tool {
 
     _update( delta ) {
 
-        if ( !this.enabled || !this.dynamic )
+        if ( !this.enabled || !this.dynamic || !this.update )
             return;
 
         this.update( delta );
 
     }
 
+    _onItemChanged( id ) {
+
+        if ( !this.enabled || !this.onItemChanged ) return;
+
+        this.onItemChanged( id );
+
+    }
+
     _onEnter() {
+
+        if ( !this.enabled || !this.onEnter ) return;
 
         this.onEnter();
 
     }
 
     _onExit() {
+
+        if ( !this.enabled || !this.onExit ) return;
 
         this.onExit();
 

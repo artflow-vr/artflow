@@ -27,12 +27,16 @@
 
 import ArtflowMain from './main';
 
+let customInit = function() {
+
+};
+
 window.onload = function () {
 
     let w = window.innerWidth;
     let h = window.innerHeight;
 
-    ArtflowMain.init( w, h );
+    ArtflowMain.init( w, h, customInit );
 
     // Registers global events
     window.addEventListener( 'resize', function () {
