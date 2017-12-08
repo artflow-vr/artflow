@@ -38,11 +38,7 @@ import MainView from '../../view/main-view';
 class PrimitivesRenderer {
     constructor( options ) {
         this.options = options;
-        this._bufferWidth = PrimitivesRenderer._getNextPowerTwo( Math.floor(
-            Math.sqrt( options.maxParticlesPerEmitter ) ) );
-        this._bufferHeight = PrimitivesRenderer._getNextPowerTwo( Math.floor(
-            Math.sqrt( options.maxParticlesPerEmitter ) ) );
-        console.log( this._bufferWidth, this._bufferHeight );
+        this._bufferSide = PrimitivesRenderer._getNextPowerTwo( this.options.bufferSide );
         this._renderer = MainView._renderer;
 
         // Set up RTTs
@@ -60,26 +56,26 @@ class PrimitivesRenderer {
     }
 
     initIndicesArray() {
-        for ( let i = this._bufferHeight - 1; i >= 0; i-- )
-            for ( let j = this._bufferWidth - 1; j >= 0; j-- )
-                this._indices.push( i * this._bufferWidth + j );
+        for ( let i = this._bufferSide - 1; i >= 0; i-- )
+            for ( let j = this._bufferSide - 1; j >= 0; j-- )
+                this._indices.push( i * this._bufferSide + j );
     }
 
     getAvailableIndex() {
         let idx = this._indices.pop();
-        return { x: idx % this._bufferWidth, y: Math.floor( idx / this._bufferWidth ) };
+        return { x: idx % this._bufferSide, y: Math.floor( idx / this._bufferSide ) };
     }
 
     initPositionRenderPass() {
         // Set up cameras
-        this._positionsCamera = new THREE.OrthographicCamera( this._bufferWidth / - 2,
-            this._bufferWidth / 2,
-            this._bufferHeight / 2,
-            this._bufferHeight / - 2, -10000, 10000 );
-        this._velocitiesCamera = new THREE.OrthographicCamera( this._bufferWidth / - 2,
-            this._bufferWidth / 2,
-            this._bufferHeight / 2,
-            this._bufferHeight / - 2, -10000, 10000 );
+        this._positionsCamera = new THREE.OrthographicCamera( this._bufferSide / - 2,
+            this._bufferSide / 2,
+            this._bufferSide / 2,
+            this._bufferSide / - 2, -10000, 10000 );
+        this._velocitiesCamera = new THREE.OrthographicCamera( this._bufferSide / - 2,
+            this._bufferSide / 2,
+            this._bufferSide / 2,
+            this._bufferSide / - 2, -10000, 10000 );
 
         // Create scenes
         this._positionRTTScene = new THREE.Scene();
@@ -92,21 +88,19 @@ class PrimitivesRenderer {
             stencilBuffer:false,
             depthBuffer:false
         };
-        this._positionRT1 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
-        this._positionRT2 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
-        this._velocityRT1 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
-        this._velocityRT2 = new THREE.WebGLRenderTarget( this._bufferWidth, this._bufferHeight, renderTargetParams );
+        this._positionRT1 = new THREE.WebGLRenderTarget( this._bufferSide, this._bufferSide, renderTargetParams );
+        this._positionRT2 = new THREE.WebGLRenderTarget( this._bufferSide, this._bufferSide, renderTargetParams );
+        this._velocityRT1 = new THREE.WebGLRenderTarget( this._bufferSide, this._bufferSide, renderTargetParams );
+        this._velocityRT2 = new THREE.WebGLRenderTarget( this._bufferSide, this._bufferSide, renderTargetParams );
 
-        this._positionBufferTex1 = THREE.ImageUtils.generateRandomDataTexture( this._bufferWidth,
-            this._bufferHeight );
+        this._positionBufferTex1 = this.options.positionInitialTex;
         this._positionInitialTex = THREE.ImageUtils.copyDataTexture( this._positionBufferTex1,
-            this._bufferWidth, this._bufferHeight );
+            this._bufferSide, this._bufferSide );
         this._positionBufferTex1.needsUpdate = true;
 
-        this._velocityBufferTex1 = THREE.ImageUtils.generateDataTexture( this._bufferWidth,
-            this._bufferHeight, new THREE.Color( 0.5, 0.495, 0.5 ) );
+        this._velocityBufferTex1 = this.options.velocityInitialTex;
         this._velocityInitialTex = THREE.ImageUtils.copyDataTexture( this._velocityBufferTex1,
-            this._bufferWidth, this._bufferHeight );
+            this._bufferSide, this._bufferSide );
         this._velocityBufferTex1.needsUpdate = true;
 
         // Initialize RTT materials
@@ -116,13 +110,15 @@ class PrimitivesRenderer {
                 tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
                 tInitialVelocitiesMap : { type: 't', value: this._velocityInitialTex },
                 tInitialPositionsMap : { type: 't', value: this._positionInitialTex },
-                normVelocity: { type: 'f', value: this.options.normVelocity },
-                lifespanEntropy : { type: 'f', value: this.options.lifespanEntropy },
                 dt : { type: 'f', value: 0 }
             },
             vertexShader: this.options.positionUpdate.vertex,
             fragmentShader: this.options.positionUpdate.fragment
         } );
+        for ( let elt in this.options.positionUniforms )
+            this._positionsTargetTextureMat.uniforms[ elt ] = this.options.positionUniforms[ elt ];
+        console.log( this._positionsTargetTextureMat.uniforms );
+
         this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
                 tPositionsMap : { type: 't', value: this._positionBufferTex1 },
@@ -134,16 +130,20 @@ class PrimitivesRenderer {
             vertexShader: this.options.velocityUpdate.vertex,
             fragmentShader: this.options.velocityUpdate.fragment
         } );
+        for ( let elt in this.options.velocityUniforms )
+            this._positionsTargetTextureMat.uniforms[ elt ] = this.options.velocityUniforms[ elt ];
+        console.log( this._velocitiesTargetTextureMat.uniforms );
+
         this._velocitiesTargetTextureMat.needsUpdate = true;
 
         // Setup render-to-texture scene
-        this._positionsTargetTextureGeo = new THREE.PlaneGeometry( this._bufferWidth, this._bufferHeight );
+        this._positionsTargetTextureGeo = new THREE.PlaneGeometry( this._bufferSide, this._bufferSide );
         this._positionsTargetTextureMesh = new THREE.Mesh( this._positionsTargetTextureGeo,
             this._positionsTargetTextureMat );
         this._positionsTargetTextureMesh.position.z = 1;
         this._positionRTTScene.add( this._positionsTargetTextureMesh );
 
-        this._velocitiesTargetTextureGeo = new THREE.PlaneGeometry( this._bufferWidth, this._bufferHeight );
+        this._velocitiesTargetTextureGeo = new THREE.PlaneGeometry( this._bufferSide, this._bufferSide );
         this._velocitiesTargetTextureMesh = new THREE.Mesh( this._velocitiesTargetTextureGeo,
             this._velocitiesTargetTextureMat );
         this._velocitiesTargetTextureMesh.position.z = 1;
@@ -157,13 +157,14 @@ class PrimitivesRenderer {
             vertexShader: BaseShader.vertex,
             fragmentShader: BaseShader.fragment
         } );
-        this._debugPlaneGeo = new THREE.PlaneGeometry( this._bufferWidth, this._bufferHeight );
+        this._debugPlaneGeo = new THREE.PlaneGeometry( this._bufferSide, this._bufferSide );
         this._debugPlaneMesh = new THREE.Mesh( this._debugPlaneGeo,
             this._debugPlaneMat );
     }
 
     update( dt ) {
         this._debugPlaneMat.uniforms.tSprite.value = this._positionRT2.texture;
+
         this._velocitiesTargetTextureMesh.material.uniforms.dt.value = dt;
         this._renderer.render( this._velocityRTTScene, this._velocitiesCamera, this._velocityRT1, true );
         let sw = this._velocityRT1;
@@ -228,15 +229,17 @@ class ParticleEmitter extends THREE.Object3D {
             uniforms: {
                 tSprite: { type: 't', value: this._particleTexture },
                 tPositions: { type: 't', value: this._updatedPositions },
-                pointMaxSize: { type: 'f', value: this._particleSystem.options.pointMaxSize },
-                brushSize: { type: 'f', value: this._particleSystem.options.brushSize },
-                particlesTexWidth: { type: 'f', value: Math.floor(
-                    Math.sqrt( this._particleSystem.options.maxParticlesPerEmitter ) ) }
+                pointMaxSize: { type: 'f', value: this.options.pointMaxSize },
+                particlesTexWidth: { type: 'f', value: PrimitivesRenderer._getNextPowerTwo(
+                    this.options.bufferSide ) }
             },
             blending: THREE.AdditiveBlending,
-            vertexShader: this.options.particleShader.vertex,
-            fragmentShader: this.options.particleShader.fragment
+            vertexShader: this.options.renderingShader.vertex,
+            fragmentShader: this.options.renderingShader.fragment
         } );
+        for ( let elt in this.options.renderingUniforms )
+            this.particleShaderMat.uniforms[ elt ] = this.options.renderingUniforms[ elt ];
+        console.log( this.particleShaderMat.uniforms );
         this.position.set( 0, 0, 0 );
 
         this.init();
@@ -249,6 +252,7 @@ class ParticleEmitter extends THREE.Object3D {
         let i = this._particleCursor;
 
         let idx = this._primitivesRenderer.getAvailableIndex();
+        console.log(idx);
         let idxAttribute = this.particleShaderGeo.getAttribute( 'idx' );
         idxAttribute.needsUpdate = true;
         idxAttribute.array[ i * 2 ] = idx.x;
@@ -288,11 +292,11 @@ export default class ParticleTool extends AbstractTool {
     super( options );
 
         this.setOptionsIfUndef(
-            ParticleTool.registeredParticles[ 0 ]
+            ParticleTool.materials.basic1
         );
+        console.log( ParticleTool.materials.basic1 );
         // this.options += ParticleTool.registeredParticles[ 0 ];
 
-        this._brushSize = this.options.brushSize;
         this._thickness = this.options.thickness;
         this._maxEmitters = this.options.maxEmitters;
         this._particlesPerEmitter = this.options.initialParticlesPerEmitter;
@@ -372,12 +376,39 @@ export default class ParticleTool extends AbstractTool {
 
 }
 
+ParticleTool.materials = {
+    basic1: {
+        brushSize: 3,
+        thickness: 10,
+        initialParticlesPerEmitter: 20,
+        maxParticlesPerEmitter: 512 * 512,
+        bufferSide: 512,
+        maxEmitters: 20,
+        debugPlane: true,
+        positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
+        velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512,
+            new THREE.Color( 0.5, 0.495, 0.5 ) ),
+        renderingUniforms: {
+            pointMaxSize: { type: 'f', value: 20 },
+            brushSize: { type: 'f', value: 3}
+        },
+        positionUniforms: {
+            normVelocity: { type:'f', value: 10.0 },
+            lifespanEntropy: { type:'f', value: 0.001 }
+        },
+        renderingShader: ParticleShader,
+        positionUpdate: PositionUpdate,
+        velocityUpdate: VelocityUpdate
+    }
+};
+
 ParticleTool.registeredParticles = [
     {
         brushSize: 3,
         thickness: 10,
         initialParticlesPerEmitter: 20,
         maxParticlesPerEmitter: 512 * 512,
+        bufferSide: 512,
         maxEmitters: 20,
         pointMaxSize: 20,
         normVelocity: 10,  // FIXME: Initialization when lifespan hits 0

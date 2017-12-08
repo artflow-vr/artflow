@@ -37,12 +37,12 @@ module.exports = {
     ].join( '\n' ),
 
     fragment: [
-        'uniform sampler2D tVelocitiesMap;',
-        'uniform float normVelocity;',
         'uniform sampler2D tPositionsMap;',
-        'uniform sampler2D tInitialPositionsMap;',
+        'uniform sampler2D tVelocitiesMap;',
         'uniform sampler2D tInitialVelocitiesMap;',
+        'uniform sampler2D tInitialPositionsMap;',
         'uniform float lifespanEntropy;',
+        'uniform float normVelocity;',
         'uniform float dt;',
         'varying vec2 a_uv;',
 
