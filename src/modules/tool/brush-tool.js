@@ -80,7 +80,7 @@ export default class BrushTool extends AbstractTool {
     update( data ) {
 
         for ( let s in this.registeredStrokes )
-            this.registeredStrokes[ s ].update( data );
+            s.update( data );
 
     }
 

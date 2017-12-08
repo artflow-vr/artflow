@@ -41,6 +41,13 @@ export default class StrokeAnimatedTest extends AbstractBrushStroke {
 
         this._helper._material.uniforms.uTime.value += 0.001;
 
-        console.log( this._helper._material.uniforms.uTime.value );
+    }
+
+    use( data ) {
+
+        this._helper.addPoint( data.position.world, data.orientation, data.pressure );
+
+        this._helper._material.uniforms.uTime.value += 0.001;
+
     }
 }

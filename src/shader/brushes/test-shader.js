@@ -55,12 +55,21 @@ module.exports = {
 
     fragment: [
 
-        'uniform float uTime;',
+        /*'uniform float uTime;',
 
         'void main()	{',
         '   float x = mod(uTime + gl_FragCoord.x, 20.) < 10. ? 1. : 0.;',
         '   float y = mod(uTime + gl_FragCoord.y, 20.) < 10. ? 1. : 0.;',
         '   gl_FragColor = vec4(vec3(min(x, y)), 1.);',
+        '}'*/
+
+
+        'void main() {',
+        'float level = gl_FragCoord.y / 150.0;',
+        'float r = float(level <= 2.0) + float(level > 4.0) * 0.5;',
+        'float g = max(1.0 - abs(level - 2.0) * 0.5, 0.0);',
+        'float b = (1.0 - (level - 4.0) * 0.5) * float(level >= 4.0);',
+        'gl_FragColor = vec4(vec3(r * 2.0, g * 2.0, b * 2.0), 1.0);',
         '}'
 
     ].join( '\n' )
