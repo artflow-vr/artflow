@@ -31,6 +31,28 @@ import AbstractTool from './abstract-tool';
 import WaterShader from '../../shader/water/water-shader';
 import { AssetManager } from '../../utils/asset-manager';
 
+const MARKER_SCALE = 0.2;
+const MARKER_MATERIAL = new THREE.MeshStandardMaterial( {
+    color: 0X3498db,
+    wireframe: false,
+    metalness: 0.5,
+    roughness: 0.5
+} );
+
+const LINE_COLORS = [
+    new THREE.Color( 0xe74c3c ),
+    new THREE.Color( 0x34495e )
+];
+const LINE_MATERIAL = new THREE.LineBasicMaterial( {
+    color: LINE_COLORS[ 0 ],
+    opacity: 1.0,
+    linewidth: 3
+} );
+
+// This is a temporary structure holding rotation
+// to apply to each line linking two marker.
+const LINE_QUAT = new THREE.Quaternion();
+
 let uniforms = THREE.UniformsUtils.clone( WaterShader.uniforms );
 let plane = null;
 
@@ -39,6 +61,8 @@ export default class WaterTool extends AbstractTool {
     constructor( options ) {
 
         super( options );
+        this.dynamic = true;
+
         this.setOptionsIfUndef( {
             speed: 50,
             color: new THREE.Vector3()
@@ -100,20 +124,87 @@ export default class WaterTool extends AbstractTool {
         this.worldGroup.addTHREEObject( plane2 );
         this.worldGroup.addTHREEObject( plane3 );*/
 
-    }
+        // Contains the spline drawn by the user. Whenever the drawing is ready,
+        // this will be deleted.
+        this._markerGroup = new THREE.Group();
+        this.worldGroup.addTHREEObject( this._markerGroup );
 
-    update( ) {
+        // Contains a reference to the previous marked added. This is used
+        // to link them with a visual line.
+        this._prevMarker = null;
 
-        this.worldGroup.object.traverse( function ( child ) {
+        // Used to animated the marks through time.
+        this._lineColorID = 1;
+        this._lineAnimTime = 0.0;
 
-            if ( child instanceof THREE.Mesh )
-                child.material.uniforms.uTime.value += 0.001;
-
+        this.registerEvent( 'interact', {
+            trigger: this.trigger.bind( this )
         } );
 
     }
 
-    trigger() {}
+    update( data ) {
+
+        this._markerGroup.traverse( ( child ) => {
+
+            if ( child.name !== 'line' ) return;
+
+            child.material.color.lerp(
+                LINE_COLORS[ this._lineColorID ], this._lineAnimTime
+            );
+            child.material.needsUpdate = true;
+
+        } );
+
+        /*this.worldGroup.object.traverse( function ( child ) {
+
+            if ( child instanceof THREE.Mesh )
+                child.material.uniforms.uTime.value += 0.001;
+
+        } );*/
+
+        this._lineAnimTime += data.delta * 0.65;
+        if ( this._lineAnimTime >= 1.0 ) {
+            this._lineColorID = ( this._lineColorID + 1 ) % LINE_COLORS.length;
+            this._lineAnimTime = 0.0;
+        }
+
+    }
+
+    trigger( data ) {
+
+        // Adds a new marker to the group.
+        let mesh = new THREE.Mesh( AssetManager.assets.model.cube, MARKER_MATERIAL );
+        mesh.scale.set( MARKER_SCALE, MARKER_SCALE, MARKER_SCALE );
+        mesh.position.set(
+            data.position.world.x, data.position.world.y, data.position.world.z
+        );
+        this._markerGroup.add( mesh );
+
+        // If it is not the first marker, we link the new one
+        // with the previous one.
+        if ( this._prevMarker ) {
+            let vec = this._prevMarker.position.clone();
+            let toVec = vec.sub( mesh.position ).normalize();
+
+            LINE_QUAT.setFromUnitVectors(
+                new THREE.Vector3( 0.0, 0.0, 1.0 ), toVec
+            );
+
+            let line = new THREE.Line(
+                AssetManager.assets.model.line , LINE_MATERIAL
+            );
+            line.name = 'line';
+            line.position.copy( this._prevMarker.position );
+            line.scale.z = mesh.position.distanceTo( this._prevMarker.position );
+            line.quaternion.multiply( LINE_QUAT );
+
+            this._markerGroup.add( line );
+        }
+
+        this._prevMarker = mesh;
+
+    }
 
     release() {}
 

@@ -178,7 +178,10 @@ class ToolModule {
         this._registerBasicTools();
         this._registerBasicItems();
 
-        this._selected[ 0 ] = this._instance.Brush[ 0 ];
+        //this._selected[ 0 ] = this._instance.Brush[ 0 ];
+        // DEBUG
+        this._selected[ 0 ] = this._instance.Water[ 0 ];
+        // END DEBUG
         this._selected[ 1 ] = this._instance.Brush[ 1 ];
 
         //UI._ui.default.home.refresh();

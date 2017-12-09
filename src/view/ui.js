@@ -541,7 +541,9 @@ class UI {
 
         let id = object.userData.id;
 
-        let controllerID = ( this._prevController + 1 ) % 2;
+        let controllerID = 0;
+        if (this._vr) controllerID = ( this._prevController + 1 ) % 2;
+
         callback( id, controllerID, evt );
 
         // Display the items UI if the tool support it.
