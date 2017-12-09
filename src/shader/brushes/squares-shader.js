@@ -25,48 +25,48 @@
 * SOFTWARE.
 */
 
-'use strict';
+module.exports = {
 
-import AbstractBrushStroke from '../abstract-brush-stroke';
-import TestShader from '../../../shader/brushes/test-shader';
-import { MainView } from '../../../view/view';
+    uniforms: THREE.UniformsUtils.merge(
+        [
+            THREE.UniformsLib.lights,
+            {
+                uTime: {
+                    value: 0.0
+                },
+                vResolution: {
+                    type: 'v2',
+                    value: new THREE.Vector2()
+                }
+            }
+        ]
+    ),
 
-let uniforms = THREE.UniformsUtils.clone( TestShader.uniforms );
+    vertex: [
 
+        'uniform float uTime;',
+        'varying vec2 vUv;',
 
-export default class StrokeAnimatedTest extends AbstractBrushStroke {
+        'void main()	{',
+        '   vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );',
+        '   gl_Position = projectionMatrix * mvPosition;',
+        '   vUv = uv;',
+        '}'
 
-    constructor( isVR ) {
+    ].join( '\n' ),
 
-        super( isVR, 'material_test_shader' );
+    fragment: [
 
-        let material = new THREE.ShaderMaterial( {
-            uniforms: uniforms,
-            vertexShader: TestShader.vertex,
-            fragmentShader: TestShader.fragment,
-            side: THREE.DoubleSide,
-            transparent: true,
-        } );
+        'uniform float uTime;',
+        'uniform vec2 vResolution;',
+        'varying vec2 vUv;',
 
-        this._helper._material = material.clone();
-        //this._helper.options.maxSpread = 0;
+        'void main()	{',
+        '   float x = mod(uTime + gl_FragCoord.x, 20.) < 10. ? 1. : 0.;',
+        '   float y = mod(uTime + gl_FragCoord.y, 20.) < 10. ? 1. : 0.;',
+        '   gl_FragColor = vec4(vec3(min(x, y)), 1.);',
+        '}'
 
-        //console.log('v', MainView.);
+    ].join( '\n' )
 
-    }
-
-    update( data ) {
-
-        for (let m in this._helper._meshes) {
-            let m2 = this._helper._meshes[ m ];
-            m2.material.uniforms.uTime.value += 0.01;
-        }
-
-    }
-
-    use( data ) {
-
-        this._helper.addPoint( data.position.world, data.orientation, data.pressure );
-
-    }
-}
+};

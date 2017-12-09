@@ -18,7 +18,7 @@ export default class AbstractBrushStroke {
             isVR: this.isVR,
             maxSpread: 20,
             brushThickness: this.isVR ? 0.2 : 0.5,
-            delta: this.isVR ? 0.01 : 0.05,
+            delta: this.isVR ? 0.01 : 0.005,
             enablePressure: false,
             color: 0x808080,
             materialId: this.materialId

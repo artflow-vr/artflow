@@ -28,13 +28,12 @@
 'use strict';
 
 import AbstractBrushStroke from '../abstract-brush-stroke';
-import TestShader from '../../../shader/brushes/test-shader';
-import { MainView } from '../../../view/view';
+import Shader from '../../../shader/brushes/dong-shader';
 
-let uniforms = THREE.UniformsUtils.clone( TestShader.uniforms );
+let uniforms = THREE.UniformsUtils.clone( Shader.uniforms );
 
 
-export default class StrokeAnimatedTest extends AbstractBrushStroke {
+export default class StrokeAnimatedDong extends AbstractBrushStroke {
 
     constructor( isVR ) {
 
@@ -42,16 +41,14 @@ export default class StrokeAnimatedTest extends AbstractBrushStroke {
 
         let material = new THREE.ShaderMaterial( {
             uniforms: uniforms,
-            vertexShader: TestShader.vertex,
-            fragmentShader: TestShader.fragment,
+            vertexShader: Shader.vertex,
+            fragmentShader: Shader.fragment,
             side: THREE.DoubleSide,
             transparent: true,
         } );
 
         this._helper._material = material.clone();
-        //this._helper.options.maxSpread = 0;
-
-        //console.log('v', MainView.);
+        this._helper._thicknescs *= 2.0;
 
     }
 
@@ -61,7 +58,6 @@ export default class StrokeAnimatedTest extends AbstractBrushStroke {
             let m2 = this._helper._meshes[ m ];
             m2.material.uniforms.uTime.value += 0.01;
         }
-
     }
 
     use( data ) {
