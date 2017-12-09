@@ -9,6 +9,8 @@ let VERICAL_MIN = 0;
 let VERICAL_MAX = Math.PI;
 let UP_DIR = new THREE.Vector3( 0, 1, 0 );
 
+const BRAKE_FACTOR = 2.5;
+
 export default class FPSControls {
 
     constructor( camera, movingWorld ) {
@@ -90,6 +92,13 @@ export default class FPSControls {
             );
 
         if ( this.fixedHeight ) this._movingWorld.position.y = 0;
+
+        let factor = delta * BRAKE_FACTOR;
+
+        let x = Math.abs(this._mouseX);
+        let y = Math.abs(this._mouseY);
+        this._mouseX = x > 0.0 ? this._mouseX - (factor * this._mouseX) : 0.0;
+        this._mouseY = y > 0.0 ? this._mouseY - (factor * this._mouseY) : 0.0;
 
     }
 
