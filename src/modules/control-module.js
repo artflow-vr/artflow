@@ -338,6 +338,9 @@ class Control {
         this._fpsController.fixedHeight = false;
         this._fpsController.enabled = false;
 
+        // By defaults, the screen is locked, so no events should be dipatched.
+        EventDispatcher.enabled = false;
+
         let checkPointerLock = 'pointerLockElement' in document ||
             'mozPointerLockElement' in document ||
             'webkitPointerLockElement' in document;
@@ -355,6 +358,8 @@ class Control {
 
             MainView.backgroundView.toggleVisibility( !this._pointerLocked );
             this._fpsController.enabled = this._pointerLocked;
+
+            EventDispatcher.enabled = this._pointerLocked;
 
         };
         document.addEventListener( 'pointerlockchange', pointLockEvent, false );

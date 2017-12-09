@@ -10,7 +10,7 @@ const GUI_HEIGHT = 0.4; // In Three.js units
 
 const DEFAULT_HOME_POS = new THREE.Vector3( 0, 0.5, -0.2 );
 const DEFAULT_COLOR_POS = new THREE.Vector3( 0.75, 0.5, 0.5 );
-const DEFAULT_COLOR_POS_VR = new THREE.Vector3( 0.25, -0.2, 0.5 );
+const DEFAULT_COLOR_POS_VR = new THREE.Vector3( 0.25, 0.5, 0.0 );
 
 const GUI_FACTOR_NO_VR = 4.0;
 

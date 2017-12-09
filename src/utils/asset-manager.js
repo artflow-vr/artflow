@@ -138,6 +138,9 @@ class Manager {
 
     _loadRequiredAssets() {
 
+        // Does not return a promise, because the loading is synchronous.
+        this._loadPrimitives();
+
         let promises = [];
 
         promises.push(
@@ -198,6 +201,27 @@ class Manager {
         this._loadUIAssets( promises );
 
         return Promise.all( promises );
+
+    }
+
+
+    /**
+     *
+     * Instanciates basic geometries needed in the whole program.
+     * e.g: cube, plane.
+     *
+     * @param {any} promises
+     * @memberof Manager
+     */
+    _loadPrimitives() {
+
+        this.assets.model.cube = new THREE.BoxGeometry( 1, 1, 1 );
+
+        let line = new THREE.Geometry();
+        line.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
+        line.vertices.push( new THREE.Vector3( 0, 0, - 1 ) );
+
+        this.assets.model.line = line;
 
     }
 

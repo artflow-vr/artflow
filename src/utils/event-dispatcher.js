@@ -30,6 +30,9 @@ class EventDispatcher {
     constructor() {
 
         const MAX_NB_PRIORITY = 3;
+
+        this.enabled = true;
+
         // Array containing, for each priority, a list of items that
         // contain a list of callbacks.
         this._events = new Array( MAX_NB_PRIORITY );
@@ -69,6 +72,8 @@ class EventDispatcher {
     }
 
     dispatch( eventID, data ) {
+
+        if ( !this.enabled ) return;
 
         let stopProp = false;
 
