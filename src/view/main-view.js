@@ -51,6 +51,8 @@ class Main {
         this.backgroundView = null;
         this.clickView = null;
 
+        this._dimensions = { width: 0, height: 0, halfW: 0, halfH: 0 };
+
     }
 
     init( w, h, renderer, vr ) {
@@ -69,6 +71,8 @@ class Main {
         this._createLighting();
         this._createHTMLBackground();
 
+        this.resize( w, h );
+
     }
 
     render() {
@@ -81,6 +85,11 @@ class Main {
 
         this._camera.aspect = w / h;
         this._camera.updateProjectionMatrix();
+
+        this._dimensions.width = w;
+        this._dimensions.halfW = w * 0.5;
+        this._dimensions.height = h;
+        this._dimensions.halfH = h * 0.5;
 
     }
 

@@ -58,23 +58,117 @@ class ToolModule {
 
     }
 
+    /**
+     * Registers a new tool template that will be instancied by the ArtFlow
+     * engine.
+     *
+     * @param {string} toolID - string used to map the tool.
+     * @param {Object} tool - Object containing the tool associated UI texture,
+     * as well as the tool prototype. The texture should be a THREE.Texture.
+     * e.g:
+     *
+     *  {
+     *      uiTexture: AssetManager.assets.texture[ 'ui-tool-brush' ],
+     *      Tool: Tool.BrushTool
+     *  }
+     *
+     */
     register( toolID, tool ) {
 
         if ( toolID in this._tools ) {
             let errorMsg = 'you already registered the tool \'' + toolID +
                 '\'';
-            throw Error( 'ToolModule: ' + errorMsg );
+            throw Error( 'ToolModule: register(): ' + errorMsg );
         }
 
         this._tools[ toolID ] = tool;
 
         // Adds the tool to the UI if a texture was provided.
-        if ( tool.uiTexture ) {
-            UI.addTool( toolID, tool.uiTexture,
-                AssetManager.assets.texture[ 'ui-button-back' ],
-                this._onUISelection.bind( this )
-            );
+        if ( !tool.uiTexture ) return;
+
+        UI.addTool( { id: toolID, data: tool },
+            AssetManager.assets.texture[ 'ui-button-back' ],
+            this._onUISelection.bind( this )
+        );
+
+    }
+
+    /**
+     * Registers a new tool item template that will be instancied by the tool
+     * itself according to its needs.
+     *
+     * @param {string} toolID - id of the tool to which the item belong.
+     * @param {Object} item - Object containing the item associated UI texture,
+     * as well as the item data. The data is a simple JavaScript Object that
+     * the tool will use in its own manner.
+     * e.g:
+     *
+     *  {
+     *      uiTexture: AssetManager.assets.texture[ 'ui-brush-leaves' ],
+     *      item: {
+     *         size: 1.0,
+     *         ...
+     *      }
+     *  }
+     *
+     */
+    registerToolItem( toolID, itemID, item ) {
+
+        let tool = this._tools[ toolID ];
+        if ( !tool ) {
+            let warnMsg = 'trying to register an item for non existing \'';
+            warnMsg += toolID + '\' tool.';
+            console.warn( 'ToolModule: registerToolItem(): ' + warnMsg );
+            return;
         }
+
+        // The items object is not yet created, we build it.
+        if ( !tool.items )
+            tool.items = {};
+        else if ( itemID in tool.items ) {
+            let warnMsg = 'trying to register an already-register item for ';
+            warnMsg += 'tool \'' + toolID + '\'';
+            console.warn( 'ToolModule: registerToolItem(): ' + warnMsg );
+            return;
+        }
+
+        tool.items[ itemID ] = item;
+
+        // Adds the tool to the UI if a texture was provided.
+        if ( !item.uiTexture ) return;
+
+        let buttonBackground = AssetManager.assets.texture[ 'ui-button-back' ];
+        UI.addToolItem(
+            toolID, { id: itemID, data: item },
+            buttonBackground, this._onItemSelection.bind( this )
+        );
+
+    }
+
+    /**
+     * Register several items by using an items map. This function is a wrapper
+     * above the `registerToolItem' method.
+     *
+     * @param {string} toolID - id of the tool to which the items belong.
+     * @param {Object} items - Map in which each key represent an item, and
+     * where the key value is a JavaScript object containing the item associated
+     * UI texture, as well as the item data.
+     * e.g:
+     *  {
+     *      leaves: {
+     *          uiTexture: AssetManager.assets.texture[ 'ui-brush-leaves' ],
+     *          item: {
+     *              size: 1.0,
+     *              ...
+     *          }
+     *      },
+     *      ...
+     *  }
+     */
+    registerToolItems( toolID, items ) {
+
+        for ( let itemID in items )
+            this.registerToolItem( toolID, itemID, items[ itemID ] );
 
     }
 
@@ -82,14 +176,12 @@ class ToolModule {
 
         this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();
-
-        // TODO: This is gross and this is a bug of the UI.
-        // It should be OK to refresh each time an element is added but
-        // it does not seem to work.
-        UI._homeUIs[ 0 ].refresh();
+        this._registerBasicItems();
 
         this._selected[ 0 ] = this._instance.Brush[ 0 ];
         this._selected[ 1 ] = this._instance.Brush[ 1 ];
+
+        //UI._ui.default.home.refresh();
 
         // TODO: Add onEnterChild & onExitChild event trigger.
 
@@ -155,15 +247,13 @@ class ToolModule {
 
     update( data ) {
 
-        let tools = null;
-        let tool = null;
-
-        for ( let toolsID in this._instance ) {
-            tools = this._instance[ toolsID ];
-
-            for ( tool of tools )
-                if ( tool.update ) tool.update( data );
+        let instances = null;
+        for ( let toolID in this._instance ) {
+            instances = this._instance[ toolID ];
+            instances[ 0 ]._update( data );
+            instances[ 1 ]._update( data );
         }
+
     }
 
     _onColorChange( color ) {
@@ -177,8 +267,19 @@ class ToolModule {
 
     _onUISelection( toolID, controllerID, evt ) {
 
-        if ( evt.pressed )
-            this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
+        if ( !evt.pressed ) return;
+
+        this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
+        // TODO: handle onExit.
+        this._selected[ controllerID ]._onEnter();
+
+    }
+
+    _onItemSelection( itemID, controllerID, evt ) {
+
+        if ( !evt.pressed ) return;
+
+        this._selected[ controllerID ]._onItemChanged( itemID );
 
     }
 
@@ -264,6 +365,18 @@ class ToolModule {
         this._instanciate( 'Particle' );
         this._instanciate( 'Water' );
         this._instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
+
+    }
+
+    _registerBasicItems() {
+
+        //
+        // PARTICLES
+        //
+        this.registerToolItem( 'Particle', 'default', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+            data: null // You can pass extra data here
+        } );
 
     }
 

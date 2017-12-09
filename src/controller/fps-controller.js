@@ -9,6 +9,8 @@ let VERICAL_MIN = 0;
 let VERICAL_MAX = Math.PI;
 let UP_DIR = new THREE.Vector3( 0, 1, 0 );
 
+const BRAKE_FACTOR = 2.5;
+
 export default class FPSControls {
 
     constructor( camera, movingWorld ) {
@@ -71,35 +73,39 @@ export default class FPSControls {
         this.rightDir.crossVectors( UP_DIR, this._forwardDir );
 
         if ( this.forward )
-            this._movingWorld.translateOnAxis( this._forwardDir, -
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this._forwardDir, - actualMoveSpeed
+            );
+
         if ( this.backward )
-            this._movingWorld.translateOnAxis( this._forwardDir,
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this._forwardDir, actualMoveSpeed
+            );
 
         if ( this.left )
-            this._movingWorld.translateOnAxis( this.rightDir, -
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this.rightDir, - actualMoveSpeed
+            );
         if ( this.right )
-            this._movingWorld.translateOnAxis( this.rightDir,
-                actualMoveSpeed );
+            this._movingWorld.translateOnAxis(
+                this.rightDir, actualMoveSpeed
+            );
 
         if ( this.fixedHeight ) this._movingWorld.position.y = 0;
 
-        this._mouseX = 0;
-        this._mouseY = 0;
+        let factor = delta * BRAKE_FACTOR;
+
+        let x = Math.abs(this._mouseX);
+        let y = Math.abs(this._mouseY);
+        this._mouseX = x > 0.0 ? this._mouseX - (factor * this._mouseX) : 0.0;
+        this._mouseY = y > 0.0 ? this._mouseY - (factor * this._mouseY) : 0.0;
 
     }
 
     moveView( event ) {
 
-        this._mouseX = event.movementX ||
-            event.mozMovementX ||
-            event.webkitMovementX || 0;
-
-        this._mouseY = event.movementY ||
-            event.mozMovementY ||
-            event.webkitMovementY || 0;
+        this._mouseX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+        this._mouseY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
     }
 
