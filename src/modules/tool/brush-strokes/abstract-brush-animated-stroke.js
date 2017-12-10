@@ -32,11 +32,20 @@ import AbstractBrushStroke from '../abstract-brush-stroke';
 
 export default class AbstractBrushAnimatedStroke extends AbstractBrushStroke {
 
-    constructor( isVR, shaderPath ) {
+    constructor( isVR, options ) {
 
         super( isVR, 'material_test_shader' );
 
-        this.shader = require( '../../../shader/brushes/' + shaderPath );
+        this.options = options;
+        this.setOptionsIfUndef( {
+            timeOffset: 0.01,
+            timeMod: 0,
+            timeModCondition: 0,
+            timeModConditionStart: 1.0,
+            thicknessMult: 1.0
+        } );
+
+        this.shader = require( '../../../shader/brushes/' + options.shaderPath );
         this.uniforms = THREE.UniformsUtils.clone( this.shader.uniforms );
 
         let material = new THREE.ShaderMaterial( {
@@ -49,10 +58,11 @@ export default class AbstractBrushAnimatedStroke extends AbstractBrushStroke {
 
         this._helper._material = material.clone();
 
-        this.timeOffset = 0.01;
-        this.timeMod = 0;
-        this.timeModCondition = 0;
-        this.timeModConditionStart = 1.0;
+        this.timeOffset = options.timeOffset;
+        this.timeMod = options.timeMod;
+        this.timeModCondition = options.timeModCondition;
+        this.timeModConditionStart = options.timeModConditionStart;
+        this._helper._thickness *= options.thicknessMult;
 
     }
 
@@ -69,4 +79,12 @@ export default class AbstractBrushAnimatedStroke extends AbstractBrushStroke {
         }
     }
 
+    setOptionsIfUndef( options ) {
+
+        if ( options === undefined || options === null ) return;
+
+        for ( let k in options )
+            if ( !( k in this.options ) ) this.options[ k ] = options[ k ];
+
+    }
 }

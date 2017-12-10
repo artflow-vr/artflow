@@ -26,15 +26,8 @@
 */
 
 import AbstractTool from './abstract-tool';
-import StrokeWithTex from './brush-strokes/stroke-with-tex';
-import StrokeWithoutTex from './brush-strokes/stroke-without-tex';
-import StrokeAnimatedTest from './brush-strokes/stroke-animated-test';
-import StrokeAnimatedSquares from './brush-strokes/stroke-animated-squares';
-import StrokeAnimatedRainbow from './brush-strokes/stroke-animated-rainbow';
-import StrokeAnimatedMatrix from './brush-strokes/stroke-animated-matrix';
-import StrokeAnimatedDong from './brush-strokes/stroke-animated-dong';
-import StrokeAnimatedFractal from './brush-strokes/stroke-animated-fractal';
-import StrokeAnimatedElectric from './brush-strokes/stroke-animated-electric';
+import AbstractBrushStroke from './abstract-brush-stroke';
+import AbstractBrushAnimatedStroke from './brush-strokes/abstract-brush-animated-stroke';
 
 const SIZE_FACTOR = 0.2;
 
@@ -70,15 +63,15 @@ export default class BrushTool extends AbstractTool {
         this.mesh = null;
 
         this.registeredStrokes = {
-            withTex: new StrokeWithTex( isVR ),
-            withoutTex: new StrokeWithoutTex( isVR ),
-            testAnim : new StrokeAnimatedTest( isVR ),
-            squaresAnim : new StrokeAnimatedSquares( isVR ),
-            rainbowAnim : new StrokeAnimatedRainbow( isVR ),
-            matrixAnim : new StrokeAnimatedMatrix( isVR ),
-            dongAnim : new StrokeAnimatedDong( isVR ),
-            fractalAnim : new StrokeAnimatedFractal( isVR ),
-            electricAnim : new StrokeAnimatedElectric( isVR )
+            withTex: new AbstractBrushStroke( isVR ),
+            withoutTex: new AbstractBrushStroke( isVR, 'material_without_tex' ),
+            testAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'test-shader' } ),
+            squaresAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 } ),
+            rainbowAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'rainbow-shader', timeModCondition: 3 } ),
+            matrixAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'matrix-shader' } ),
+            dongAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'dong-shader', thicknessMult: 2.0 } ),
+            fractalAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'fractal-shader' } ),
+            electricAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'electric-shader', thicknessMult: 2.0 } )
         };
 
         this.currentStroke = stroke;

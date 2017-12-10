@@ -378,6 +378,19 @@ class ToolModule {
             data: null // You can pass extra data here
         } );
 
+        //
+        // BRUSH STROKES
+        //
+        this.registerToolItem( 'Brush', 'default', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+            data: null // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'fractal', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+            data: 'fractalAnim' // You can pass extra data here
+        } );
+
     }
 
 }
