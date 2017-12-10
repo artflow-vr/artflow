@@ -27,45 +27,15 @@
 
 'use strict';
 
-import AbstractBrushStroke from '../abstract-brush-stroke';
-import Shader from '../../../shader/brushes/electric-shader';
-import { MainView } from '../../../view/view';
+import AbstractBrushAnimatedStroke from './abstract-brush-animated-stroke';
 
-let uniforms = THREE.UniformsUtils.clone( Shader.uniforms );
-
-
-export default class StrokeAnimatedElectric extends AbstractBrushStroke {
+export default class StrokeAnimatedElectric extends AbstractBrushAnimatedStroke {
 
     constructor( isVR ) {
 
-        super( isVR, 'material_test_shader' );
+        super( isVR, 'electric-shader' );
 
-        let material = new THREE.ShaderMaterial( {
-            uniforms: uniforms,
-            vertexShader: Shader.vertex,
-            fragmentShader: Shader.fragment,
-            side: THREE.DoubleSide,
-            transparent: true
-        } );
-
-        this._helper._material = material.clone();
         this._helper._thickness *= 2.0;
-
-    }
-
-    update( ) {
-
-        for ( let m in this._helper._meshes ) {
-            let m2 = this._helper._meshes[ m ];
-            m2.material.uniforms.uTime.value += 0.01;
-            m2.material.uniforms.vResolution.value = new THREE.Vector2( MainView._dimensions.width, MainView._dimensions.height );
-        }
-
-    }
-
-    use( data ) {
-
-        this._helper.addPoint( data.position.world, data.orientation, data.pressure );
 
     }
 }

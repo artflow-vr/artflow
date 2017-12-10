@@ -27,47 +27,14 @@
 
 'use strict';
 
-import AbstractBrushStroke from '../abstract-brush-stroke';
-import TestShader from '../../../shader/brushes/test-shader';
+import AbstractBrushAnimatedStroke from './abstract-brush-animated-stroke';
 
-let uniforms = THREE.UniformsUtils.clone( TestShader.uniforms );
-
-
-export default class StrokeAnimatedRainbow extends AbstractBrushStroke {
+export default class StrokeAnimatedRainbow extends AbstractBrushAnimatedStroke {
 
     constructor( isVR ) {
 
-        super( isVR, 'material_test_shader' );
+        super( isVR, 'rainbow-shader' );
 
-        let material = new THREE.ShaderMaterial( {
-            uniforms: uniforms,
-            vertexShader: TestShader.vertex,
-            fragmentShader: TestShader.fragment,
-            side: THREE.DoubleSide,
-            transparent: true
-        } );
-
-        this._helper._material = material.clone();
-        //this._helper._thicknescs *= 7.0;
-        //this._helper.options.maxSpread = 0;
-
-    }
-
-    update( ) {
-
-        for ( let m in this._helper._meshes ) {
-            let m2 = this._helper._meshes[ m ];
-            if ( Math.floor( m2.material.uniforms.uTime.value + 1 ) % 3 === 0 )
-                m2.material.uniforms.uTime.value = 1.0;
-            m2.material.uniforms.uTime.value += 0.01;
-        }
-
-    }
-
-    use( data ) {
-
-        this._helper.addPoint( data.position.world, data.orientation, data.pressure );
-
+        this.timeModCondition = 3;
     }
 }
-

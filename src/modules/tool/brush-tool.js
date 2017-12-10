@@ -40,7 +40,7 @@ const SIZE_FACTOR = 0.2;
 
 export default class BrushTool extends AbstractTool {
 
-    constructor( isVR, stroke = 'fractalAnim' ) {
+    constructor( isVR, stroke = 'rainbowAnim' ) {
 
         super();
 
