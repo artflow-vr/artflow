@@ -28,10 +28,8 @@
 import AbstractTool from './abstract-tool';
 import { AssetManager } from '../../utils/asset-manager';
 import ParticleShader from '../../shader/particle/particle-shader';
-import ParticleShader2 from '../../shader/particle/particle-shader2';
 import PositionUpdate from '../../shader/particle/position-update';
 import VelocityUpdate from '../../shader/particle/velocity-update';
-import VelocityUpdate2 from '../../shader/particle/velocity-update2';
 import BaseShader from '../../shader/particle/base-shader';
 import MainView from '../../view/main-view';
 
@@ -322,7 +320,7 @@ export default class ParticleTool extends AbstractTool {
         this.registerEvent( 'interact', {
             use: this.use.bind( this ),
             trigger: this.trigger.bind( this ),
-            release: this.release.bind( this ),
+            release: this.release.bind( this )
         } );
     }
 
@@ -367,7 +365,7 @@ export default class ParticleTool extends AbstractTool {
     }
 
     update( delta ) {
-        console.log( "updating" );
+        console.log( 'updating' );
         for ( let i = 0; i < this._particleEmitters.length; i ++ )
             this._particleEmitters[ i ].update( delta.delta );
     }

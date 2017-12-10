@@ -95,10 +95,10 @@ export default class FPSControls {
 
         let factor = delta * BRAKE_FACTOR;
 
-        let x = Math.abs(this._mouseX);
-        let y = Math.abs(this._mouseY);
-        this._mouseX = x > 0.0 ? this._mouseX - (factor * this._mouseX) : 0.0;
-        this._mouseY = y > 0.0 ? this._mouseY - (factor * this._mouseY) : 0.0;
+        let x = Math.abs( this._mouseX );
+        let y = Math.abs( this._mouseY );
+        this._mouseX = x > 0.0 ? this._mouseX - ( factor * this._mouseX ) : 0.0;
+        this._mouseY = y > 0.0 ? this._mouseY - ( factor * this._mouseY ) : 0.0;
 
     }
 
