@@ -29,7 +29,7 @@ export default class AbstractBrushStroke {
 
     }
 
-    update( data ) {
+    update( ) {
 
     }
 

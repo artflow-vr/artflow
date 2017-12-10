@@ -172,7 +172,7 @@ class ToolModule {
 
     }
 
-    init( isVR ) {
+    init( ) {
 
         this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();

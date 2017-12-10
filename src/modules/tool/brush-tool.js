@@ -40,7 +40,7 @@ const SIZE_FACTOR = 0.2;
 
 export default class BrushTool extends AbstractTool {
 
-    constructor( isVR, stroke = 'with_tex' ) {
+    constructor( isVR, stroke = 'fractalAnim' ) {
 
         super();
 
@@ -81,7 +81,7 @@ export default class BrushTool extends AbstractTool {
             electricAnim : new StrokeAnimatedElectric( isVR )
         };
 
-        this.currentStroke = 'fractalAnim';
+        this.currentStroke = stroke;
 
     }
 

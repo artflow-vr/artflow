@@ -29,7 +29,6 @@
 
 import AbstractBrushStroke from '../abstract-brush-stroke';
 import Shader from '../../../shader/brushes/fractal-shader';
-import { MainView } from '../../../view/view';
 
 let uniforms = THREE.UniformsUtils.clone( Shader.uniforms );
 

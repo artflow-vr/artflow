@@ -57,7 +57,7 @@ export default class StrokeAnimatedRainbow extends AbstractBrushStroke {
 
         for ( let m in this._helper._meshes ) {
             let m2 = this._helper._meshes[ m ];
-            if ( Math.floor( m2.material.uniforms.uTime.value + 1 ) % 3 == 0 )
+            if ( Math.floor( m2.material.uniforms.uTime.value + 1 ) % 3 === 0 )
                 m2.material.uniforms.uTime.value = 1.0;
             m2.material.uniforms.uTime.value += 0.01;
         }
