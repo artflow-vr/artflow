@@ -361,7 +361,6 @@ export default class ParticleTool extends AbstractTool {
     }
 
     update( delta ) {
-        console.log( 'updating' );
         for ( let i = 0; i < this._particleEmitters.length; i ++ )
             this._particleEmitters[ i ].update( delta.delta );
     }

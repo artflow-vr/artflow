@@ -26,22 +26,22 @@
 */
 
 import AbstractTool from './abstract-tool';
-import AddCommand from './command/add-command';
-import BrushHelper from './helper/brush-helper';
+import AbstractBrushStroke from './abstract-brush-stroke';
+import AbstractBrushAnimatedStroke from './brush-strokes/abstract-brush-animated-stroke';
 
 const SIZE_FACTOR = 0.2;
 
 export default class BrushTool extends AbstractTool {
 
-    constructor( options ) {
+    constructor( isVR, stroke = 'rainbowAnim' ) {
 
-        super( options );
+        super();
 
-        this.registeredBrushes = null;
+        this.dynamic = true;
 
-        this.setOptionsIfUndef( BrushTool.registeredBrushes[ 0 ] );
+        //AbstractTool.call( this, null );
 
-        this._helper = new BrushHelper( this.options );
+        this.registeredStrokes = null;
 
         let self = this;
         this.registerEvent( 'interact', {
@@ -57,27 +57,49 @@ export default class BrushTool extends AbstractTool {
         } );
 
         this.registerEvent( 'colorChanged', ( hsv ) => {
-            this._helper.setColor( hsv );
+            self.setColor( hsv );
         } );
 
         this.mesh = null;
+
+        this.registeredStrokes = {
+            withTex: new AbstractBrushStroke( isVR ),
+            withoutTex: new AbstractBrushStroke( isVR, 'material_without_tex' ),
+            testAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'test-shader' } ),
+            squaresAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 } ),
+            rainbowAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'rainbow-shader', timeModCondition: 3 } ),
+            matrixAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'matrix-shader' } ),
+            dongAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'dong-shader', thicknessMult: 2.0 } ),
+            fractalAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'fractal-shader' } ),
+            electricAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'electric-shader', thicknessMult: 2.0 } )
+        };
+
+        this.currentStroke = stroke;
+
+    }
+
+    setCurrentStroke( id ) {
+
+        this.currentStroke = id;
+
+    }
+
+    update( data ) {
+
+        for ( let s in this.registeredStrokes )
+            this.registeredStrokes[ s ].update( data );
 
     }
 
     use( data ) {
 
-        this._helper.addPoint(
-            data.position.world, data.orientation, data.pressure
-        );
+        this.registeredStrokes[ this.currentStroke ].use( data );
 
     }
 
     trigger() {
 
-        this.mesh = this._helper.createMesh();
-        this.worldGroup.addTHREEObject( this.mesh );
-
-        return new AddCommand( this.worldGroup, this.mesh );
+        this.registeredStrokes[ this.currentStroke ].trigger( this );
 
     }
 
@@ -89,21 +111,9 @@ export default class BrushTool extends AbstractTool {
 
     }
 
-}
+    setColor( hsv ) {
 
-BrushTool.registeredBrushes = [ {
-        maxSpread: 20,
-        brushThickness: 0.1,
-        enablePressure: false,
-        color: 0x808080,
-        materialId: 'material_with_tex'
-    },
-    {
-        maxSpread: 20,
-        brushThickness: 0.5,
-        texture: null,
-        enablePressure: true,
-        color: 0x808080,
-        materialId: 'material_without_tex'
+        this.registeredStrokes[ this.currentStroke ].setColor( hsv );
+
     }
-];
+}

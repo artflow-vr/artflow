@@ -27,6 +27,10 @@
 
 import { AssetManager } from '../utils/asset-manager';
 
+import TestShader from '../shader/brushes/test-shader';
+
+let uniforms = THREE.UniformsUtils.clone( TestShader.uniforms );
+
 export default class ObjectPool {
 
     constructor() {
@@ -61,6 +65,18 @@ export default class ObjectPool {
                     depthTest: false,
                     metalness: 0.0,
                     roughness: 0.3
+                } )
+            },
+            {
+                type: 'material_test_shader',
+                object: new THREE.ShaderMaterial( {
+                    uniforms: uniforms,
+                    vertexShader: TestShader.vertex,
+                    fragmentShader: TestShader.fragment,
+                    side: THREE.DoubleSide,
+                    depthTest: false,
+                    transparent: true
+                    //lights: true
                 } )
             }
         ];
