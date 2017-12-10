@@ -172,7 +172,7 @@ class ToolModule {
 
     }
 
-    init() {
+    init( ) {
 
         this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();
@@ -339,7 +339,7 @@ class ToolModule {
 
     }
 
-    _registerBasicTools() {
+    _registerBasicTools( isVR ) {
 
         this.register( 'Teleporter', {
             Tool: Tool.TeleporterTool
@@ -361,11 +361,10 @@ class ToolModule {
             Tool: Tool.TreeTool
         } );
 
-
-        this._instanciate( 'Brush', Tool.BrushTool.registeredBrushes[ 0 ] );
+        this._instanciate( 'Brush', isVR );
+        this._instanciate( 'Particle' );
         this._instanciate( 'Water' );
         this._instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
-        this._instanciate( 'Particle' );
 
     }
 
@@ -377,6 +376,19 @@ class ToolModule {
         this.registerToolItem( 'Particle', 'default', {
             uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
             data: null // You can pass extra data here
+        } );
+
+        //
+        // BRUSH STROKES
+        //
+        this.registerToolItem( 'Brush', 'default', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+            data: null // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'fractal', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+            data: 'fractalAnim' // You can pass extra data here
         } );
 
     }
