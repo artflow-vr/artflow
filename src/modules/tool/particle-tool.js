@@ -117,7 +117,6 @@ class PrimitivesRenderer {
         } );
         for ( let elt in this.options.positionUniforms )
             this._positionsTargetTextureMat.uniforms[ elt ] = this.options.positionUniforms[ elt ];
-        console.log( this._positionsTargetTextureMat.uniforms );
 
         this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
@@ -132,7 +131,6 @@ class PrimitivesRenderer {
         } );
         for ( let elt in this.options.velocityUniforms )
             this._positionsTargetTextureMat.uniforms[ elt ] = this.options.velocityUniforms[ elt ];
-        console.log( this._velocitiesTargetTextureMat.uniforms );
 
         this._velocitiesTargetTextureMat.needsUpdate = true;
 
@@ -239,7 +237,6 @@ class ParticleEmitter extends THREE.Object3D {
         } );
         for ( let elt in this.options.renderingUniforms )
             this.particleShaderMat.uniforms[ elt ] = this.options.renderingUniforms[ elt ];
-        console.log( this.particleShaderMat.uniforms );
         this.position.set( 0, 0, 0 );
 
         this.init();
@@ -252,7 +249,6 @@ class ParticleEmitter extends THREE.Object3D {
         let i = this._particleCursor;
 
         let idx = this._primitivesRenderer.getAvailableIndex();
-        console.log(idx);
         let idxAttribute = this.particleShaderGeo.getAttribute( 'idx' );
         idxAttribute.needsUpdate = true;
         idxAttribute.array[ i * 2 ] = idx.x;
@@ -294,7 +290,6 @@ export default class ParticleTool extends AbstractTool {
         this.setOptionsIfUndef(
             ParticleTool.materials.basic1
         );
-        console.log( ParticleTool.materials.basic1 );
         // this.options += ParticleTool.registeredParticles[ 0 ];
 
         this._thickness = this.options.thickness;
@@ -384,13 +379,13 @@ ParticleTool.materials = {
         maxParticlesPerEmitter: 512 * 512,
         bufferSide: 512,
         maxEmitters: 20,
-        debugPlane: true,
+        debugPlane: false,
         positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
         velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512,
             new THREE.Color( 0.5, 0.495, 0.5 ) ),
         renderingUniforms: {
             pointMaxSize: { type: 'f', value: 20 },
-            brushSize: { type: 'f', value: 3}
+            brushSize: { type: 'f', value: 3 }
         },
         positionUniforms: {
             normVelocity: { type:'f', value: 10.0 },
