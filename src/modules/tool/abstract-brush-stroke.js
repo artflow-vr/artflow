@@ -14,7 +14,7 @@ export default class AbstractBrushStroke {
         this.isVR = isVR;
         this.materialId = materialId;
 
-        let options_helper = {
+        let optionsHelper = {
             isVR: this.isVR,
             maxSpread: 20,
             brushThickness: this.isVR ? 0.2 : 0.5,
@@ -25,7 +25,7 @@ export default class AbstractBrushStroke {
             //materialId: 'material_with_tex'
         };
 
-        this._helper = new BrushHelper( options_helper );
+        this._helper = new BrushHelper( optionsHelper );
 
     }
 
