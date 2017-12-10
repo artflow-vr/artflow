@@ -44,7 +44,7 @@ export default class StrokeAnimatedDong extends AbstractBrushStroke {
             vertexShader: Shader.vertex,
             fragmentShader: Shader.fragment,
             side: THREE.DoubleSide,
-            transparent: true,
+            transparent: true
         } );
 
         this._helper._material = material.clone();
@@ -52,9 +52,9 @@ export default class StrokeAnimatedDong extends AbstractBrushStroke {
 
     }
 
-    update( data ) {
+    update( ) {
 
-        for (let m in this._helper._meshes) {
+        for ( let m in this._helper._meshes ) {
             let m2 = this._helper._meshes[ m ];
             m2.material.uniforms.uTime.value += 0.01;
         }

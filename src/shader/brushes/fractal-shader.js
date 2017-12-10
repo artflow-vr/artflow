@@ -73,7 +73,7 @@ module.exports = {
         '#define r2 0.5',
         '#define v1 0.5',
         '#define v2 0.9',
-        
+
         'void main( void )',
         '{',
         ' vec2 surfacePosition = vUv.xy;',
@@ -99,7 +99,7 @@ module.exports = {
         ' vec3 color = vec3(dist/0.3, dist*dist/0.03, dist/0.1);',
         ' if (color == vec3(0.0)) discard;',
         '    gl_FragColor = vec4(color, 1.0);',
-        '}',
+        '}'
 
     ].join( '\n' )
 

@@ -64,24 +64,24 @@ export default class BrushTool extends AbstractTool {
         } );
 
         this.registerEvent( 'colorChanged', ( hsv ) => {
-            self.setColor( hsv )
+            self.setColor( hsv );
         } );
 
         this.mesh = null;
 
         this.registeredStrokes = {
-            'with_tex': new StrokeWithTex( isVR ),
-            'without_tex': new StrokeWithoutTex( isVR ),
-            'test_anim' : new StrokeAnimatedTest( isVR ),
-            'squares_anim' : new StrokeAnimatedSquares( isVR ),
-            'rainbow_anim' : new StrokeAnimatedRainbow( isVR ),
-            'matrix_anim' : new StrokeAnimatedMatrix( isVR ),
-            'dong_anim' : new StrokeAnimatedDong( isVR ),
-            'fractal_anim' : new StrokeAnimatedFractal( isVR ),
-            'electric_anim' : new StrokeAnimatedElectric( isVR )
+            withTex: new StrokeWithTex( isVR ),
+            withoutTex: new StrokeWithoutTex( isVR ),
+            testAnim : new StrokeAnimatedTest( isVR ),
+            squaresAnim : new StrokeAnimatedSquares( isVR ),
+            rainbowAnim : new StrokeAnimatedRainbow( isVR ),
+            matrixAnim : new StrokeAnimatedMatrix( isVR ),
+            dongAnim : new StrokeAnimatedDong( isVR ),
+            fractalAnim : new StrokeAnimatedFractal( isVR ),
+            electricAnim : new StrokeAnimatedElectric( isVR )
         };
 
-        this.currentStroke = 'fractal_anim';
+        this.currentStroke = 'fractalAnim';
 
     }
 

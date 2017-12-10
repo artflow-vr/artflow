@@ -74,7 +74,7 @@ module.exports = {
         '    finalColor = vec3( 0.0, g, 0.0 );',
         '    ',
         '    gl_FragColor = vec4( finalColor, 1.0 );',
-        '}',
+        '}'
 
     ].join( '\n' )
 

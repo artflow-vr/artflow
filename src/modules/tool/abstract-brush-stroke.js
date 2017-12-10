@@ -54,7 +54,7 @@ export default class AbstractBrushStroke {
 
     setColor( hsv ) {
 
-        this._helper.setColor( hsv ); 
+        this._helper.setColor( hsv );
 
     }
 }

@@ -45,7 +45,7 @@ export default class StrokeAnimatedElectric extends AbstractBrushStroke {
             vertexShader: Shader.vertex,
             fragmentShader: Shader.fragment,
             side: THREE.DoubleSide,
-            transparent: true,
+            transparent: true
         } );
 
         this._helper._material = material.clone();
@@ -53,12 +53,12 @@ export default class StrokeAnimatedElectric extends AbstractBrushStroke {
 
     }
 
-    update( data ) {
+    update( ) {
 
-        for (let m in this._helper._meshes) {
+        for ( let m in this._helper._meshes ) {
             let m2 = this._helper._meshes[ m ];
             m2.material.uniforms.uTime.value += 0.01;
-            m2.material.uniforms.vResolution.value = new THREE.Vector2(MainView._dimensions.width, MainView._dimensions.height);
+            m2.material.uniforms.vResolution.value = new THREE.Vector2( MainView._dimensions.width, MainView._dimensions.height );
         }
 
     }

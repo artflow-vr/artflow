@@ -72,7 +72,7 @@ module.exports = {
             'i += clamp((glow + curve) / glow, 0.0, 1.0) * 0.4 ;',
             'return i * color;',
         '}',
-        
+
         'vec3 Muzzle(in vec2 fragCoord, in float timescale)',
         '{',
 
@@ -82,7 +82,7 @@ module.exports = {
             'float d = max(-0.6, 1.0 - (sqrt(pow(abs(iResolution.x - fragCoord.x), 2.0) + pow(abs(iResolution.y / 2.0 - ((fragCoord.y - iResolution.y / 2.0) * 4.0 + iResolution.y / 2.0)), 2.0)) / len));',
             'return vec3(d * (1.0 + sin(theta * 10.0 + floor(uTime * 20.0) * 10.77) * 0.5), d * (1.0 + -cos(theta * 8.0 - floor(uTime * 20.0) * 8.77) * 0.5), d * (1.0 + -sin(theta * 6.0 - floor(uTime * 20.0) * 134.77) * 0.5));',
         '}',
-        
+
         'void main()',
         '{',
             'float timescale = 4.0;',

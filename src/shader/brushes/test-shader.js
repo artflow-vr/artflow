@@ -59,7 +59,7 @@ module.exports = {
 
         'uniform float uTime;',
         'uniform vec2 vResolution;',
-        'varying vec2 vUv;',
+        'varying vec2 vUv;'
 
     ].join( '\n' )
 

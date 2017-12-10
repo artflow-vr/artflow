@@ -30,7 +30,7 @@
 import AbstractBrushStroke from '../abstract-brush-stroke';
 import Shader from '../../../shader/brushes/matrix-shader';
 
-let uniforms = THREE.UniformsUtils.clone( Shader.uniforms );
+let uniforms = THREE.UniformsUtils.clone( Shader.unforms );
 
 
 export default class StrokeAnimatedMatrix extends AbstractBrushStroke {
@@ -44,16 +44,16 @@ export default class StrokeAnimatedMatrix extends AbstractBrushStroke {
             vertexShader: Shader.vertex,
             fragmentShader: Shader.fragment,
             side: THREE.DoubleSide,
-            transparent: true,
+            transparent: true
         } );
 
         this._helper._material = material.clone();
 
     }
 
-    update( data ) {
+    update( ) {
 
-        for (let m in this._helper._meshes) {
+        for ( let m in this._helper._meshes ) {
             let m2 = this._helper._meshes[ m ];
             m2.material.uniforms.uTime.value += 0.01;
         }

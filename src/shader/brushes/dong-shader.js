@@ -98,7 +98,7 @@ module.exports = {
         '    ',
         '    return dick;	',
         '}',
-        
+
         'void main() {',
         '',
 
@@ -112,8 +112,8 @@ module.exports = {
         '    color = getDick(position);',
         ' if (color == vec3(0.0)) discard;',
         '    gl_FragColor = vec4(color, 1.0 );',
-        
-        '}',
+
+        '}'
 
     ].join( '\n' )
 
