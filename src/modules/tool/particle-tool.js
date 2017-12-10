@@ -300,11 +300,7 @@ export default class ParticleTool extends AbstractTool {
     constructor( options ) {
     super( options );
 
-        this.setOptionsIfUndef(
-            ParticleTool.materials.basic1
-        );
-        // this.options += ParticleTool.registeredParticles[ 0 ];
-
+        this.dynamic = true;
         this._thickness = this.options.thickness;
         this._maxEmitters = this.options.maxEmitters;
         this._particlesPerEmitter = this.options.initialParticlesPerEmitter;
@@ -326,7 +322,7 @@ export default class ParticleTool extends AbstractTool {
         this.registerEvent( 'interact', {
             use: this.use.bind( this ),
             trigger: this.trigger.bind( this ),
-            release: this.release.bind( this )
+            release: this.release.bind( this ),
         } );
     }
 
@@ -371,6 +367,7 @@ export default class ParticleTool extends AbstractTool {
     }
 
     update( delta ) {
+        console.log( "updating" );
         for ( let i = 0; i < this._particleEmitters.length; i ++ )
             this._particleEmitters[ i ].update( delta.delta );
     }
@@ -384,8 +381,8 @@ export default class ParticleTool extends AbstractTool {
 
 }
 
-ParticleTool.materials = {
-    basic1: {
+ParticleTool.registeredParticles = [
+    {
         brushSize: 3,
         thickness: 10,
         initialParticlesPerEmitter: 20,
@@ -405,52 +402,6 @@ ParticleTool.materials = {
             lifespanEntropy: { type:'f', value: 0.001 }
         },
         renderingShader: ParticleShader,
-        positionUpdate: PositionUpdate,
-        velocityUpdate: VelocityUpdate
-    }
-};
-
-ParticleTool.registeredParticles = [
-    {
-        brushSize: 3,
-        thickness: 10,
-        initialParticlesPerEmitter: 20,
-        maxParticlesPerEmitter: 512 * 512,
-        bufferSide: 512,
-        maxEmitters: 20,
-        pointMaxSize: 20,
-        normVelocity: 10,  // FIXME: Initialization when lifespan hits 0
-        lifespanEntropy: 0.001,
-        debugPlane: false,
-        particleShader: ParticleShader,
-        positionUpdate: PositionUpdate,
-        velocityUpdate: VelocityUpdate
-    },
-    {
-        brushSize: 3,
-        thickness: 10,
-        initialParticlesPerEmitter: 20,
-        maxParticlesPerEmitter: 512 * 512,
-        maxEmitters: 20,
-        pointMaxSize: 20,
-        normVelocity: 10,
-        lifespanEntropy: 0.001,
-        debugPlane: false,
-        particleShader: ParticleShader2,
-        positionUpdate: PositionUpdate,
-        velocityUpdate: VelocityUpdate2
-    },
-    {
-        brushSize: 3,
-        thickness: 10,
-        initialParticlesPerEmitter: 20,
-        maxParticlesPerEmitter: 512 * 512,
-        maxEmitters: 20,
-        pointMaxSize: 20,
-        normVelocity: 10,
-        lifespanEntropy: 0.001,
-        debugPlane: false,
-        particleShader: ParticleShader,
         positionUpdate: PositionUpdate,
         velocityUpdate: VelocityUpdate
     }
