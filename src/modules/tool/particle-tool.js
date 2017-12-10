@@ -70,10 +70,6 @@ class PrimitivesRenderer {
             this._bufferSide / 2,
             this._bufferSide / 2,
             this._bufferSide / - 2, -10000, 10000 );
-        this._velocitiesCamera = new THREE.OrthographicCamera( this._bufferSide / - 2,
-            this._bufferSide / 2,
-            this._bufferSide / 2,
-            this._bufferSide / - 2, -10000, 10000 );
 
         // Create scenes
         this._positionRTTScene = new THREE.Scene();
@@ -162,7 +158,7 @@ class PrimitivesRenderer {
         this._debugPlaneMat.uniforms.tSprite.value = this._positionRT2.texture;
 
         this._velocitiesTargetTextureMesh.material.uniforms.dt.value = dt;
-        this._renderer.render( this._velocityRTTScene, this._velocitiesCamera, this._velocityRT1, true );
+        this._renderer.render( this._velocityRTTScene, this._positionsCamera, this._velocityRT1, true );
         let sw = this._velocityRT1;
         this._velocityRT1 = this._velocityRT2;
         this._velocityRT2 = sw;

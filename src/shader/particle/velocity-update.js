@@ -25,16 +25,11 @@
  * SOFTWARE.
  */
 
+import BaseShader from '../../shader/particle/base-shader';
+
 module.exports = {
-    vertex: [
-        'varying vec2 a_uv;',
 
-        'void main() {',
-        '	gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );',
-        '   a_uv = uv;',
-        '}'
-
-    ].join( '\n' ),
+    vertex: BaseShader.vertex,
 
     fragment: [
         'uniform sampler2D tVelocitiesMap;',
