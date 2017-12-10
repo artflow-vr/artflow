@@ -28,13 +28,13 @@
 'use strict';
 
 import AbstractBrushStroke from '../abstract-brush-stroke';
-import Shader from '../../../shader/brushes/test-shader';
+import Shader from '../../../shader/brushes/electric-shader';
 import { MainView } from '../../../view/view';
 
 let uniforms = THREE.UniformsUtils.clone( Shader.uniforms );
 
 
-export default class StrokeAnimatedTest extends AbstractBrushStroke {
+export default class StrokeAnimatedElectric extends AbstractBrushStroke {
 
     constructor( isVR ) {
 
@@ -50,8 +50,6 @@ export default class StrokeAnimatedTest extends AbstractBrushStroke {
 
         this._helper._material = material.clone();
         this._helper._thickness *= 2.0;
-        //this._helper.options.maxSpread = 0;
-
 
     }
 

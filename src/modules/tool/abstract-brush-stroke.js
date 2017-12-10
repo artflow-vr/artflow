@@ -51,4 +51,10 @@ export default class AbstractBrushStroke {
         return new AddCommand( brushTool.worldGroup, this.mesh );
 
     }
+
+    setColor( hsv ) {
+
+        this._helper.setColor( hsv ); 
+
+    }
 }

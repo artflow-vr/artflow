@@ -28,13 +28,13 @@
 'use strict';
 
 import AbstractBrushStroke from '../abstract-brush-stroke';
-import Shader from '../../../shader/brushes/test-shader';
+import Shader from '../../../shader/brushes/fractal-shader';
 import { MainView } from '../../../view/view';
 
 let uniforms = THREE.UniformsUtils.clone( Shader.uniforms );
 
 
-export default class StrokeAnimatedTest extends AbstractBrushStroke {
+export default class StrokeAnimatedFractal extends AbstractBrushStroke {
 
     constructor( isVR ) {
 
@@ -49,9 +49,10 @@ export default class StrokeAnimatedTest extends AbstractBrushStroke {
         } );
 
         this._helper._material = material.clone();
-        this._helper._thickness *= 2.0;
+        //this._helper._thickness = 0.5;
         //this._helper.options.maxSpread = 0;
 
+        //console.log('v', MainView.);
 
     }
 
@@ -60,7 +61,6 @@ export default class StrokeAnimatedTest extends AbstractBrushStroke {
         for (let m in this._helper._meshes) {
             let m2 = this._helper._meshes[ m ];
             m2.material.uniforms.uTime.value += 0.01;
-            m2.material.uniforms.vResolution.value = new THREE.Vector2(MainView._dimensions.width, MainView._dimensions.height);
         }
 
     }

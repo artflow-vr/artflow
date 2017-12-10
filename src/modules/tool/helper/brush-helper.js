@@ -131,7 +131,8 @@ export default class BrushHelper {
 
     setColor( hsv ) {
 
-        this._material.color.setHSL( hsv.h, hsv.s, hsv.v );
+        if (this._material.color)
+            this._material.color.setHSL( hsv.h, hsv.s, hsv.v );
 
     }
 

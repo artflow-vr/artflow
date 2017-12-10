@@ -33,14 +33,18 @@ import StrokeAnimatedSquares from './brush-strokes/stroke-animated-squares';
 import StrokeAnimatedRainbow from './brush-strokes/stroke-animated-rainbow';
 import StrokeAnimatedMatrix from './brush-strokes/stroke-animated-matrix';
 import StrokeAnimatedDong from './brush-strokes/stroke-animated-dong';
+import StrokeAnimatedFractal from './brush-strokes/stroke-animated-fractal';
+import StrokeAnimatedElectric from './brush-strokes/stroke-animated-electric';
 
 const SIZE_FACTOR = 0.2;
 
 export default class BrushTool extends AbstractTool {
 
-    constructor( isVR ) {
+    constructor( isVR, stroke = 'with_tex' ) {
 
         super();
+
+        this.dynamic = true;
 
         //AbstractTool.call( this, null );
 
@@ -72,10 +76,12 @@ export default class BrushTool extends AbstractTool {
             'squares_anim' : new StrokeAnimatedSquares( isVR ),
             'rainbow_anim' : new StrokeAnimatedRainbow( isVR ),
             'matrix_anim' : new StrokeAnimatedMatrix( isVR ),
-            'dong_anim' : new StrokeAnimatedDong( isVR )
+            'dong_anim' : new StrokeAnimatedDong( isVR ),
+            'fractal_anim' : new StrokeAnimatedFractal( isVR ),
+            'electric_anim' : new StrokeAnimatedElectric( isVR )
         };
 
-        this.currentStroke = 'rainbow_anim';
+        this.currentStroke = 'fractal_anim';
 
     }
 
