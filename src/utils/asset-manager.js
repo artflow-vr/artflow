@@ -197,6 +197,8 @@ class Manager {
 
         this._loadUIAssets( promises );
 
+        this._loadUIAssets( promises );
+
         return Promise.all( promises );
 
     }
