@@ -466,14 +466,14 @@ class ToolModule {
         //
         // BRUSH STROKES
         //
-        this.registerToolItem( 'Brush', 'default', {
+        this.registerToolItem( 'Brush', 'withTex', {
             uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
             data: null // You can pass extra data here
         } );
 
-        this.registerToolItem( 'Brush', 'fractal', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
-            data: 'fractalAnim' // You can pass extra data here
+        this.registerToolItem( 'Brush', 'rainbowAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-rainbow' ],
+            data: 'rainbowAnim' // You can pass extra data here
         } );
 
         //

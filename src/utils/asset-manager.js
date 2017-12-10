@@ -284,6 +284,13 @@ class Manager {
             );
         }
 
+        promises.push(
+            this.load(
+                'ui/items/brush/rainbow', '.png',
+                TEXTURE, this._texturePath, 'brush-item-rainbow'
+            )
+        );
+
     }
 
 }

@@ -33,7 +33,7 @@ const SIZE_FACTOR = 0.2;
 
 export default class BrushTool extends AbstractTool {
 
-    constructor( isVR, stroke = 'rainbowAnim' ) {
+    constructor( isVR, stroke = 'withTex' ) {
 
         super();
 
@@ -78,9 +78,11 @@ export default class BrushTool extends AbstractTool {
 
     }
 
-    setCurrentStroke( id ) {
+    onItemChanged( id ) {
 
-        this.currentStroke = id;
+        console.log( 'Changing stroke to ', id, typeof id );
+        this.currentStroke = id.slice( 0 );
+        console.log( 'currStroke after change', this.currentStroke );
 
     }
 
@@ -94,6 +96,7 @@ export default class BrushTool extends AbstractTool {
     use( data ) {
 
         this.registeredStrokes[ this.currentStroke ].use( data );
+        console.log( 'Use', this.currentStroke );
 
     }
 
