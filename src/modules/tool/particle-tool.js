@@ -29,6 +29,7 @@ import AbstractTool from './abstract-tool';
 import { AssetManager } from '../../utils/asset-manager';
 import ParticleShader from '../../shader/particle/particle-shader';
 import PositionUpdate from '../../shader/particle/position-update';
+import PositionHelix from '../../shader/particle/position-helix';
 import VelocityUpdate from '../../shader/particle/velocity-update';
 import BaseShader from '../../shader/particle/base-shader';
 import MainView from '../../view/main-view';
@@ -402,6 +403,29 @@ ParticleTool.registeredParticles = [
         },
         renderingShader: ParticleShader,
         positionUpdate: PositionUpdate,
+        velocityUpdate: VelocityUpdate
+    },
+    {
+        brushSize: 3,
+        thickness: 10,
+        initialParticlesPerEmitter: 20,
+        maxParticlesPerEmitter: 512 * 512,
+        bufferSide: 512,
+        maxEmitters: 20,
+        debugPlane: false,
+        positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
+        velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512,
+            new THREE.Color( 0.5, 0.495, 0.5 ) ),
+        renderingUniforms: {
+            pointMaxSize: { type: 'f', value: 20 },
+            brushSize: { type: 'f', value: 3 }
+        },
+        positionUniforms: {
+            normVelocity: { type:'f', value: 10.0 },
+            lifespanEntropy: { type:'f', value: 0.001 }
+        },
+        renderingShader: ParticleShader,
+        positionUpdate: PositionHelix,
         velocityUpdate: VelocityUpdate
     }
 ];
