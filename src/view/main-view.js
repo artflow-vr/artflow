@@ -28,6 +28,7 @@
 import * as Utils from '../utils/utils';
 import HTMLView from './html-view';
 import HTMLTextArea from './html-text-area';
+import '../../vendor/ImageUtils';
 
 let AssetManager = Utils.AssetManager;
 let MiscInfoTable = Utils.InfoTable.misc;

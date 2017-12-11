@@ -365,6 +365,7 @@ class ToolModule {
         this._instanciate( 'Particle' );
         this._instanciate( 'Water' );
         this._instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
+        this._instanciate( 'Particle', Tool.ParticleTool.registeredParticles[ 0 ] );
 
     }
 

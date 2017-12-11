@@ -172,8 +172,30 @@ class Manager {
                 TEXTURE, this._texturePath, 'particle_raw' )
         );
         promises.push(
+            this.load( 'perlin-512', '.png',
+                TEXTURE, this._texturePath, 'particle_noise' )
+        );
+        promises.push(
             this.load( 'water_normal', '.png', TEXTURE, this._texturePath )
         );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_position' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_velocity' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_position_out' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_velocity_out' )
+        );
+
+        this._loadUIAssets( promises );
 
         this._loadUIAssets( promises );
 
