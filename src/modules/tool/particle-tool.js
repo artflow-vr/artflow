@@ -40,6 +40,7 @@ class PrimitivesRenderer {
         this.options = options;
         this._bufferSide = PrimitivesRenderer._getNextPowerTwo( this.options.bufferSide );
         this._renderer = MainView._renderer;
+        this._t = 0.0;
 
         // Set up RTTs
         this.initPositionRenderPass();
@@ -106,7 +107,8 @@ class PrimitivesRenderer {
                 tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
                 tInitialVelocitiesMap : { type: 't', value: this._velocityInitialTex },
                 tInitialPositionsMap : { type: 't', value: this._positionInitialTex },
-                dt : { type: 'f', value: 0 }
+                dt : { type: 'f', value: 0 },
+                t : { type: 'f', value: 0 }
             },
             vertexShader: this.options.positionUpdate.vertex,
             fragmentShader: this.options.positionUpdate.fragment
@@ -120,7 +122,8 @@ class PrimitivesRenderer {
                 tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
                 tInitialVelocitiesMap : { type: 't', value: this._velocityInitialTex },
                 tInitialPositionsMap : { type: 't', value: this._positionInitialTex },
-                dt : { type: 'f', value: 0 }
+                dt : { type: 'f', value: 0 },
+                t : { type: 'f', value: 0 }
             },
             vertexShader: this.options.velocityUpdate.vertex,
             fragmentShader: this.options.velocityUpdate.fragment
@@ -157,9 +160,12 @@ class PrimitivesRenderer {
     }
 
     update( dt ) {
+        this._t += dt;
+        if ( this._t < 0 ) this._t = 0;
         this._debugPlaneMat.uniforms.tSprite.value = this._positionRT2.texture;
 
         this._velocitiesTargetTextureMesh.material.uniforms.dt.value = dt;
+        this._velocitiesTargetTextureMesh.material.uniforms.t.value = this._t;
         this._renderer.render( this._velocityRTTScene, this._positionsCamera, this._velocityRT1, true );
         let sw = this._velocityRT1;
         this._velocityRT1 = this._velocityRT2;
@@ -168,6 +174,7 @@ class PrimitivesRenderer {
 
         this._positionsTargetTextureMat.uniforms.tVelocitiesMap.value = this._velocityRT2.texture;
         this._positionsTargetTextureMesh.material.uniforms.dt.value = dt;
+        this._positionsTargetTextureMesh.material.uniforms.t.value = this._t;
         this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT1, true );
         sw = this._positionRT1;
         this._positionRT1 = this._positionRT2;
@@ -424,7 +431,9 @@ ParticleTool.registeredParticles = [
         },
         positionUniforms: {
             normVelocity: { type:'f', value: 10.0 },
-            lifespanEntropy: { type:'f', value: 0.001 }
+            lifespanEntropy: { type:'f', value: 0.001 },
+            a: { type:'f', value: 1.0 },
+            b: { type:'f', value: 1.0 }
         },
         renderingShader: ParticleHelix,
         positionUpdate: PositionHelix,
