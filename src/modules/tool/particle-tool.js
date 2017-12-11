@@ -28,6 +28,7 @@
 import AbstractTool from './abstract-tool';
 import { AssetManager } from '../../utils/asset-manager';
 import ParticleShader from '../../shader/particle/particle-shader';
+import ParticleHelix from '../../shader/particle/particle-helix';
 import PositionUpdate from '../../shader/particle/position-update';
 import PositionHelix from '../../shader/particle/position-helix';
 import VelocityUpdate from '../../shader/particle/velocity-update';
@@ -418,13 +419,14 @@ ParticleTool.registeredParticles = [
             new THREE.Color( 0.5, 0.495, 0.5 ) ),
         renderingUniforms: {
             pointMaxSize: { type: 'f', value: 20 },
-            brushSize: { type: 'f', value: 3 }
+            brushSize: { type: 'f', value: 3 },
+            rotation: { type:'3f', value: [ 180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0 ] }
         },
         positionUniforms: {
             normVelocity: { type:'f', value: 10.0 },
             lifespanEntropy: { type:'f', value: 0.001 }
         },
-        renderingShader: ParticleShader,
+        renderingShader: ParticleHelix,
         positionUpdate: PositionHelix,
         velocityUpdate: VelocityUpdate
     }
