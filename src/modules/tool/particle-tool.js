@@ -426,6 +426,7 @@ ParticleTool.registeredParticles = [
             new THREE.Color( 0.5, 0.495, 0.5 ) ),
         renderingUniforms: {
             pointMaxSize: { type: 'f', value: 20 },
+<<<<<<< HEAD
             brushSize: { type: 'f', value: 3 },
             rotation: { type:'3f', value: [ 180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0 ] }
         },
@@ -436,6 +437,15 @@ ParticleTool.registeredParticles = [
             b: { type:'f', value: 1.0 }
         },
         renderingShader: ParticleHelix,
+=======
+            brushSize: { type: 'f', value: 3 }
+        },
+        positionUniforms: {
+            normVelocity: { type:'f', value: 10.0 },
+            lifespanEntropy: { type:'f', value: 0.001 }
+        },
+        renderingShader: ParticleShader,
+>>>>>>> Particles: Add helix position shader for wind effect
         positionUpdate: PositionHelix,
         velocityUpdate: VelocityUpdate
     }

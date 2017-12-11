@@ -214,7 +214,6 @@ class ToolModule {
         this._selected[ 0 ] = this._instance.Particle[ 0 ];
         this._selected[ 1 ] = this._instance.Particle[ 1 ];
 
-
         // TODO: Add onEnterChild & onExitChild event trigger.
 
         /*
