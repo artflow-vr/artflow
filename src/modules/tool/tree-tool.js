@@ -100,19 +100,18 @@ class Tree {
 
 export default class TreeTool extends AbstractTool {
 
-    constructor( options ) {
+    constructor() {
 
-        super( options );
-
-        this.registeredBrushes = null;
-
-        this.setOptionsIfUndef( options, {
+        super( {
             maxSpread: 20,
             brushThickness: 0.1,
+            texture: null,
             enablePressure: true,
-            color: 0x808080,
+            color: 0x45220a,
             materialId: 'material_without_tex'
         } );
+
+        this.dynamic = true;
 
         this.registerEvent( 'interact', {
             trigger: this.trigger.bind( this ),
@@ -386,19 +385,3 @@ export default class TreeTool extends AbstractTool {
     }
 }
 
-TreeTool.registeredBrushes = [ {
-        maxSpread: 20,
-        brushThickness: 0.5,
-        enablePressure: false,
-        color: 0x808080,
-        materialId: 'material_with_tex'
-    },
-    {
-        maxSpread: 20,
-        brushThickness: 0.2,
-        texture: null,
-        enablePressure: true,
-        color: 0x45220a,
-        materialId: 'material_without_tex'
-    }
-];
