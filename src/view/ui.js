@@ -200,13 +200,13 @@ class UI {
         let events = {
             change: ( object, evt ) => {
                 let controllerID = ( this._prevController + 1 ) % 2;
-                callback( toolID, controllerID, evt );
+                callback( item.id, controllerID, evt );
             }
         };
 
         let itemsUI = this._ui.items[ toolID ];
         let ui = this._add(
-            toolID, itemsUI, { background: background, button: texture },
+            item.id, itemsUI, { background: background, button: texture },
             events, true
         );
 

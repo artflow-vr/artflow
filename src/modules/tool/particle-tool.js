@@ -354,6 +354,12 @@ export default class ParticleTool extends AbstractTool {
         this._updateBrush( data.position.world );
     }
 
+    onItemChanged( id ) {
+
+        console.log( id );
+
+    }
+
     _updateBrush( pointCoords ) {
         this._cursorMesh.position.x = pointCoords.x;
         this._cursorMesh.position.y = pointCoords.y;
