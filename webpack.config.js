@@ -10,6 +10,10 @@ let BUILD = 'build';
 let ENTRY_FILE = SRC + '/index.js';
 let OUTPUT_FILE = 'artflow-dist';
 
+const INCLUDES = [
+  'controller', 'modules', 'shader', 'utils', 'view', 'vr'
+];
+
 let env = require( 'dotenv' ).config();
 
 let plugins = [
@@ -18,6 +22,7 @@ let plugins = [
     'window.THREE': 'three'
   } )
 ];
+
 let loaders = [
   {
     test: /\.js$/,
@@ -29,6 +34,15 @@ let loaders = [
   }
 ];
 
+/**
+ * Creates the array containing the different include folders.
+ * This is used to avoid having gross relative import!
+ */
+let aliases = {};
+for ( let i = 0; i < INCLUDES.length; ++i )
+  aliases[ INCLUDES[ i ] ] = path.resolve( SRC, INCLUDES[ i ] );
+//test.push( path.resolve( ROOT, './node_modules' ) );
+
 let exp = {
   entry: ENTRY_FILE,
   output: {
@@ -36,6 +50,9 @@ let exp = {
     filename: null,
     publicPath: '/' + BUILD + '/',
     library: 'Artflow'
+  },
+  resolve: {
+    alias: aliases
   },
   module: {}
 };
