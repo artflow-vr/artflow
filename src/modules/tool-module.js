@@ -392,6 +392,31 @@ class ToolModule {
             data: 'fractalAnim' // You can pass extra data here
         } );
 
+        //
+        // TREE
+        //
+        this.registerToolItems( 'Tree', {
+            bush: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'bush'
+            },
+            hilbertCube: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'hilbertCube'
+            },
+            contextSensitive: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'contextSensitive'
+            },
+            simpleTree: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'simpleTree'
+            },
+            tiltTree: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'tiltTree'
+            }
+        } );
     }
 
 }

@@ -230,6 +230,14 @@ export default class TreeTool extends AbstractTool {
 
     }
 
+    onItemChanged( itemID ) {
+
+        console.log( itemID );
+        this._lSystem = this.lSystems[ itemID ];
+        this._str = this._lSystem.derivate();
+
+    }
+
     _addMesh( tree ) {
 
         let mesh = tree.helper.createMesh();
