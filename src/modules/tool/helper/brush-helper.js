@@ -26,19 +26,47 @@
 */
 
 import ToolModule from '../../tool-module';
+import { setPropIfUndefined } from 'utils/object';
+
+const INIT_VBO_LIMIT = 10000;
+const MIN_DIST = 0.05;
+
+const DEFAULT_OPTIONS = {
+    isDynamic: true,
+    maxVertices: INIT_VBO_LIMIT,
+    material: null,
+    computeTangents: false
+};
 
 export default class BrushHelper {
 
-    constructor( options ) {
+    constructor( options, uvMode, triangleMode ) {
 
-        this.registeredBrushes = null;
+        this.options = Object.assign( {}, options );
+        setPropIfUndefined( this.options, {
+            brushThickness: 1.0,
+            maxSpread: 1,
+            color: 0x808080,
+            materialId: 'material_without_tex'
+        } );
 
-        this.options = options;
+        // We can choose how the UVs should be computed.
+        if ( !uvMode ) {
+            if ( this.options.enablePressure ) {
+                this._computeUV = BrushHelper.UV_MODE.handPressure;
+                this._computeThickness = this._computeThicknessWithPressure;
+            } else
+                this._computeUV = BrushHelper.UV_MODE.hand;
+        } else
+            this._computeUV = uvMode;
+        this._computeUV = this._computeUV.bind( this );
 
         this._verticesCount = 0;
         this._normalsCount = 0;
         this._uvCount = 0;
-        this._vboLimit = 50000;
+
+        this._vboLimit = INIT_VBO_LIMIT;
+
         this._material = null;
         this._geometry = null;
         this._vertices = null;
@@ -46,7 +74,6 @@ export default class BrushHelper {
         this._meshes = [];
         this._uvs = null;
         this._uv = 0;
-        this._delta = this.options.delta;
         this._axisLock = new THREE.Vector3( 0, 0, -1 );
         this._pointA = new THREE.Vector3( 0, 0, 0 );
         this._pointB = new THREE.Vector3( 0, 0, 0 );
@@ -56,18 +83,11 @@ export default class BrushHelper {
         this._lastPressure = 0.0;
         this._thickness = this.options.brushThickness / 2.0;
 
-        this._computeUV = null;
         this._computeThickness = function () {
 
             return this._thickness;
 
         };
-
-        if ( this.options.enablePressure ) {
-            this._computeUV = this._computeUVWithPressure;
-            this._computeThickness = this._computeThicknessWithPressure;
-        } else
-            this._computeUV = this._computeUVWithoutPressure;
 
         // TOOD: Helper shound not access the object pool directly like this.
         this._material = ToolModule.objectPool.getObject( this.options.materialId );
@@ -76,39 +96,54 @@ export default class BrushHelper {
 
     }
 
-    createMesh() {
+    createMesh( options ) {
+
+        let data = options || DEFAULT_OPTIONS;
+        let dynamic = data.dynamic || true;
+
+        this._vboLimit = data.maxVertices || INIT_VBO_LIMIT;
+        this._material = data.material || this._material;
 
         this._geometry = new THREE.BufferGeometry();
-        this._vertices = new Float32Array( this._vboLimit * 3 * 3 );
-        this._normals = new Float32Array( this._vboLimit * 3 * 3 );
-        this._uvs = new Float32Array( this._vboLimit * 2 * 3 );
+
+        this._vertices = new Float32Array( this._vboLimit * 3 );
+        this._normals = new Float32Array( this._vboLimit * 3 );
+        this._uvs = new Float32Array( this._vboLimit * 2 );
 
         this._geometry.setDrawRange( 0, 0 );
         this._geometry.addAttribute(
             'position',
-            new THREE.BufferAttribute( this._vertices, 3 ).setDynamic( true )
+            new THREE.BufferAttribute( this._vertices, 3 )
         );
         this._geometry.addAttribute(
-            'uv', new THREE.BufferAttribute( this._uvs, 2 ).setDynamic( true )
+            'uv', new THREE.BufferAttribute( this._uvs, 2 )
         );
         this._geometry.addAttribute(
             'normal',
-            new THREE.BufferAttribute( this._normals, 3 ).setDynamic( true )
+            new THREE.BufferAttribute( this._normals, 3 )
         );
+
+        // Important step, we have to make every attributes dynamic, if we
+        // are not provided a maximum
+        for ( let k in this._geometry.attributes ) {
+            let obj = this._geometry.attributes[ k ];
+            obj.setDynamic( dynamic );
+        }
 
         this._verticesCount = 0;
         this._normalsCount = 0;
         this._uvCount = 0;
         this._uv = 0;
 
-        this._lastPoint = new THREE.Vector3( Number.NEGATIVE_INFINITY );
+        this._lastPoint.set(
+            Number.NEGATIVE_INFINITY,
+            Number.NEGATIVE_INFINITY,
+            Number.NEGATIVE_INFINITY
+        );
 
         let mesh = new THREE.Mesh( this._geometry, this._material.clone() );
         mesh.drawMode = THREE.TriangleStripDrawMode;
         mesh.frustumCulled = false;
-        mesh.vertices = this._vertices;
-        mesh.uvs = this._uvs;
-        mesh.normals = this._normals;
 
         this._meshes.push( mesh );
 
@@ -165,13 +200,55 @@ export default class BrushHelper {
         this._lastPoint = pointCoords.clone();
     }
 
+    computeTangents() {
+
+        this._tangents = new Float32Array( this._vboLimit * 3 );
+        this._tangents.userData = { count: 0 };
+        this._geometry.addAttribute(
+            'tangent',
+            new THREE.BufferAttribute( this._tangents, 3 )
+        );
+
+        let v0 = new THREE.Vector3( 0.0 );
+        let v1 = new THREE.Vector3( 0.0 );
+        let normal = new THREE.Vector3( 0.0 );
+        let edge = new THREE.Vector3( 0.0 );
+        let tangent = new THREE.Vector3( 0.0 );
+
+        for ( let i = 0; i < this._verticesCount - 6; i += 6 ) {
+
+            v0.fromArray( this._vertices, i );
+            v1.fromArray( this._vertices, i + 6 );
+            normal.fromArray( this._normals, i );
+
+            edge.copy( v0 );
+            edge.sub( v1 );
+            tangent.copy( edge );
+            tangent.normalize();
+
+            this._tangents[ this._tangents.userData.count++ ] = tangent.x;
+            this._tangents[ this._tangents.userData.count++ ] = tangent.y;
+            this._tangents[ this._tangents.userData.count++ ] = tangent.z;
+            this._tangents[ this._tangents.userData.count++ ] = tangent.x;
+            this._tangents[ this._tangents.userData.count++ ] = tangent.y;
+            this._tangents[ this._tangents.userData.count++ ] = tangent.z;
+        }
+        this._tangents[ this._tangents.userData.count++ ] = tangent.x;
+        this._tangents[ this._tangents.userData.count++ ] = tangent.y;
+        this._tangents[ this._tangents.userData.count++ ] = tangent.z;
+        this._tangents[ this._tangents.userData.count++ ] = tangent.x;
+        this._tangents[ this._tangents.userData.count++ ] = tangent.y;
+        this._tangents[ this._tangents.userData.count++ ] = tangent.z;
+
+    }
+
     _processPoint( pointCoords, orientation, verticesCount_,
         normalsCount_, pressure ) {
 
         let verticesCount = verticesCount_;
         let normalsCount = normalsCount_;
 
-        this._axisLock.x = 1.0;
+        this._axisLock.x = -1.0;
         this._axisLock.y = 0.0;
         this._axisLock.z = 0.0;
         this._axisLock.applyQuaternion( orientation );
@@ -200,14 +277,8 @@ export default class BrushHelper {
 
         if ( this._verticesCount >= 3 * 4 ) {
 
-            let it = 3;
-            if ( verticesCount - 3 * 3 === 0 )
-                it = 1;
-            else if ( verticesCount - 4 * 3 === 3 )
-                it = 2;
-
             let n = new THREE.Vector3( 0 );
-            for ( let i = 0; i < it * 3; i += 3 ) {
+            for ( let i = 0; i < 3 * 3; i += 3 ) {
 
                 let v0 = new THREE.Vector3();
                 let v1 = new THREE.Vector3();
@@ -225,32 +296,13 @@ export default class BrushHelper {
 
                 n.add( n1 );
             }
+            n.divideScalar( 3 );
 
-            n.divideScalar( it );
-
-            this._normals[ normalsCount++ ] = n.x;
-            this._normals[ normalsCount++ ] = n.y;
-            this._normals[ normalsCount++ ] = n.z;
-
-            this._normals[ normalsCount++ ] = n.x;
-            this._normals[ normalsCount++ ] = n.y;
-            this._normals[ normalsCount++ ] = n.z;
-
-            this._normals[ normalsCount++ ] = n.x;
-            this._normals[ normalsCount++ ] = n.y;
-            this._normals[ normalsCount++ ] = n.z;
-
-            this._normals[ normalsCount++ ] = n.x;
-            this._normals[ normalsCount++ ] = n.y;
-            this._normals[ normalsCount++ ] = n.z;
-
-            this._normals[ normalsCount++ ] = n.x;
-            this._normals[ normalsCount++ ] = n.y;
-            this._normals[ normalsCount++ ] = n.z;
-
-            this._normals[ normalsCount++ ] = n.x;
-            this._normals[ normalsCount++ ] = n.y;
-            this._normals[ normalsCount++ ] = n.z;
+            for ( let i = 0; i < 6; ++i ) {
+                this._normals[ normalsCount++ ] = n.x;
+                this._normals[ normalsCount++ ] = n.y;
+                this._normals[ normalsCount++ ] = n.z;
+            }
 
             this._geometry.normalizeNormals();
 
@@ -293,4 +345,24 @@ export default class BrushHelper {
 
     }
 
+    _computeUVQuad() {
+
+        let base = ( this._uv / 4 );
+
+        this._uvs[ this._uv++ ] = 0.0;
+        this._uvs[ this._uv++ ] = base;
+
+        this._uvs[ this._uv++ ] = 1.0;
+        this._uvs[ this._uv++ ] = base;
+
+    }
+
 }
+
+BrushHelper.UV_MODE = {
+
+    hand: BrushHelper.prototype._computeUVWithoutPressure,
+    handPressure: BrushHelper.prototype._computeUVWithPressure,
+    quad: BrushHelper.prototype._computeUVQuad
+
+};

@@ -31,6 +31,8 @@ import AbstractTool from './abstract-tool';
 import WaterShader from '../../shader/water/water-shader';
 import { AssetManager } from '../../utils/asset-manager';
 
+import buildPath from 'utils/path-draw';
+
 const MARKER_SCALE = 0.2;
 const MARKER_SCALE_VR = 0.05;
 
@@ -55,7 +57,19 @@ const LINE_MATERIAL = new THREE.LineBasicMaterial( {
 // to apply to each line linking two marker.
 const LINE_QUAT = new THREE.Quaternion();
 
-let uniforms = THREE.UniformsUtils.clone( WaterShader.uniforms );
+const UNIFORMS = THREE.UniformsUtils.clone( WaterShader.uniforms );
+const WATER_MATERIAL = new THREE.ShaderMaterial( {
+    uniforms: UNIFORMS,
+    vertexShader: WaterShader.vertex,
+    fragmentShader: WaterShader.fragment,
+    side: THREE.DoubleSide,
+    //transparent: true,
+    lights: true,
+    extensions: {
+        derivatives: true
+    }
+} );
+
 let plane = null;
 
 export default class WaterTool extends AbstractTool {
@@ -73,63 +87,15 @@ export default class WaterTool extends AbstractTool {
         let geometry = new THREE.PlaneBufferGeometry( 2, 2 );
         THREE.BufferGeometryUtils.computeTangents( geometry );
 
-        let cubemap = AssetManager.assets.cubemap.cubemap;
-
-        let material = new THREE.ShaderMaterial( {
-            uniforms: uniforms,
-            vertexShader: WaterShader.vertex,
-            fragmentShader: WaterShader.fragment,
-            side: THREE.DoubleSide,
-            transparent: true,
-            lights: true,
-            extensions: {
-                derivatives: true
-            }
-        } );
-        plane = new THREE.Mesh( geometry, material.clone() );
-        plane.material.uniforms.normalMap.value = AssetManager.assets.texture
-            .water_normal;
-        plane.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
-        plane.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
-        plane.material.uniforms.uSpeed.value = this.options.speed;
-        plane.material.uniforms.uCubemap.value = cubemap;
-
-        plane.translateZ( 5.0 );
-        plane.rotateZ( -Math.PI / 4 );
-        //plane.rotateX( Math.PI / 2.5 );
-
-        let plane2 = new THREE.Mesh( geometry, material.clone() );
-        plane2.material.uniforms.normalMap.value = AssetManager.assets.texture
-            .water_normal;
-        plane2.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
-        plane2.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
-        plane2.material.uniforms.uSpeed.value = this.options.speed;
-        plane2.translateZ( 5.0 );
-        plane2.translateX( 4.0 );
-        plane2.rotateX( Math.PI / 3 );
-        plane2.material.uniforms.uCubemap.value = cubemap;
-
-        let plane3 = new THREE.Mesh( geometry, material.clone() );
-        plane3.material.uniforms.normalMap.value = AssetManager.assets.texture
-            .water_normal;
-        plane3.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
-        plane3.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
-        plane3.material.uniforms.uSpeed.value = this.options.speed;
-        plane3.translateZ( 2.0 );
-        plane3.translateX( 2.0 );
-        plane3.material.uniforms.uCubemap.value = cubemap;
-
-        /*this.localGroup.addTHREEObject( plane );
-        this.localGroup.addTHREEObject( plane2 );
-        this.localGroup.addTHREEObject( plane3 );*/
-        /*this.worldGroup.addTHREEObject( plane );
-        this.worldGroup.addTHREEObject( plane2 );
-        this.worldGroup.addTHREEObject( plane3 );*/
-
         // Contains the spline drawn by the user. Whenever the drawing is ready,
         // this will be deleted.
         this._markerGroup = new THREE.Group();
+        this._splineGroup = new THREE.Group();
+        this._waterGroup = new THREE.Group();
+
         this.worldGroup.addTHREEObject( this._markerGroup );
+        this.worldGroup.addTHREEObject( this._splineGroup );
+        this.worldGroup.addTHREEObject( this._waterGroup );
 
         // Contains a reference to the previous marked added. This is used
         // to link them with a visual line.
@@ -139,17 +105,22 @@ export default class WaterTool extends AbstractTool {
         this._lineColorID = 1;
         this._lineAnimTime = 0.0;
 
+        // The BrushHelper is used to draw the planes above the
+        //this._helper = new BrushHelper( null, BrushHelper.UV_MODE.quad );
+
         this.registerEvent( 'interact', {
             trigger: this.trigger.bind( this )
         } );
+
+        this.test = [];
 
     }
 
     update( data ) {
 
-        this._markerGroup.traverse( ( child ) => {
+        this._splineGroup.traverse( ( child ) => {
 
-            if ( child.name !== 'line' ) return;
+            if ( child.constructor !== THREE.Line ) return;
 
             child.material.color.lerp(
                 LINE_COLORS[ this._lineColorID ], this._lineAnimTime
@@ -158,12 +129,12 @@ export default class WaterTool extends AbstractTool {
 
         } );
 
-        /*this.worldGroup.object.traverse( function ( child ) {
+        this._waterGroup.traverse( function ( child ) {
 
             if ( child instanceof THREE.Mesh )
-                child.material.uniforms.uTime.value += 0.001;
+                child.material.uniforms.uTime.value += 0.0005;
 
-        } );*/
+        } );
 
         this._lineAnimTime += data.delta * 0.65;
         if ( this._lineAnimTime >= 1.0 ) {
@@ -174,6 +145,11 @@ export default class WaterTool extends AbstractTool {
     }
 
     trigger( data ) {
+
+        this.test.push( {
+            orientation: data.orientation.clone(),
+            coords: data.position.world.clone()
+        } );
 
         // Adds a new marker to the group.
         let mesh = new THREE.Mesh( AssetManager.assets.model.cube, MARKER_MATERIAL );
@@ -201,11 +177,43 @@ export default class WaterTool extends AbstractTool {
             line.scale.z = mesh.position.distanceTo( this._prevMarker.position );
             line.quaternion.multiply( LINE_QUAT );
 
-            this._markerGroup.add( line );
+            this._splineGroup.add( line );
         }
 
         this._prevMarker = mesh;
 
+        if ( this.test.length === 8 ) {
+            /*let t = this._helper.createMesh( {
+                material: WATER_MATERIAL,
+                dynamic: false,
+                computeTangents: true,
+                maxVertices: 2 * 4
+            } );*/
+
+            let geometry = buildPath( this.test, 0.5 );
+            let m = new THREE.Mesh( geometry, WATER_MATERIAL.clone() );
+            m.frustumCulled = false;
+            m.drawMode = THREE.TrianglesDrawMode; //default
+
+            let cubemap = AssetManager.assets.cubemap.cubemap;
+            m.material.uniforms.normalMap.value = AssetManager.assets.texture.water_normal;
+            m.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
+            m.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
+            m.material.uniforms.uSpeed.value = this.options.speed;
+            m.material.uniforms.uCubemap.value = cubemap;
+            m.material.needsUpdate = true;
+            this._waterGroup.add( m );
+
+            this.test = [];
+            this._prevMarker = null;
+
+            for ( let i = this._markerGroup.children.length - 1; i >= 0; i-- ) {
+                this._markerGroup.remove( this._markerGroup.children[ i ] );
+            }
+            for ( let i = this._splineGroup.children.length - 1; i >= 0; i-- ) {
+                this._splineGroup.remove( this._splineGroup.children[ i ] );
+            }
+        }
     }
 
     release() {}
