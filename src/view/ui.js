@@ -199,7 +199,8 @@ class UI {
         let texture = item.data.uiTexture;
         let events = {
             change: ( object, evt ) => {
-                let controllerID = ( this._prevController + 1 ) % 2;
+                let controllerID = 0;
+                if ( this._vr ) controllerID = ( this._prevController + 1 ) % 2;
                 callback( item.id, controllerID, evt );
             }
         };
