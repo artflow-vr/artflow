@@ -44,7 +44,7 @@ module.exports = {
                     value: 0
                 },
                 uSpeed: {
-                    value: 1.0
+                    value: 40.0
                 }
             }
         ]
@@ -106,6 +106,8 @@ module.exports = {
 
         'const vec3 DOWN = vec3(0.0, -1.0, 0.0);',
 
+        'const float ALPHA = 0.965;',
+
         'vec3 perturbNormal2Arb( vec3 eye_pos, vec3 surf_norm, vec2 uv ) {',
         '// Workaround for Adreno 3XX dFd*( vec3 ) bug. See #9988',
         'vec3 q0 = vec3( dFdx( eye_pos.x ), dFdx( eye_pos.y ), dFdx( eye_pos.z ) );',
@@ -127,14 +129,11 @@ module.exports = {
 
         THREE.ShaderChunk.normal_flip,
 
-        'float uSlide = dot(vBinormal, DOWN);',
+        'float uSlide = vBinormal.y * DOWN.y;',
         'float vSlide = -vTangent.y * DOWN.y;',
-        'uSlide = uSlide * uSlide;',
-        'vSlide = vSlide * vSlide * 1.2;',
+        'uSlide = uSlide;',
+        'vSlide = vSlide * 1.2;',
         'vec2 slideUV = vUv + vec2(uSlide, vSlide) * uTime * uSpeed;',
-        '//vec2 slideUV = vUv + vec2(0.1, 0.0) * uTime * uSpeed;',
-        '//vec2 slideUV = vUv + vec2(0.0, vSlide) * uTime * uSpeed;',
-        '//vec2 slideUV = vUv;',
 
         'vec3 normal = normalize( vNormal );',
         'normal = perturbNormal2Arb( -vViewPosition, normal, slideUV );',
@@ -146,16 +145,9 @@ module.exports = {
         '//#if NUM_DIR_LIGHTS > 0',
         '//for( int i = 0; i < NUM_DIR_LIGHTS; i++ ) {',
 
-        '//gl_FragColor = vec4(fetchColor + vec3(0.03, 0.03, 0.1), 1.0);',
-        '//gl_FragColor = vec4(vec3(vUv, 0.0), 1.0);',
-        '//gl_FragColor = vec4(vec3(1.0, 0.0, 0.0), 1.0);',
-        'gl_FragColor = vec4(vTangent, 1.0);',
-        '//gl_FragColor = vec4(vNormal, 1.0);',
-        '//gl_FragColor = vec4(textureCube(uCubemap, reflectVec).rgb, 1.0);',
-        '//gl_FragColor = vec4(texture2D(normalMap, vUv).xyz, 1.0);',
-        '//gl_FragColor = vec4(texture2D(normalMap, slideUV).xyz, 1.0);',
+        'gl_FragColor = vec4(fetchColor + vec3(0.08, 0.08, 0.15), ALPHA);',
 
-        THREE.ShaderChunk.linear_to_gamma_fragment,
+        //THREE.ShaderChunk.linear_to_gamma_fragment,
 
         '}'
 

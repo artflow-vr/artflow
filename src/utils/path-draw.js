@@ -63,7 +63,50 @@ let computeNormal = ( vecA, vecB, vecB2 ) => {
 
 };
 
-export default ( points, uvFactor, initQuaternion = DEFAULT_QUAT ) => {
+let meanTangent = ( points, tangents, blendFactor = 0.4, nbNeighbors = 3 ) => {
+
+    let tan = new THREE.Vector3( 0.0 );
+    let tmp = new THREE.Vector3( 0.0 );
+    let mean = new THREE.Vector3( 0.0 );
+    let selected = [];
+
+    for ( let i = 0; i < points.length; ++i ) {
+        selected.length = 0;
+        mean.set( 0.0, 0.0, 0.0 );
+
+        // Selects only the point with high altitude contribution.
+        for ( let j = i - 1; j >= i - nbNeighbors && j >= 0; --j ) {
+            if ( points[ j ].coords.y < points[ i ].coords.y ) break;
+            selected.push( j );
+        }
+        for ( let j = i + 1; j < i + nbNeighbors && j <= points.length - 1; ++j ) {
+            if ( points[ j ].coords.y < points[ i ].coords.y ) break;
+            selected.push( j );
+        }
+
+        let nbContrib = selected.length;
+        let start = i * 18;
+        tan.set( tangents[ start ], tangents[ start + 1 ],tangents[ start + 2 ] );
+
+        let c = 0;
+        for ( let val of selected ) {
+            c = ( val * 18 < tangents.length ) ? val * 18 : tangents.length - 18;
+            tmp.set( tangents[ c ], tangents[ c + 1 ], tangents[ c + 2 ] );
+            mean.add( tmp );
+        }
+
+        if ( nbContrib > 0 ) {
+            mean.divideScalar( nbContrib ).normalize().multiplyScalar( blendFactor );
+            tan.normalize().multiplyScalar( 1.0 - blendFactor );
+        }
+        mean.add( tan ).normalize();
+        vecToAttrib( mean, start, start + 18, tangents );
+    }
+
+};
+
+export default ( points, uvFactor,
+                 tangentMean = true, initQuaternion = DEFAULT_QUAT ) => {
 
         // Builds a model using the default draw mode. We will not use indices
         // for now for simplicity.
@@ -72,9 +115,9 @@ export default ( points, uvFactor, initQuaternion = DEFAULT_QUAT ) => {
         let nbVertices = ( points.length - 1 ) * 6;
 
         let attrib = {
-            vertices: new Float32Array( nbVertices * 3 ),
-            normals: new Float32Array( nbVertices * 3 ),
-            tangents: new Float32Array( nbVertices * 3 ),
+            position: new Float32Array( nbVertices * 3 ),
+            normal: new Float32Array( nbVertices * 3 ),
+            tangent: new Float32Array( nbVertices * 3 ),
             uv: new Float32Array( nbVertices * 2 )
         };
 
@@ -106,15 +149,15 @@ export default ( points, uvFactor, initQuaternion = DEFAULT_QUAT ) => {
             nextUv = pointA.coords.distanceTo( pointB.coords ) * uvFactor + prevUv;
             let start = vCount;
             // Push A vertex
-            attrib.vertices[ vCount++ ] = vectorA.x;
-            attrib.vertices[ vCount++ ] = vectorA.y;
-            attrib.vertices[ vCount++ ] = vectorA.z;
+            attrib.position[ vCount++ ] = vectorA.x;
+            attrib.position[ vCount++ ] = vectorA.y;
+            attrib.position[ vCount++ ] = vectorA.z;
             attrib.uv[ uvCount++ ] = 0.0;
             attrib.uv[ uvCount++ ] = prevUv;
             // Push B vertex
-            attrib.vertices[ vCount++ ] = vectorB.x;
-            attrib.vertices[ vCount++ ] = vectorB.y;
-            attrib.vertices[ vCount++ ] = vectorB.z;
+            attrib.position[ vCount++ ] = vectorB.x;
+            attrib.position[ vCount++ ] = vectorB.y;
+            attrib.position[ vCount++ ] = vectorB.z;
             attrib.uv[ uvCount++ ] = 1.0;
             attrib.uv[ uvCount++ ] = prevUv;
 
@@ -123,112 +166,56 @@ export default ( points, uvFactor, initQuaternion = DEFAULT_QUAT ) => {
             );
 
             // Push A2 vertex
-            attrib.vertices[ vCount++ ] = vectorA.x;
-            attrib.vertices[ vCount++ ] = vectorA.y;
-            attrib.vertices[ vCount++ ] = vectorA.z;
+            attrib.position[ vCount++ ] = vectorA.x;
+            attrib.position[ vCount++ ] = vectorA.y;
+            attrib.position[ vCount++ ] = vectorA.z;
             attrib.uv[ uvCount++ ] = 0.0;
             attrib.uv[ uvCount++ ] = nextUv;
             // Push A2 vertex
-            attrib.vertices[ vCount++ ] = vectorA.x;
-            attrib.vertices[ vCount++ ] = vectorA.y;
-            attrib.vertices[ vCount++ ] = vectorA.z;
+            attrib.position[ vCount++ ] = vectorA.x;
+            attrib.position[ vCount++ ] = vectorA.y;
+            attrib.position[ vCount++ ] = vectorA.z;
             attrib.uv[ uvCount++ ] = 0.0;
             attrib.uv[ uvCount++ ] = nextUv;
             // Push B vertex
-            attrib.vertices[ vCount++ ] = vectorB.x;
-            attrib.vertices[ vCount++ ] = vectorB.y;
-            attrib.vertices[ vCount++ ] = vectorB.z;
+            attrib.position[ vCount++ ] = vectorB.x;
+            attrib.position[ vCount++ ] = vectorB.y;
+            attrib.position[ vCount++ ] = vectorB.z;
             attrib.uv[ uvCount++ ] = 1.0;
             attrib.uv[ uvCount++ ] = prevUv;
             // Push B2 vertex
-            attrib.vertices[ vCount++ ] = vectorB2.x;
-            attrib.vertices[ vCount++ ] = vectorB2.y;
-            attrib.vertices[ vCount++ ] = vectorB2.z;
+            attrib.position[ vCount++ ] = vectorB2.x;
+            attrib.position[ vCount++ ] = vectorB2.y;
+            attrib.position[ vCount++ ] = vectorB2.z;
             attrib.uv[ uvCount++ ] = 1.0;
             attrib.uv[ uvCount++ ] = nextUv;
 
             // NORMAL
             // Write the normals to the `attrib.normals' attribute.
             let normal = computeNormal( vectorA.clone(), vectorB.clone(), vectorB2 );
-            vecToAttrib( normal, start, vCount, attrib.normals );
+            vecToAttrib( normal, start, vCount, attrib.normal );
+
             // PRIMITIVE TANGENTS
             // Write the tangents to the `attrib.tangents' attribute.
             let tangent = new THREE.Vector3();
             tangent.copy( pointB.coords );
             tangent.sub( pointA.coords ).normalize();
-            vecToAttrib( tangent, start, vCount, attrib.tangents );
+            vecToAttrib( tangent, start, vCount, attrib.tangent );
 
             prevUv = nextUv % 1.0;
 
         }
 
-        /*let tan = new THREE.Vector3( 0.0 );
-        let tmp = new THREE.Vector3( 0.0 );
-        for ( let i = 0; i < points.length; ++i ) {
-            let mean = new THREE.Vector3( 0.0 );
-            let data = [];
-            for ( let j = i - 1; j >= 0; --j ) {
-                if ( points[ j ].coords.y < points[ i ].coords.y ) break;
-                data.push( j );
-            }
-            for ( let j = i + 1; j <= points.length - 1; ++j ) {
-                if ( points[ j ].coords.y < points[ i ].coords.y ) break;
-                data.push( j );
-            }
-
-            let start = i * 18;
-            let c = 0;
-            for ( let val of data ) {
-                c = ( val * 18 < attrib.tangents.length ) ? val * 18 : attrib.tangents.length - 18;
-                tmp.set(
-                    attrib.tangents[ c ],
-                    attrib.tangents[ c + 1 ],
-                    attrib.tangents[ c + 2 ]
-                );
-                mean.add( tmp );
-            }
-            tan.set(
-                attrib.tangents[ start ],
-                attrib.tangents[ start + 1 ],
-                attrib.tangents[ start + 2 ]
-            );
-
-            if ( data.length > 0 ) {
-                mean.divideScalar( data.length ).normalize().multiplyScalar( 0.2 );
-                tan.normalize().multiplyScalar( 0.8 );
-            }
-            mean.add( tan ).normalize();
-            vecToAttrib( mean, start, start + 18, attrib.tangents );
-
-            console.log( 'idx : ' + i );
-            console.log( data.toString() );
-        }*/
+        meanTangent( points, attrib.tangent );
 
         let geometry = new THREE.BufferGeometry();
-
-        geometry.addAttribute(
-            'position',
-            new THREE.BufferAttribute( attrib.vertices, 3 )
-        );
-        geometry.addAttribute(
-            'normal',
-            new THREE.BufferAttribute( attrib.normals, 3 )
-        );
-        geometry.addAttribute(
-            'tangent',
-            new THREE.BufferAttribute( attrib.tangents, 3 )
-        );
-        geometry.addAttribute(
-            'uv',
-            new THREE.BufferAttribute( attrib.uv, 2 )
-        );
-        geometry.attributes.position.needsUpdate = true;
-        geometry.attributes.normal.needsUpdate = true;
-        geometry.attributes.tangent.needsUpdate = true;
-        geometry.attributes.uv.needsUpdate = true;
+        for ( let att in attrib ) {
+            let val = attrib[ att ];
+            let size = att !== 'uv' ? 3 : 2;
+            geometry.addAttribute( att, new THREE.BufferAttribute( val, size ) );
+            geometry.attributes[ att ].needsUpdate = true;
+        }
         geometry.setDrawRange( 0, vCount / 3 );
-
-        console.log( attrib.vertices );
 
         return geometry;
 

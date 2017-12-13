@@ -61,14 +61,12 @@ const WATER_MATERIAL = new THREE.ShaderMaterial( {
     vertexShader: WaterShader.vertex,
     fragmentShader: WaterShader.fragment,
     side: THREE.DoubleSide,
-    //transparent: true,
+    transparent: true,
     lights: true,
     extensions: {
         derivatives: true
     }
 } );
-
-let plane = null;
 
 export default class WaterTool extends AbstractTool {
 
@@ -78,7 +76,7 @@ export default class WaterTool extends AbstractTool {
         this.dynamic = true;
 
         this.setOptionsIfUndef( {
-            speed: 50,
+            speed: 120,
             color: new THREE.Vector3()
         } );
 
@@ -189,7 +187,8 @@ export default class WaterTool extends AbstractTool {
             } );*/
 
             let geometry = buildPath( this.test, 0.5 );
-            let m = new THREE.Mesh( geometry, WATER_MATERIAL.clone() );
+            let material = WATER_MATERIAL.clone();
+            let m = new THREE.Mesh( geometry, material );
             m.frustumCulled = false;
             m.drawMode = THREE.TrianglesDrawMode; //default
 
