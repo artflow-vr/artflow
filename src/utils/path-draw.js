@@ -25,8 +25,13 @@
 * SOFTWARE.
 */
 
-const DEFAULT_QUAT = new THREE.Vector3( -1, 0, 0 );
-//const DEFAULT_QUAT = new THREE.Vector3( 0, 1, 0 );
+import { setPropIfUndefined } from 'utils/object';
+
+const DEFAULT_OPT = {
+    uvFactor: 1.0,
+    tangentMean: true,
+    initLock: new THREE.Vector3( -1, 0, 0 )
+};
 
 let createLockPoints = ( point, initQuat, outAxisLock, outA, outB ) => {
 
@@ -105,8 +110,10 @@ let meanTangent = ( points, tangents, blendFactor = 0.4, nbNeighbors = 3 ) => {
 
 };
 
-export default ( points, uvFactor,
-                 tangentMean = true, initQuaternion = DEFAULT_QUAT ) => {
+export default ( points, options ) => {
+
+        let opt = options || { };
+        setPropIfUndefined( opt, DEFAULT_OPT );
 
         // Builds a model using the default draw mode. We will not use indices
         // for now for simplicity.
@@ -124,7 +131,9 @@ export default ( points, uvFactor,
         let vCount = 0;
         let uvCount = 0;
 
-        let axisLock = initQuaternion.clone();
+        let axisLock = new THREE.Vector3( 0.0 );
+        axisLock.set( opt.initLock.x, opt.initLock.y, opt.initLock.z );
+
         let vectorA = new THREE.Vector3( 0.0 );
         let vectorB = new THREE.Vector3( 0.0 );
         let vectorB2 = new THREE.Vector3( 0.0 );
@@ -138,7 +147,7 @@ export default ( points, uvFactor,
 
             // Initializes the quaternion to the inital value.
             createLockPoints(
-                pointA, initQuaternion, axisLock, vectorA, vectorB
+                pointA, opt.initLock, axisLock, vectorA, vectorB
             );
 
             // We are building a quad having this layout:
@@ -146,7 +155,7 @@ export default ( points, uvFactor,
             //             | / |            order: A, B, A2, A2, B, B2
             //  (0.0, 1.0) A2--A (1.0, 1.0)
 
-            nextUv = pointA.coords.distanceTo( pointB.coords ) * uvFactor + prevUv;
+            nextUv = pointA.coords.distanceTo( pointB.coords ) * opt.uvFactor + prevUv;
             let start = vCount;
             // Push A vertex
             attrib.position[ vCount++ ] = vectorA.x;
@@ -162,7 +171,7 @@ export default ( points, uvFactor,
             attrib.uv[ uvCount++ ] = prevUv;
 
             createLockPoints(
-                pointB, initQuaternion, axisLock, vectorA, vectorB2
+                pointB, opt.initLock, axisLock, vectorA, vectorB2
             );
 
             // Push A2 vertex

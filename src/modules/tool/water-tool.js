@@ -179,14 +179,7 @@ export default class WaterTool extends AbstractTool {
         this._prevMarker = mesh;
 
         if ( this.test.length === 8 ) {
-            /*let t = this._helper.createMesh( {
-                material: WATER_MATERIAL,
-                dynamic: false,
-                computeTangents: true,
-                maxVertices: 2 * 4
-            } );*/
-
-            let geometry = buildPath( this.test, 0.5 );
+            let geometry = buildPath( this.test, { uvFactor: 0.5 } );
             let material = WATER_MATERIAL.clone();
             let m = new THREE.Mesh( geometry, material );
             m.frustumCulled = false;
