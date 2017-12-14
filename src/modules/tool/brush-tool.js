@@ -89,7 +89,6 @@ export default class BrushTool extends AbstractTool {
     onItemChanged( id ) {
 
         this.currentStroke = id;
-        console.log( 'currStroke after change', this.currentStroke );
 
     }
 
@@ -103,7 +102,6 @@ export default class BrushTool extends AbstractTool {
     use( data ) {
 
         this.registeredStrokes[ this.currentStroke ].use( data );
-        console.log( 'Use', this.currentStroke );
 
     }
 
