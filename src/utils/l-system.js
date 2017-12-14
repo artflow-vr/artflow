@@ -36,13 +36,8 @@ class Letter {
 
   match( rhs ) {
 
-    if ( this.symbol !== rhs.symbol )
-      return false;
-
-    if ( this.parameters.length !== rhs.parameters.length )
-      return false;
-
-    return true;
+    return this.symbol === rhs.symbol
+      && this.parameters.length === rhs.parameters.length;
 
   }
 
@@ -89,10 +84,7 @@ class Production {
     if ( this.rightCtx && !this.matchRightCtx( axiom, index ) )
       return false;
 
-    if ( this.cond && !this.cond( axiom, index ) )
-      return false;
-
-    return true;
+    return !( this.cond && !this.cond( axiom, index ) );
 
   }
 
@@ -107,19 +99,47 @@ class Production {
 
   }
 
+  _isBracket( l ) {
+
+    return l === '[' || l === ']';
+
+  }
+
   matchLeftCtx( axiom, index ) {
 
-    return this.matchLetters( this.leftCtx,
-                              axiom.slice( index - this.leftCtx.length,
-                                           index ) );
+    let aIdx = index - 1;
+    let cLen = this.leftCtx.length;
+    let cIdx = cLen - 1;
 
+    for ( ; aIdx >= 0 && cIdx >= 0; --aIdx, --cIdx ) {
+
+      while ( aIdx >= 0 && this._isBracket( axiom[ aIdx ] ) )
+        --aIdx;
+
+      if ( aIdx < 0 && !axiom[ aIdx ].match( this.leftCtx[ cIdx ] ) )
+        return false;
+    }
+
+    return true;
   }
 
   matchRightCtx( axiom, index ) {
 
-    return this.matchLetters( this.rightCtx,
-                              axiom.slice( index + 1,
-                                           index + this.rightCtx.length + 1 ) );
+    let aLen = axiom.length;
+    let aIdx = index + 1;
+    let cLen = this.leftCtx.length;
+    let cIdx = 0;
+
+    for ( ; aIdx < aLen && cIdx < cLen; ++aIdx, ++cIdx ) {
+
+      while ( aIdx < aLen && this._isBracket( axiom[ aIdx ] ) )
+        ++aIdx;
+
+      if ( aIdx >= aLen && !axiom[ aIdx ].match( this.leftCtx[ cIdx ] ) )
+        return false;
+    }
+
+    return true;
 
   }
 
@@ -149,7 +169,7 @@ class Parser {
       return null;
 
     // Handle operations later.
-    let re = /([a-zA-Z+-\[\]])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/;
+    let re = /([a-zA-Z+-\[\]^&\\\/|])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/;
     let matches = str.match( re );
     if ( !matches )
       return null;
@@ -161,7 +181,7 @@ class Parser {
 
   static parseLetters( str ) {
 
-    let re = /([a-zA-Z+-\[\]])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/g;
+    let re = /([a-zA-Z+-\[\]^&\\\/|])(?:\(((?:[a-zA-Z]|[0-9])+(?:,(?:[a-zA-Z]|[0-9])+)*)\))?/g;
     return this.parseMultiple( str, re, this.parseLetter );
 
   }
@@ -179,7 +199,7 @@ class Parser {
     if ( !str )
       return null;
 
-    let re = /(.+<)?(.+)(>.+)?(:.+)?->({[0-9]+})?(.+)/;
+    let re = /(?:(.+)<)?(.+)(?:>(.+))?(:.+)?->({[0-9]+})?(.+)/;
     let matches = str.match( re );
     if ( !matches )
       return null;
@@ -204,18 +224,21 @@ class Parser {
 
 class LSystem {
 
-    constructor( axiom, productions ) {
+    constructor( axiom, productions, defaultAngle, defaultN ) {
 
       this.axiom = Parser.parseLetters( axiom );
       this.productions = Parser.parseProductions( productions );
+      this.defaultAngle = defaultAngle;
+      this.defaultN = defaultN;
 
     }
 
     derivate( n ) {
 
+      let nIte = n === undefined ? this.defaultN : n;
       let prevAxiom = JSON.parse( JSON.stringify( this.axiom ) );
 
-      for ( let k = 0; k < n; ++k ) {
+      for ( let k = 0; k < nIte; ++k ) {
         let newAxiom = [];
 
         for ( let i = 0; i < prevAxiom.length; ++i ) {

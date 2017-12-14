@@ -102,7 +102,7 @@ export default class WaterTool extends AbstractTool {
 
     }
 
-    update() {
+    update( ) {
 
         this.worldGroup.object.traverse( function ( child ) {
 
@@ -118,3 +118,14 @@ export default class WaterTool extends AbstractTool {
     release() {}
 
 }
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////// REGISTERED SUBTOOLS /////////////////////////////
+
+WaterTool.items = {
+
+    plane: {
+        uiTexture: ''
+    }
+
+};

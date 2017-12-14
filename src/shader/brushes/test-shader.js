@@ -25,24 +25,42 @@
 * SOFTWARE.
 */
 
-import ArtflowMain from './main';
+module.exports = {
 
-let customInit = function() {
+    uniforms: THREE.UniformsUtils.merge(
+        [
+            THREE.UniformsLib.lights,
+            {
+                uTime: {
+                    value: 0.0
+                },
+                vResolution: {
+                    type: 'v2',
+                    value: new THREE.Vector2()
+                }
+            }
+        ]
+    ),
 
-};
+    vertex: [
 
-window.onload = function () {
+        'uniform float uTime;',
+        'varying vec2 vUv;',
 
-    let w = window.innerWidth;
-    let h = window.innerHeight;
+        'void main()	{',
+        '   vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );',
+        '   gl_Position = projectionMatrix * mvPosition;',
+        '   vUv = uv;',
+        '}'
 
-    ArtflowMain.init( w, h, customInit );
+    ].join( '\n' ),
 
-    // Registers global events
-    window.addEventListener( 'resize', function () {
+    fragment: [
 
-        ArtflowMain.resize( window.innerWidth, window.innerHeight );
+        'uniform float uTime;',
+        'uniform vec2 vResolution;',
+        'varying vec2 vUv;'
 
-    }, false );
+    ].join( '\n' )
 
 };
