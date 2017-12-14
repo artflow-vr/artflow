@@ -56,6 +56,11 @@ class Tree {
             this.helper.setColor( hsv );
         }
 
+        this.curIdx = 0;
+        this.newMesh = false;
+        this.needPoint = false;
+        this.time = 0;
+
     }
 
     init( data, angle, step, str, speed ) {
@@ -70,9 +75,6 @@ class Tree {
         );
 
         this.str = str;
-        this.curIdx = 0;
-        this.newMesh = false;
-        this.time = 0;
         this.speed = speed;
 
     }
@@ -148,7 +150,7 @@ export default class TreeTool extends AbstractTool {
              Math.PI / 2.0,
              2,
              0.5,
-             5
+             1
         );
 
         this.lSystems.contextSensitive = new LSystem(
@@ -158,7 +160,7 @@ export default class TreeTool extends AbstractTool {
              25.0 / 180.0 * Math.PI,
              4,
              0.1,
-             5
+             1
         );
 
         this.lSystems.simpleTree = new LSystem(
@@ -168,16 +170,16 @@ export default class TreeTool extends AbstractTool {
              25.7 / 180.0 * Math.PI,
              5,
              0.1,
-             5
+             1
         );
 
         this.lSystems.tiltTree = new LSystem(
             'F',
             'F->FF-[-F+F+F]+[+F-F-F]',
             22.5 / 180.0 * Math.PI,
-            4,
+            3,
             0.1,
-            5
+            1
         );
 
         this._changeTree( 'simpleTree' );
@@ -239,8 +241,10 @@ export default class TreeTool extends AbstractTool {
                 toRemove.push( i );
         }
 
-        for ( let i of toRemove )
+        for ( let i of toRemove ) {
+          if ( this.trees[ i ].needPoint ) this._draw( this.trees[ i ] );
           this.trees.splice( i, 1 );
+        }
 
     }
 
@@ -264,15 +268,13 @@ export default class TreeTool extends AbstractTool {
         let tree = this.trees[ treeIdx ];
         if ( !tree || !tree.str ) return false;
 
-        tree.time += delta;
+        tree.time += delta * 100.0;
 
         if ( !( tree.time / tree.speed ) ) return false;
 
         tree.time %= tree.speed;
 
         let i = tree.curIdx;
-        tree.newMesh |= tree.str[ i ].symbol === ']'
-                        || tree.str[ i ].symbol === 'f';
 
         let clbk = this.interpretations[ tree.str[ i ].symbol ];
         if ( clbk ) clbk( tree );
@@ -296,6 +298,7 @@ export default class TreeTool extends AbstractTool {
         tree.helper.addPoint(
             state.pos, state.orientation, state.pressure
         );
+        tree.needPoint = false;
 
     }
 
@@ -305,21 +308,24 @@ export default class TreeTool extends AbstractTool {
             this._addMesh( tree );
             this._draw( tree );
             tree.newMesh = false;
+        } else if ( tree.needPoint ) {
+          this._draw( tree );
         }
 
         this._movePos( tree );
-        this._draw( tree );
 
     }
 
     moveForward( tree ) {
 
+        tree.newMesh = true;
         this._movePos( tree );
 
     }
 
     _updateAngle( tree, rmat ) {
 
+        tree.needPoint = true;
         tree.peekState().hlu.multiply( rmat );
 
     }
@@ -400,7 +406,9 @@ export default class TreeTool extends AbstractTool {
 
     popState( tree ) {
 
+        if ( tree.needPoint ) this._draw( tree );
         tree.popState();
+        tree.newMesh = true;
 
     }
 }
