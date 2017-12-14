@@ -206,15 +206,6 @@ class ParticleEmitter extends THREE.Object3D {
             MainView.addToMovingGroup( this._primitivesRenderer._debugPlaneMesh );
         this._updatedPositions = this._primitivesRenderer.update( 0 );
 
-        this._primitivesRenderer._debugPlaneMesh.scale.x = 0.01;
-        this._primitivesRenderer._debugPlaneMesh.scale.y = 0.01;
-        this._primitivesRenderer._debugPlaneMesh.scale.z = 0.01;
-        this._primitivesRenderer._debugPlaneMesh.position.x = 1;
-        this._primitivesRenderer._debugPlaneMesh.position.y = 1;
-        this._primitivesRenderer._debugPlaneMesh.position.z = 0;
-        MainView.addToMovingGroup( this._primitivesRenderer._debugPlaneMesh );
-        this._updatedPositions = this._primitivesRenderer.update( 0 );
-
         // geometry
         this.particleShaderGeo = new THREE.BufferGeometry();
 
@@ -300,7 +291,7 @@ export default class ParticleTool extends AbstractTool {
 
         this.dynamic = true;
 
-        this.options = ParticleTool.items.snow;
+        this.options = ParticleTool.items.snow.data;
 
         this._thickness = this.options.thickness;
         this._maxEmitters = this.options.maxEmitters;
@@ -375,12 +366,13 @@ export default class ParticleTool extends AbstractTool {
     }
 
     release() {
+        console.log( this.options );
         this._spawnParticleEmitter();
     }
 
     onItemChanged( id ) {
         console.log( 'Changing system to ', id, typeof id );
-        this.options = ParticleTool.items[ id.slice( 0 ) ];
+        this.options = ParticleTool.items[ id.slice( 0 ) ].data;
         console.log( 'currStroke after change', id.slice ( 0 ) );
     }
 
