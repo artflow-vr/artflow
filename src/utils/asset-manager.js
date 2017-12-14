@@ -255,6 +255,24 @@ class Manager {
                 TEXTURE, this._texturePath, 'brush-item-unified'
             )
         );
+        promises.push(
+            this.load(
+                'ui/items/brush/confettis', '.png',
+                TEXTURE, this._texturePath, 'confetti-item'
+            )
+        );
+        promises.push(
+            this.load(
+                'ui/items/brush/snow', '.png',
+                TEXTURE, this._texturePath, 'snow-item'
+            )
+        );
+        promises.push(
+            this.load(
+                'ui/items/brush/spiral', '.png',
+                TEXTURE, this._texturePath, 'spiral-item'
+            )
+        );
 
     }
 

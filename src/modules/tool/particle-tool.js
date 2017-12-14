@@ -27,9 +27,6 @@
 
 import AbstractTool from './abstract-tool';
 import { AssetManager } from '../../utils/asset-manager';
-import ParticleShader from '../../shader/particle/particle-shader';
-import PositionUpdate from '../../shader/particle/position-update';
-import VelocityUpdate from '../../shader/particle/velocity-update';
 import BaseShader from '../../shader/particle/base-shader';
 import MainView from '../../view/main-view';
 
@@ -38,6 +35,7 @@ class PrimitivesRenderer {
         this.options = options;
         this._bufferSide = PrimitivesRenderer._getNextPowerTwo( this.options.bufferSide );
         this._renderer = MainView._renderer;
+        this._t = 0.0;
 
         // Set up RTTs
         this.initPositionRenderPass();
@@ -104,7 +102,8 @@ class PrimitivesRenderer {
                 tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
                 tInitialVelocitiesMap : { type: 't', value: this._velocityInitialTex },
                 tInitialPositionsMap : { type: 't', value: this._positionInitialTex },
-                dt : { type: 'f', value: 0 }
+                dt : { type: 'f', value: 0 },
+                t : { type: 'f', value: 0 }
             },
             vertexShader: this.options.positionUpdate.vertex,
             fragmentShader: this.options.positionUpdate.fragment
@@ -118,7 +117,8 @@ class PrimitivesRenderer {
                 tVelocitiesMap : { type: 't', value: this._velocityBufferTex1 },
                 tInitialVelocitiesMap : { type: 't', value: this._velocityInitialTex },
                 tInitialPositionsMap : { type: 't', value: this._positionInitialTex },
-                dt : { type: 'f', value: 0 }
+                dt : { type: 'f', value: 0 },
+                t : { type: 'f', value: 0 }
             },
             vertexShader: this.options.velocityUpdate.vertex,
             fragmentShader: this.options.velocityUpdate.fragment
@@ -155,9 +155,12 @@ class PrimitivesRenderer {
     }
 
     update( dt ) {
+        this._t += dt;
+        if ( this._t < 0 ) this._t = 0;
         this._debugPlaneMat.uniforms.tSprite.value = this._positionRT2.texture;
 
         this._velocitiesTargetTextureMesh.material.uniforms.dt.value = dt;
+        this._velocitiesTargetTextureMesh.material.uniforms.t.value = this._t;
         this._renderer.render( this._velocityRTTScene, this._positionsCamera, this._velocityRT1, true );
         let sw = this._velocityRT1;
         this._velocityRT1 = this._velocityRT2;
@@ -166,6 +169,7 @@ class PrimitivesRenderer {
 
         this._positionsTargetTextureMat.uniforms.tVelocitiesMap.value = this._velocityRT2.texture;
         this._positionsTargetTextureMesh.material.uniforms.dt.value = dt;
+        this._positionsTargetTextureMesh.material.uniforms.t.value = this._t;
         this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT1, true );
         sw = this._positionRT1;
         this._positionRT1 = this._positionRT2;
@@ -200,15 +204,6 @@ class ParticleEmitter extends THREE.Object3D {
         this._primitivesRenderer._debugPlaneMesh.position.z = 0;
         if ( this._particleSystem.options.debugPlane )
             MainView.addToMovingGroup( this._primitivesRenderer._debugPlaneMesh );
-        this._updatedPositions = this._primitivesRenderer.update( 0 );
-
-        this._primitivesRenderer._debugPlaneMesh.scale.x = 0.01;
-        this._primitivesRenderer._debugPlaneMesh.scale.y = 0.01;
-        this._primitivesRenderer._debugPlaneMesh.scale.z = 0.01;
-        this._primitivesRenderer._debugPlaneMesh.position.x = 1;
-        this._primitivesRenderer._debugPlaneMesh.position.y = 1;
-        this._primitivesRenderer._debugPlaneMesh.position.z = 0;
-        MainView.addToMovingGroup( this._primitivesRenderer._debugPlaneMesh );
         this._updatedPositions = this._primitivesRenderer.update( 0 );
 
         // geometry
@@ -291,10 +286,13 @@ class ParticleEmitter extends THREE.Object3D {
 
 export default class ParticleTool extends AbstractTool {
 
-    constructor( options ) {
-    super( options );
+    constructor() {
+        super();
 
         this.dynamic = true;
+
+        this.options = ParticleTool.items.snow.data;
+
         this._thickness = this.options.thickness;
         this._maxEmitters = this.options.maxEmitters;
         this._particlesPerEmitter = this.options.initialParticlesPerEmitter;
@@ -303,7 +301,6 @@ export default class ParticleTool extends AbstractTool {
 
         // Initializing particles
         this._particleEmitters = [];
-
         this.initCursorMesh();
 
         // preload a million random numbers
@@ -347,17 +344,11 @@ export default class ParticleTool extends AbstractTool {
         );
         this._cursorMesh.castShadow = false;
         this._cursorMesh.receiveShadow = false;
-        this.worldGroup.addTHREEObject( this._cursorMesh );
+        // this.worldGroup.addTHREEObject( this._cursorMesh );
     }
 
     use( data ) {
         this._updateBrush( data.position.world );
-    }
-
-    onItemChanged( id ) {
-
-        console.log( id );
-
     }
 
     _updateBrush( pointCoords ) {
@@ -375,33 +366,15 @@ export default class ParticleTool extends AbstractTool {
     }
 
     release() {
+        console.log( this.options );
         this._spawnParticleEmitter();
+    }
+
+    onItemChanged( id ) {
+        console.log( 'Changing system to ', id, typeof id );
+        this.options = ParticleTool.items[ id.slice( 0 ) ].data;
+        console.log( 'currStroke after change', id.slice ( 0 ) );
     }
 
 }
 
-ParticleTool.registeredParticles = [
-    {
-        brushSize: 3,
-        thickness: 10,
-        initialParticlesPerEmitter: 20,
-        maxParticlesPerEmitter: 512 * 512,
-        bufferSide: 512,
-        maxEmitters: 20,
-        debugPlane: false,
-        positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-        velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512,
-            new THREE.Color( 0.5, 0.495, 0.5 ) ),
-        renderingUniforms: {
-            pointMaxSize: { type: 'f', value: 20 },
-            brushSize: { type: 'f', value: 3 }
-        },
-        positionUniforms: {
-            normVelocity: { type:'f', value: 10.0 },
-            lifespanEntropy: { type:'f', value: 0.001 }
-        },
-        renderingShader: ParticleShader,
-        positionUpdate: PositionUpdate,
-        velocityUpdate: VelocityUpdate
-    }
-];
