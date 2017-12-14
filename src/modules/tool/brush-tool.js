@@ -82,7 +82,7 @@ export default class BrushTool extends AbstractTool {
             waveAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'wave-shader' } )
         };
 
-        this.currentStroke = 'trippyRastaAnim';
+        this.currentStroke = stroke;
 
     }
 

@@ -2,7 +2,6 @@ import VRUI from 'vr-ui';
 
 import MainView from './main-view';
 import EventDispatcher from '../utils/event-dispatcher';
-import { EILSEQ } from 'constants';
 
 const INIT_POINTER_LEN = 3.5;
 
