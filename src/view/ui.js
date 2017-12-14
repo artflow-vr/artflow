@@ -2,6 +2,7 @@ import VRUI from 'vr-ui';
 
 import MainView from './main-view';
 import EventDispatcher from '../utils/event-dispatcher';
+import { EILSEQ } from 'constants';
 
 const INIT_POINTER_LEN = 3.5;
 
@@ -15,7 +16,7 @@ const GUI_FACTOR_NO_VR = 4.0;
 
 const GRID_ID = 'elementGrid';
 const TOOL_GRID_SIZE = { columns: 4, rows: 3 };
-const ITEMS_GRID_SIZE = { columns: 4, rows: 4 };
+const ITEMS_GRID_SIZE = { columns: 3, rows: 3 };
 
 const HOVER_GEOM = new THREE.PlaneGeometry( 1, 1 );
 
@@ -439,6 +440,11 @@ class UI {
             }
         );
 
+        if ( !isHome ) {
+            button.onChange( this._arrowButtonChanged.bind( this, true ) );
+            button2.onChange( this._arrowButtonChanged.bind( this, false ) );
+        }
+
         // Adds both buttons to the layout
         bottomLayout.add( button );
         // Adds Grid Layout and Horizontal Layout to the parent layout.
@@ -555,6 +561,16 @@ class UI {
             this._hideShowUI( this._ui.items[ id ], true );
             this._currItemUI = id;
         }
+
+    }
+
+    _arrowButtonChanged( isLeft ) {
+
+        let ui = this._ui.items[ this._currItemUI ];
+        if ( isLeft )
+            ui.prevPage();
+        else
+            ui.nextPage();
 
     }
 
