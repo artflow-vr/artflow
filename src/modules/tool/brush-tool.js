@@ -88,7 +88,6 @@ export default class BrushTool extends AbstractTool {
 
     onItemChanged( id ) {
 
-        console.log( 'Changing stroke to ', id, typeof id );
         this.currentStroke = id;
         console.log( 'currStroke after change', this.currentStroke );
 
