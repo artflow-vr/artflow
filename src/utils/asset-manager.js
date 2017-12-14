@@ -247,7 +247,7 @@ class Manager {
         }
 
         //
-        // Particle items
+        // Brush items
         //
         promises.push(
             this.load(
@@ -295,6 +295,97 @@ class Manager {
             this.load(
                 'ui/items/brush/rainbow', '.png',
                 TEXTURE, this._texturePath, 'brush-item-rainbow'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/baianat', '.png',
+                TEXTURE, this._texturePath, 'brush-item-blue'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/epic_coders', '.png',
+                TEXTURE, this._texturePath, 'brush-item-wave'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/freepik', '.png',
+                TEXTURE, this._texturePath, 'brush-item-fractal'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/freepik_2', '.png',
+                TEXTURE, this._texturePath, 'brush-item-stars'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/freepik_3', '.png',
+                TEXTURE, this._texturePath, 'brush-item-squares'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/freepik_4', '.png',
+                TEXTURE, this._texturePath, 'brush-item-matrix'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/freepik_5', '.png',
+                TEXTURE, this._texturePath, 'brush-item-cryptic'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/freepik_6', '.png',
+                TEXTURE, this._texturePath, 'brush-item-void'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/freepik_7', '.png',
+                TEXTURE, this._texturePath, 'brush-item-trippy-rasta'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/nikita_golubev', '.png',
+                TEXTURE, this._texturePath, 'brush-item-hyper-green'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/nikita_golubev', '.png',
+                TEXTURE, this._texturePath, 'brush-item-rasta'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/nikita_golubev', '.png',
+                TEXTURE, this._texturePath, 'brush-item-electric'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/smash_icons_3', '.png',
+                TEXTURE, this._texturePath, 'brush-item-voronoi'
             )
         );
 

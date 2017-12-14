@@ -33,7 +33,7 @@ const SIZE_FACTOR = 0.2;
 
 export default class BrushTool extends AbstractTool {
 
-    constructor( isVR, stroke = 'testAnim' ) {
+    constructor( isVR, stroke = 'starsAnim' ) {
 
         super();
 
@@ -82,14 +82,14 @@ export default class BrushTool extends AbstractTool {
             waveAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'wave-shader' } )
         };
 
-        this.currentStroke = stroke;
+        this.currentStroke = 'trippyRastaAnim';
 
     }
 
     onItemChanged( id ) {
 
         console.log( 'Changing stroke to ', id, typeof id );
-        this.currentStroke = id.slice( 0 );
+        this.currentStroke = id;
         console.log( 'currStroke after change', this.currentStroke );
 
     }

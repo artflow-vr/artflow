@@ -476,6 +476,66 @@ class ToolModule {
             data: 'rainbowAnim' // You can pass extra data here
         } );
 
+        this.registerToolItem( 'Brush', 'blueAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-blue' ],
+            data: 'bluewAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'squaresAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-squares' ],
+            data: 'squaresAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'matrixAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-matrix' ],
+            data: 'matrixAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'fractalAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-fractal' ],
+            data: 'rainbowAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'electricAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-electric' ],
+            data: 'rainbowAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'starsAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-stars' ],
+            data: 'rainbowAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'crypticAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-cryptic' ],
+            data: 'rainbowAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'hypergreenAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-hyper-green' ],
+            data: 'rainbowAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'rastaAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-rasta' ],
+            data: 'rainbowAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'trippyRastaAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-trippy-rasta' ],
+            data: 'rainbowAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'voronoiAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-voronoi' ],
+            data: 'rainbowAnim' // You can pass extra data here
+        } );
+
+        this.registerToolItem( 'Brush', 'waveAnim', {
+            uiTexture: AssetManager.assets.texture[ 'brush-item-wave' ],
+            data: 'rainbowAnim' // You can pass extra data here
+        } );
+
         //
         // TREE
         //
@@ -501,6 +561,7 @@ class ToolModule {
                 data: 'tiltTree'
             }
         } );
+
     }
 
 }
