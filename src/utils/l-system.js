@@ -224,12 +224,15 @@ class Parser {
 
 class LSystem {
 
-    constructor( axiom, productions, defaultAngle, defaultN ) {
+    constructor( axiom, productions, defaultAngle, defaultN, defaultStep,
+                 defaultSpeed ) {
 
       this.axiom = Parser.parseLetters( axiom );
       this.productions = Parser.parseProductions( productions );
       this.defaultAngle = defaultAngle;
       this.defaultN = defaultN;
+      this.defaultStep = defaultStep;
+      this.defaultSpeed = defaultSpeed;
 
     }
 

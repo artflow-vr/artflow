@@ -481,23 +481,23 @@ class ToolModule {
         //
         this.registerToolItems( 'Tree', {
             bush: {
-                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                uiTexture: AssetManager.assets.texture[ 'tree-item-bush' ],
                 data: 'bush'
             },
             hilbertCube: {
-                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                uiTexture: AssetManager.assets.texture[ 'tree-item-cube' ],
                 data: 'hilbertCube'
             },
             contextSensitive: {
-                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                uiTexture: AssetManager.assets.texture[ 'tree-item-contextSens' ],
                 data: 'contextSensitive'
             },
             simpleTree: {
-                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                uiTexture: AssetManager.assets.texture[ 'tree-item-simple' ],
                 data: 'simpleTree'
             },
             tiltTree: {
-                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                uiTexture: AssetManager.assets.texture[ 'tree-item-tilt' ],
                 data: 'tiltTree'
             }
         } );

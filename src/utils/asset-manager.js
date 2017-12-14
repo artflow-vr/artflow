@@ -274,6 +274,16 @@ class Manager {
             )
         );
 
+        //
+        // Tree items
+        //
+        for ( let elt of [ 'bush', 'contextSens', 'cube', 'simple', 'tilt' ] ) {
+            promises.push(
+                this.load( 'ui/items/tree/' + elt, '.png',
+                    TEXTURE, this._texturePath, 'tree-item-' + elt )
+            );
+        }
+
     }
 
 }
