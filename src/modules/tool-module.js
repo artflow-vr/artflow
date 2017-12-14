@@ -172,16 +172,47 @@ class ToolModule {
 
     }
 
+    instanciate( toolID, options ) {
+
+        if ( !( toolID in this._tools ) ) {
+            let errorMsg = 'Tool \'' + toolID + '\' is not registered yet.';
+            throw Error( 'ToolModule._instanciate(): ' + errorMsg );
+        }
+
+        if ( this._instance[ toolID ] ) {
+            let errorMsg = 'Tool \'' + toolID + '\' is already instancied. ';
+            errorMsg += 'You can only have at most 2 instances.';
+            throw Error( 'ToolModule._instanciate(): ' + errorMsg );
+        }
+
+        // The user can use two tool at the same time. We need two instances
+        // of each.
+        let instance = new Array( 2 );
+        instance[ 0 ] = new this._tools[ toolID ].Tool( options );
+        instance[ 1 ] = new this._tools[ toolID ].Tool( options );
+        this._instance[ toolID ] = instance;
+
+        // Adds tool's view groups to the root scene and the moving group.
+        MainView.addToMovingGroup( instance[ 0 ].worldGroup.getObject() );
+        MainView.addToMovingGroup( instance[ 1 ].worldGroup.getObject() );
+        MainView.addToScene( instance[ 0 ].localGroup.getObject() );
+        MainView.addToScene( instance[ 1 ].localGroup.getObject() );
+
+    }
+
     init( ) {
 
         this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();
         this._registerBasicItems();
 
+        this.instanciate( 'Brush' );
+        this.instanciate( 'Particle' );
+        this.instanciate( 'Water' );
+        this.instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
+
         this._selected[ 0 ] = this._instance.Brush[ 0 ];
         this._selected[ 1 ] = this._instance.Brush[ 1 ];
-
-        //UI._ui.default.home.refresh();
 
         // TODO: Add onEnterChild & onExitChild event trigger.
 
@@ -317,29 +348,7 @@ class ToolModule {
 
     }
 
-    _instanciate( toolID, options ) {
-
-        if ( !( toolID in this._tools ) ) {
-            let errorMsg = 'Tool \'' + toolID + '\' is not registered yet.';
-            throw Error( 'ToolModule._instanciate(): ' + errorMsg );
-        }
-
-        // The user can use two tool at the same time. We need two instances
-        // of each.
-        let instance = new Array( 2 );
-        instance[ 0 ] = new this._tools[ toolID ].Tool( options );
-        instance[ 1 ] = new this._tools[ toolID ].Tool( options );
-        this._instance[ toolID ] = instance;
-
-        // Adds tool's view groups to the root scene and the moving group.
-        MainView.addToMovingGroup( instance[ 0 ].worldGroup.getObject() );
-        MainView.addToMovingGroup( instance[ 1 ].worldGroup.getObject() );
-        MainView.addToScene( instance[ 0 ].localGroup.getObject() );
-        MainView.addToScene( instance[ 1 ].localGroup.getObject() );
-
-    }
-
-    _registerBasicTools( isVR ) {
+    _registerBasicTools() {
 
         this.register( 'Teleporter', {
             Tool: Tool.TeleporterTool
@@ -360,12 +369,6 @@ class ToolModule {
             uiTexture: AssetManager.assets.texture[ 'ui-tool-tree' ],
             Tool: Tool.TreeTool
         } );
-
-        this._instanciate( 'Brush', isVR );
-        this._instanciate( 'Particle' );
-        this._instanciate( 'Water' );
-        this._instanciate( 'Tree' );
-        this._instanciate( 'Particle', Tool.ParticleTool.registeredParticles[ 0 ] );
 
     }
 
