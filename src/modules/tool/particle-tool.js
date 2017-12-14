@@ -27,11 +27,6 @@
 
 import AbstractTool from './abstract-tool';
 import { AssetManager } from '../../utils/asset-manager';
-import ParticleShader from '../../shader/particle/particle-shader';
-import ParticleHelix from '../../shader/particle/particle-helix';
-import PositionUpdate from '../../shader/particle/position-update';
-import PositionHelix from '../../shader/particle/position-helix';
-import VelocityUpdate from '../../shader/particle/velocity-update';
 import BaseShader from '../../shader/particle/base-shader';
 import MainView from '../../view/main-view';
 
@@ -300,15 +295,12 @@ class ParticleEmitter extends THREE.Object3D {
 
 export default class ParticleTool extends AbstractTool {
 
-    constructor( systemType = 'snow' ) {
+    constructor() {
         super();
 
         this.dynamic = true;
 
-        this.options = {};
-        let particleSystemOptions = ParticleTool.registeredParticles[ systemType ];
-        for ( let option in particleSystemOptions )
-            this.options[ option ] = particleSystemOptions[ option ];
+        this.options = ParticleTool.items.snow;
 
         this._thickness = this.options.thickness;
         this._maxEmitters = this.options.maxEmitters;
@@ -318,7 +310,6 @@ export default class ParticleTool extends AbstractTool {
 
         // Initializing particles
         this._particleEmitters = [];
-
         this.initCursorMesh();
 
         // preload a million random numbers
@@ -362,17 +353,11 @@ export default class ParticleTool extends AbstractTool {
         );
         this._cursorMesh.castShadow = false;
         this._cursorMesh.receiveShadow = false;
-        this.worldGroup.addTHREEObject( this._cursorMesh );
+        // this.worldGroup.addTHREEObject( this._cursorMesh );
     }
 
     use( data ) {
         this._updateBrush( data.position.world );
-    }
-
-    onItemChanged( id ) {
-
-        console.log( id );
-
     }
 
     _updateBrush( pointCoords ) {
@@ -395,67 +380,9 @@ export default class ParticleTool extends AbstractTool {
 
     onItemChanged( id ) {
         console.log( 'Changing system to ', id, typeof id );
-        this.currentStroke = id.slice( 0 );
-        console.log( 'currStroke after change', this.currentStroke );
+        this.options = ParticleTool.items[ id.slice( 0 ) ];
+        console.log( 'currStroke after change', id.slice ( 0 ) );
     }
 
 }
 
-ParticleTool.registeredParticles = {
-    snow: {
-        brushSize: 3,
-        thickness: 10,
-        initialParticlesPerEmitter: 20,
-        maxParticlesPerEmitter: 512 * 512,
-        bufferSide: 512,
-        maxEmitters: 20,
-        debugPlane: false,
-        positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-        velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
-        renderingUniforms: {
-            pointMaxSize: { type: 'f', value: 20 },
-            brushSize: { type: 'f', value: 3 } },
-        positionUniforms: {
-            normVelocity: { type:'f', value: 10.0 },
-            lifespanEntropy: { type:'f', value: 0.001 }
-        },
-        renderingShader: ParticleShader,
-        positionUpdate: PositionUpdate,
-        velocityUpdate: VelocityUpdate
-    },
-    spiral: {
-        brushSize: 3,
-        thickness: 10,
-        initialParticlesPerEmitter: 20,
-        maxParticlesPerEmitter: 512 * 512,
-        bufferSide: 512,
-        maxEmitters: 20,
-        debugPlane: false,
-        positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-        velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
-        renderingUniforms: {
-            pointMaxSize: { type: 'f', value: 20 },
-<<<<<<< HEAD
-            brushSize: { type: 'f', value: 3 },
-            rotation: { type:'3f', value: [180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0] }
-        },
-        positionUniforms: {
-            normVelocity: { type:'f', value: 10.0 },
-            lifespanEntropy: { type:'f', value: 0.001 },
-            a: { type:'f', value: 1.0 },
-            b: { type:'f', value: 1.0 }
-        },
-        renderingShader: ParticleHelix,
-=======
-            brushSize: { type: 'f', value: 3 }
-        },
-        positionUniforms: {
-            normVelocity: { type:'f', value: 10.0 },
-            lifespanEntropy: { type:'f', value: 0.001 }
-        },
-        renderingShader: ParticleShader,
->>>>>>> Particles: Add helix position shader for wind effect
-        positionUpdate: PositionHelix,
-        velocityUpdate: VelocityUpdate
-    }
-};
