@@ -1,4 +1,3 @@
-
 /**
 * ArtFlow application
 * https://github.com/artflow-vr/artflow
@@ -62,45 +61,35 @@ module.exports = {
         'uniform vec2 vResolution;',
         'varying vec2 vUv;',
 
-        '#define PI 3.14159265359',
-        'void main( void ) {',
-        '',
-        '	vec2 position = (vUv * 2.0 ) - vec2( 1.0 ); // normalise and translate to center',
-        '	',
-        '	',
-        '	float d = distance( vec2( 0.0 ), position );',
-        '	//float s = 0.15;',
-        '	//d = mod( d, s );',
-        '	//d = step( s * 0.5, d); // step returns 0 if second argument is less than first, 1 otherwise',
-        '',
-        '	',
-        '	float curl = 0.1;',
-        '	float m = 8.0, mm = 0.2, on = 0.5; // twiddle these',
-        '	float tstep = 0.02;',
-        '	float a = atan( position.y, position.x ) / PI / 2.0 + 0.5; // normalised angle',
-        '	a+= d * curl /* comment line from here to go for the true whirly effect */- uTime * tstep;',
-        '	float aa = step( mm * on, mod( a * m, mm ) );',
-        '	aa -= mod( a * m, mm * 4.0 );',
-        '	',
-        '	float b = atan( position.y, position.x ) / PI / 2.0 + 0.5; // normalised angle',
-        '	b-= d * curl - uTime * tstep;',
-        '	float bb = step( mm * on, mod( b * m, mm ) );',
-        '	bb -= mod( b * m, mm * 4.0 );',
-        '	',
-        '	',
-        '	float c = min( aa, bb );',
-        '	//c = aa;',
-        '	',
-        '	if ( d < 0.3 ) c = 0.0;',
-        '',
-        '	gl_FragColor = vec4( vec3( c * 0.2, c * 0.8, c ), 1.0 );',
-        '	gl_FragColor = vec4( vec3( 0.2, 0.7, 1.0 ) * c, 1.0 );',
-        '//	gl_FragColor = vec4( toCol( c, 4.0 ), 1.0 );',
-        '',
+        'float nrand (vec2 co)',
+        '{	',
+        '    float a = fract(cos(co.x * 8.3e-3 + co.y) * 4.7e5);',
+        '       float b = fract(sin(co.x * 0.3e-3 + co.y) * 1.0e5);',
+        '    return a * .5 + b * .5;',
         '}',
-        ''
+
+        'float genstars (float starsize, float density, float intensity, vec2 seed)',
+        '{',
+        '    float rnd = nrand(floor(seed * starsize));',
+        '    float stars = pow(rnd,density) * intensity;',
+        '    return stars;',
+        '}',
+        'vec3 White = vec3(1,1,1);',
+        'void main (void)',
+        '{',
+        '    vec2 offset = vec2(uTime * 8.25,0);',
+        '    ',
+        '    vec2 p = 4.0 * vUv - 1.0;',
+        '    ',
+        '    p *= 350.0;',
+        '        ',
+        '    float intensity = genstars(0.025, 16.0, 2.5, p + offset * 40.);',
+        '    intensity += genstars(0.05, 16.0, 1.5, p + offset * 20.);',
+        '    intensity += genstars(0.10, 16.0, 0.5, p + offset * 10.);',
+        '    ',
+        '    gl_FragColor = vec4(intensity * White, 1);',
+        '}'
 
     ].join( '\n' )
 
 };
-
