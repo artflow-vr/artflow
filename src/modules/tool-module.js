@@ -40,7 +40,6 @@ import ParticleHelix from '../shader/particle/particle-helix';
 import PositionUpdate from '../shader/particle/position-update';
 import PositionHelix from '../shader/particle/position-helix';
 import VelocityUpdate from '../shader/particle/velocity-update';
-import VelocityUpdate2 from '../shader/particle/velocity-update2';
 
 class ToolModule {
 
