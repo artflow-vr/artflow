@@ -128,6 +128,8 @@ class ToolModule {
             return;
         }
 
+        tool = tool.Tool;
+
         // The items object is not yet created, we build it.
         if ( !tool.items )
             tool.items = {};
@@ -215,7 +217,7 @@ class ToolModule {
         this.instanciate( 'Brush' );
         this.instanciate( 'Particle' );
         this.instanciate( 'Water' );
-        this.instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
+        this.instanciate( 'Tree' );
 
         this._selected[ 0 ] = this._instance.Particle[ 0 ];
         this._selected[ 1 ] = this._instance.Particle[ 1 ];
@@ -341,7 +343,6 @@ class ToolModule {
                     let c = this.redoStack.pop();
                     if ( c.clear ) c.clear();
                 }
-
             },
             release: ( data ) => {
 
