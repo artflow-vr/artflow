@@ -172,12 +172,39 @@ class Manager {
                 TEXTURE, this._texturePath, 'particle_raw' )
         );
         promises.push(
+            this.load( 'perlin-512', '.png',
+                TEXTURE, this._texturePath, 'particle_noise' )
+        );
+        promises.push(
             this.load( 'water_normal', '.png', TEXTURE, this._texturePath )
         );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_position' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_velocity' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_position_out' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_velocity_out' )
+        );
 
-        /*
-            Loads UI assets
-        */
+        this._loadUIAssets( promises );
+
+        this._loadUIAssets( promises );
+
+        return Promise.all( promises );
+
+    }
+
+    _loadUIAssets( promises ) {
+
         promises.push(
             this.load( 'ui/background', '.png', TEXTURE, this._texturePath,
                 'ui-background' )
@@ -189,6 +216,10 @@ class Manager {
         promises.push(
             this.load( 'ui/button-hover', '.png', TEXTURE, this._texturePath,
                 'ui-button-hover' )
+        );
+        promises.push(
+            this.load( 'ui/home-icon', '.png', TEXTURE, this._texturePath,
+                'ui-home' )
         );
         promises.push(
             this.load( 'ui/arrow-icon', '.png', TEXTURE, this._texturePath,
@@ -207,9 +238,7 @@ class Manager {
                 'ui-slider-button' )
         );
 
-        /*
-            Loads UI tool textures
-        */
+        // Loads tool textures
         for ( let elt of ['brush', 'particles', 'water', 'tree'] ) {
             promises.push(
                 this.load( 'ui/tools/' + elt + '-icon', '.png',
@@ -217,7 +246,43 @@ class Manager {
             );
         }
 
-        return Promise.all( promises );
+        //
+        // Particle items
+        //
+        promises.push(
+            this.load(
+                'ui/items/brush/unified', '.png',
+                TEXTURE, this._texturePath, 'brush-item-unified'
+            )
+        );
+        promises.push(
+            this.load(
+                'ui/items/brush/confettis', '.png',
+                TEXTURE, this._texturePath, 'confetti-item'
+            )
+        );
+        promises.push(
+            this.load(
+                'ui/items/brush/snow', '.png',
+                TEXTURE, this._texturePath, 'snow-item'
+            )
+        );
+        promises.push(
+            this.load(
+                'ui/items/brush/spiral', '.png',
+                TEXTURE, this._texturePath, 'spiral-item'
+            )
+        );
+
+        //
+        // Tree items
+        //
+        for ( let elt of [ 'bush', 'contextSens', 'cube', 'simple', 'tilt' ] ) {
+            promises.push(
+                this.load( 'ui/items/tree/' + elt, '.png',
+                    TEXTURE, this._texturePath, 'tree-item-' + elt )
+            );
+        }
 
     }
 

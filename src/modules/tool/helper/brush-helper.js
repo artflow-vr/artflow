@@ -43,9 +43,10 @@ export default class BrushHelper {
         this._geometry = null;
         this._vertices = null;
         this._normals = null;
+        this._meshes = [];
         this._uvs = null;
         this._uv = 0;
-        this._delta = 0.05;
+        this._delta = this.options.delta;
         this._axisLock = new THREE.Vector3( 0, 0, -1 );
         this._pointA = new THREE.Vector3( 0, 0, 0 );
         this._pointB = new THREE.Vector3( 0, 0, 0 );
@@ -70,7 +71,8 @@ export default class BrushHelper {
 
         // TOOD: Helper shound not access the object pool directly like this.
         this._material = ToolModule.objectPool.getObject( this.options.materialId );
-        this._material.color.setHex( this.options.color );
+        if ( 'color' in this._material )
+            this._material.color.setHex( this.options.color );
 
     }
 
@@ -108,6 +110,8 @@ export default class BrushHelper {
         mesh.uvs = this._uvs;
         mesh.normals = this._normals;
 
+        this._meshes.push( mesh );
+
         return mesh;
 
     }
@@ -127,7 +131,8 @@ export default class BrushHelper {
 
     setColor( hsv ) {
 
-        this._material.color.setHSL( hsv.h, hsv.s, hsv.v );
+        if ( this._material.color )
+            this._material.color.setHSL( hsv.h, hsv.s, hsv.v );
 
     }
 
