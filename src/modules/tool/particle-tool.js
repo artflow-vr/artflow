@@ -342,6 +342,7 @@ export default class ParticleTool extends AbstractTool {
                 wireframe: true
             } )
         );
+        this._cursorMesh.visible = false;
         this._cursorMesh.castShadow = false;
         this._cursorMesh.receiveShadow = false;
         // this.worldGroup.addTHREEObject( this._cursorMesh );
