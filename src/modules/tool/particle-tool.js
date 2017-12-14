@@ -300,10 +300,16 @@ class ParticleEmitter extends THREE.Object3D {
 
 export default class ParticleTool extends AbstractTool {
 
-    constructor( options ) {
-    super( options );
+    constructor( systemType = 'snow' ) {
+        super();
 
         this.dynamic = true;
+
+        this.options = {};
+        let particleSystemOptions = ParticleTool.registeredParticles[ systemType ];
+        for ( let option in particleSystemOptions )
+            this.options[ option ] = particleSystemOptions[ option ];
+
         this._thickness = this.options.thickness;
         this._maxEmitters = this.options.maxEmitters;
         this._particlesPerEmitter = this.options.initialParticlesPerEmitter;
@@ -387,10 +393,16 @@ export default class ParticleTool extends AbstractTool {
         this._spawnParticleEmitter();
     }
 
+    onItemChanged( id ) {
+        console.log( 'Changing system to ', id, typeof id );
+        this.currentStroke = id.slice( 0 );
+        console.log( 'currStroke after change', this.currentStroke );
+    }
+
 }
 
-ParticleTool.registeredParticles = [
-    {
+ParticleTool.registeredParticles = {
+    snow: {
         brushSize: 3,
         thickness: 10,
         initialParticlesPerEmitter: 20,
@@ -399,12 +411,10 @@ ParticleTool.registeredParticles = [
         maxEmitters: 20,
         debugPlane: false,
         positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-        velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512,
-            new THREE.Color( 0.5, 0.495, 0.5 ) ),
+        velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
         renderingUniforms: {
             pointMaxSize: { type: 'f', value: 20 },
-            brushSize: { type: 'f', value: 3 }
-        },
+            brushSize: { type: 'f', value: 3 } },
         positionUniforms: {
             normVelocity: { type:'f', value: 10.0 },
             lifespanEntropy: { type:'f', value: 0.001 }
@@ -413,7 +423,7 @@ ParticleTool.registeredParticles = [
         positionUpdate: PositionUpdate,
         velocityUpdate: VelocityUpdate
     },
-    {
+    spiral: {
         brushSize: 3,
         thickness: 10,
         initialParticlesPerEmitter: 20,
@@ -422,13 +432,12 @@ ParticleTool.registeredParticles = [
         maxEmitters: 20,
         debugPlane: false,
         positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-        velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512,
-            new THREE.Color( 0.5, 0.495, 0.5 ) ),
+        velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
         renderingUniforms: {
             pointMaxSize: { type: 'f', value: 20 },
 <<<<<<< HEAD
             brushSize: { type: 'f', value: 3 },
-            rotation: { type:'3f', value: [ 180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0 ] }
+            rotation: { type:'3f', value: [180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0] }
         },
         positionUniforms: {
             normVelocity: { type:'f', value: 10.0 },
@@ -449,4 +458,4 @@ ParticleTool.registeredParticles = [
         positionUpdate: PositionHelix,
         velocityUpdate: VelocityUpdate
     }
-];
+};
