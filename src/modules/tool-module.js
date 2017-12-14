@@ -209,7 +209,7 @@ class ToolModule {
         this.instanciate( 'Brush' );
         this.instanciate( 'Particle' );
         this.instanciate( 'Water' );
-        this.instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
+        this.instanciate( 'Tree' );
 
         this._selected[ 0 ] = this._instance.Brush[ 0 ];
         this._selected[ 1 ] = this._instance.Brush[ 1 ];
