@@ -364,7 +364,7 @@ class ToolModule {
         this._instanciate( 'Brush', isVR );
         this._instanciate( 'Particle' );
         this._instanciate( 'Water' );
-        this._instanciate( 'Tree', Tool.TreeTool.registeredBrushes[ 1 ] );
+        this._instanciate( 'Tree' );
         this._instanciate( 'Particle', Tool.ParticleTool.registeredParticles[ 0 ] );
 
     }
@@ -392,6 +392,31 @@ class ToolModule {
             data: 'fractalAnim' // You can pass extra data here
         } );
 
+        //
+        // TREE
+        //
+        this.registerToolItems( 'Tree', {
+            bush: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'bush'
+            },
+            hilbertCube: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'hilbertCube'
+            },
+            contextSensitive: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'contextSensitive'
+            },
+            simpleTree: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'simpleTree'
+            },
+            tiltTree: {
+                uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
+                data: 'tiltTree'
+            }
+        } );
     }
 
 }
