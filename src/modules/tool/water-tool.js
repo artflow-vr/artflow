@@ -76,7 +76,7 @@ export default class WaterTool extends AbstractTool {
         this.dynamic = true;
 
         this.setOptionsIfUndef( {
-            speed: 120,
+            speed: 2,
             color: new THREE.Vector3()
         } );
 
@@ -127,8 +127,10 @@ export default class WaterTool extends AbstractTool {
 
         this._waterGroup.traverse( function ( child ) {
 
-            if ( child instanceof THREE.Mesh )
-                child.material.uniforms.uTime.value += 0.0005;
+            if ( child instanceof THREE.Mesh ) {
+                let uniform = child.material.uniforms.uTime;
+                uniform.value = ( uniform.value + data.delta );
+            }
 
         } );
 
@@ -178,7 +180,7 @@ export default class WaterTool extends AbstractTool {
 
         this._prevMarker = mesh;
 
-        if ( this.test.length === 8 ) {
+        if ( this.test.length === 4 ) {
             let geometry = buildPath( this.test, { uvFactor: 0.5 } );
             let material = WATER_MATERIAL.clone();
             let m = new THREE.Mesh( geometry, material );

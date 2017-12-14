@@ -30,6 +30,7 @@ import { setPropIfUndefined } from 'utils/object';
 const DEFAULT_OPT = {
     uvFactor: 1.0,
     tangentMean: true,
+    smoothNormal: true,
     initLock: new THREE.Vector3( -1, 0, 0 )
 };
 
@@ -215,7 +216,7 @@ export default ( points, options ) => {
 
         }
 
-        meanTangent( points, attrib.tangent );
+        if ( opt.tangentMean ) meanTangent( points, attrib.tangent );
 
         let geometry = new THREE.BufferGeometry();
         for ( let att in attrib ) {

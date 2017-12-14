@@ -292,7 +292,7 @@ class ParticleEmitter extends THREE.Object3D {
 export default class ParticleTool extends AbstractTool {
 
     constructor( options ) {
-    super( options );
+        super( options );
 
         this.dynamic = true;
         this._thickness = this.options.thickness;
@@ -345,6 +345,7 @@ export default class ParticleTool extends AbstractTool {
                 wireframe: true
             } )
         );
+        this._cursorMesh.visible = false;
         this._cursorMesh.castShadow = false;
         this._cursorMesh.receiveShadow = false;
         this.worldGroup.addTHREEObject( this._cursorMesh );
