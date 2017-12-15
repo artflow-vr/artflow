@@ -80,9 +80,13 @@ class Control {
             },
             orientation: new THREE.Quaternion()
         };
-        this._controllerTransform[ 1 ] = Object.assign(
-            {}, this._controllerTransform[ 0 ]
-        );
+        this._controllerTransform[ 1 ] = {
+            position: {
+                local: new THREE.Vector3( 0, 0, 0 ),
+                world: new THREE.Vector3( 0, 0, 0 )
+            },
+            orientation: new THREE.Quaternion()
+        };
 
         this._fpsController = null;
         this._controllers = null;

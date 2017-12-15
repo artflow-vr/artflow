@@ -33,9 +33,12 @@ const SIZE_FACTOR = 0.2;
 
 export default class BrushTool extends AbstractTool {
 
-    constructor( isVR, stroke = 'starsAnim' ) {
+    constructor( options ) {
 
-        super();
+        super( options );
+
+        let isVR = options.isVR || false;
+        let stroke = options.stroke || 'starsAnim';
 
         this.dynamic = true;
         this.registeredStrokes = null;
@@ -80,11 +83,14 @@ export default class BrushTool extends AbstractTool {
 
         this.currentStroke = stroke;
 
+        this._lastHsv = { h: 0.0, s: 0.0, v: 0.0 };
+
     }
 
     onItemChanged( id ) {
 
         this.currentStroke = id;
+        this._updateStrokeData();
 
     }
 
@@ -120,6 +126,16 @@ export default class BrushTool extends AbstractTool {
     setColor( hsv ) {
 
         this.registeredStrokes[ this.currentStroke ].setColor( hsv );
+        Object.assign( this._lastHsv, hsv );
+
+    }
+
+    _updateStrokeData() {
+
+        let stroke = this.registeredStrokes[ this.currentStroke ];
+        stroke._helper.setThickness( this.options.brushThickness );
+
+        stroke.setColor( this._lastHsv );
 
     }
 }

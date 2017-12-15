@@ -215,7 +215,9 @@ class ToolModule {
         this._registerBasicTools();
         this._registerBasicItems();
 
-        this.instanciate( 'Brush' );
+        this.instanciate( 'Brush', {
+            isVR: true
+        } );
         this.instanciate( 'Particle' );
         this.instanciate( 'Water' );
         this.instanciate( 'Tree' );
@@ -327,14 +329,13 @@ class ToolModule {
 
         return {
             use: ( data ) => {
-
+                
                 this._selected[ data.controllerID ].triggerEvent(
                     eventID, data, 'use'
                 );
 
             },
             trigger: ( data ) => {
-                
                 let cmd = this._selected[ data.controllerID ].triggerEvent(
                     eventID, data, 'trigger'
                 );
