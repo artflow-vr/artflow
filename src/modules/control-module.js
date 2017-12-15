@@ -330,7 +330,7 @@ class Control {
         let camera = MainView.getCamera();
 
         this._fpsController = new FPSControls( camera, MainView.getGroup() );
-        this._fpsController.fixedHeight = true;
+        this._fpsController.fixedHeight = false;
         this._fpsController.enabled = false;
 
         let checkPointerLock = 'pointerLockElement' in document ||
@@ -482,6 +482,7 @@ class Control {
 
         position.world.copy( position.local );
         position.world.x -= MainView.getGroup().position.x;
+        position.world.y -= MainView.getGroup().position.y;
         position.world.z -= MainView.getGroup().position.z;
 
     }

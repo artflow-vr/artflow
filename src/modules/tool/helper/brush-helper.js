@@ -38,7 +38,7 @@ export default class BrushHelper {
         this._verticesCount = 0;
         this._normalsCount = 0;
         this._uvCount = 0;
-        this._vboLimit = 10000;
+        this._vboLimit = 50000;
         this._material = null;
         this._geometry = null;
         this._vertices = null;
@@ -81,7 +81,7 @@ export default class BrushHelper {
         this._geometry = new THREE.BufferGeometry();
         this._vertices = new Float32Array( this._vboLimit * 3 * 3 );
         this._normals = new Float32Array( this._vboLimit * 3 * 3 );
-        this._uvs = new Float32Array( this._vboLimit * 2 * 2 );
+        this._uvs = new Float32Array( this._vboLimit * 2 * 3 );
 
         this._geometry.setDrawRange( 0, 0 );
         this._geometry.addAttribute(
@@ -138,7 +138,7 @@ export default class BrushHelper {
 
     addPoint ( pointCoords, orientation, pressureValue ) {
 
-        if ( this._lastPoint.distanceTo( pointCoords ) < this._delta )
+        if ( this._lastPoint.distanceTo( pointCoords ) < this._delta && this._uvs.length >= this._vboLimit )
             return;
 
         let max = this.options.maxSpread;

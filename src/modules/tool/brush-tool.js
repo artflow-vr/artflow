@@ -33,7 +33,7 @@ const SIZE_FACTOR = 0.2;
 
 export default class BrushTool extends AbstractTool {
 
-    constructor( isVR, stroke = 'rainbowAnim' ) {
+    constructor( isVR, stroke = 'starsAnim' ) {
 
         super();
 
@@ -71,14 +71,22 @@ export default class BrushTool extends AbstractTool {
             matrixAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'matrix-shader' } ),
             dongAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'dong-shader', thicknessMult: 2.0 } ),
             fractalAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'fractal-shader' } ),
-            electricAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'electric-shader', thicknessMult: 2.0 } )
+            electricAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'electric-shader', thicknessMult: 2.0 } ),
+            starsAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'stars-shader' } ),
+            blueAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'blue-shader' } ),
+            crypticAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'cryptic-shader' } ),
+            hypergreenAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'hypergreen-shader' } ),
+            rastaAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'rasta-shader' } ),
+            trippyRastaAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'trippy-rasta-shader' } ),
+            voronoiAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'voronoi-shader' } ),
+            waveAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'wave-shader' } )
         };
 
         this.currentStroke = stroke;
 
     }
 
-    setCurrentStroke( id ) {
+    onItemChanged( id ) {
 
         this.currentStroke = id;
 
