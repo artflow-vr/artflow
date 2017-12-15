@@ -214,23 +214,20 @@ class Control {
 
         // This callback is in charge of stopping event propagation
         // if the UI intercept input events.
-        let callback = ( pressed ) => {
-            if ( UI.hover ) {
-                UI.setPressed( pressed );
-                return false;
-            }
+        let triggerCallback = ( ) => {
+            UI.setPressed( true );
+            return !UI.hover;
+        };
+        let releaseCallback = ( ) => {
+            UI.setPressed( false );
             return true;
         };
-        callback.toto = 5;
-        let triggerCallback = callback.bind( true );
-        let releaseCallback = callback.bind( false );
         // We will put the events on the UI as the most important event.
         // UI events have priority 0, meaning they are executed first and
         // can stop propagation to others.
         EventDispatcher.registerFamily( CONTROLLER_TO_ACTION.trigger, {
-                use: triggerCallback,
-                trigger: triggerCallback,
-                release: releaseCallback
+                release: releaseCallback,
+                trigger: triggerCallback
             }, 0
         );
 

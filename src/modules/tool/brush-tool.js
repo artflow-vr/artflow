@@ -38,26 +38,22 @@ export default class BrushTool extends AbstractTool {
         super();
 
         this.dynamic = true;
-
-        //AbstractTool.call( this, null );
-
         this.registeredStrokes = null;
 
-        let self = this;
         this.registerEvent( 'interact', {
-            use: self.use.bind( self ),
-            trigger: self.trigger.bind( self )
+            use: this.use.bind( this ),
+            trigger: this.trigger.bind( this )
         } );
 
         this.registerEvent( 'axisChanged', {
-            use: self.useAxisChanged.bind( self ),
-            release: function() {
-                self._previousY = 0.0;
+            use: this.useAxisChanged.bind( this ),
+            release: () => {
+                this._previousY = 0.0;
             }
         } );
 
         this.registerEvent( 'colorChanged', ( hsv ) => {
-            self.setColor( hsv );
+            this.setColor( hsv );
         } );
 
         this.mesh = null;
@@ -115,7 +111,9 @@ export default class BrushTool extends AbstractTool {
 
         this.options.brushThickness =
             data.controller.sizeMesh.scale.x * SIZE_FACTOR;
-        this._helper.setThickness( this.options.brushThickness );
+
+        let stroke = this.registeredStrokes[ this.currentStroke ];
+        stroke._helper.setThickness( this.options.brushThickness );
 
     }
 

@@ -315,6 +315,8 @@ class UI {
         // Enables/Disables each UI.
         this._traverseUI( ( ui, isItem ) => {
 
+            ui.setPressed( false );
+
             if ( isItem ) {
                 this._hideShowUI( ui, false );
                 return;
@@ -323,7 +325,7 @@ class UI {
             ui.addInput( this._controllers[ nextController ] );
 
         } );
-        setPointerVisibility( this._controllers[ nextController ], true );
+        setPointerVisibility( this._controllers[ nextController ], this._show );
 
         if ( controllerID === this._prevController ) return;
 
@@ -538,11 +540,20 @@ class UI {
 
         if ( !evt.pressed ) return;
 
+        this._traverseUI( ( ui ) => {
+            
+            ui.setPressed( false );
+
+        } );
+
         let itemsUI = this._ui.items[ this._currItemUI ];
         // Hides itemUI
         this._hideShowUI( itemsUI, false );
         // Shows Home UI
         this._hideShowUI( this._ui.home, true );
+
+        // TODO: THIS IS SO GROSS, fix VRUI.
+        this._ui.home.pages[ 0 ]._forceExit();
 
         // Do not forget to set the variable to null to indicate
         // that no items UI is open.
@@ -564,9 +575,19 @@ class UI {
             // Hides Home UI
             this._hideShowUI( this._ui.home, false );
             // Displays items UI
-            this._hideShowUI( this._ui.items[ id ], true );
+            let ui = this._ui.items[ id ];
+            this._hideShowUI( ui, true );
+            if ( this._vr ) {
+                ui.addInput( this._controllers[ controllerID ] );
+                setPointerVisibility( this._controllers[ controllerID ], this._show );
+            }
             this._currItemUI = id;
         }
+        this._traverseUI( ( u ) => {
+            
+            u.setPressed( false );
+
+        } );
 
     }
 
@@ -582,7 +603,6 @@ class UI {
 
     _layoutHoverEnter( object, data ) {
 
-        console.log(object, data);
         if ( !data ) return;
 
         this._lineMeshes[ 0 ].scale.z = data.info.distance;
@@ -628,6 +648,8 @@ class UI {
     _buttonHoverExit( object ) {
 
         this._hoverCursor.material.visible = false;
+        if ( !object.userData.prevScale ) return;
+
         object.group.scale.x = object.userData.prevScale.x;
         object.group.scale.y = object.userData.prevScale.y;
 

@@ -77,7 +77,6 @@ class EventDispatcher {
             if ( events === undefined || events === null ) continue;
 
             for ( let callback of events ) {
-                console.log(callback);
                 let ret = callback( data );
                 stopProp = ret !== undefined && !ret;
             }

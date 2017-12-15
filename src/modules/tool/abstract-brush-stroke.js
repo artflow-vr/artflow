@@ -7,8 +7,6 @@ export default class AbstractBrushStroke {
 
     constructor( isVR, materialId = 'material_with_tex' ) {
 
-        this._helper = null;
-
         this.mesh = null;
 
         this.isVR = isVR;
@@ -34,7 +32,7 @@ export default class AbstractBrushStroke {
     }
 
     use( data ) {
-
+        
         this._helper.addPoint( data.position.world, data.orientation, data.pressure );
 
     }
@@ -54,7 +52,8 @@ export default class AbstractBrushStroke {
 
     setColor( hsv ) {
 
-        this._helper.setColor( hsv );
+        if ( this._helper )
+            this._helper.setColor( hsv );
 
     }
 }

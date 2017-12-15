@@ -138,6 +138,8 @@ export default class BrushHelper {
 
     addPoint ( pointCoords, orientation, pressureValue ) {
 
+        if ( !this._uvs || !this._geometry || !this._vertices ) return;
+
         if ( this._lastPoint.distanceTo( pointCoords ) < this._delta && this._uvs.length >= this._vboLimit )
             return;
 
