@@ -26,8 +26,8 @@
 */
 
 import AbstractTool from './abstract-tool';
-import AddCommand from './command/add-command';
-import BrushHelper from './helper/brush-helper';
+import AbstractBrushStroke from './abstract-brush-stroke';
+import AbstractBrushAnimatedStroke from './brush-strokes/abstract-brush-animated-stroke';
 
 const SIZE_FACTOR = 0.2;
 
@@ -37,47 +37,79 @@ export default class BrushTool extends AbstractTool {
 
         super( options );
 
-        this.registeredBrushes = null;
+        let isVR = options.isVR || false;
+        let stroke = options.stroke || 'starsAnim';
 
-        this.setOptionsIfUndef( BrushTool.registeredBrushes[ 0 ] );
+        this.dynamic = true;
+        this.registeredStrokes = null;
 
-        this._helper = new BrushHelper( this.options );
-
-        let self = this;
         this.registerEvent( 'interact', {
-            use: self.use.bind( self ),
-            trigger: self.trigger.bind( self )
+            use: this.use.bind( this ),
+            trigger: this.trigger.bind( this )
         } );
 
         this.registerEvent( 'axisChanged', {
-            use: self.useAxisChanged.bind( self ),
-            release: function() {
-                self._previousY = 0.0;
+            use: this.useAxisChanged.bind( this ),
+            release: () => {
+                this._previousY = 0.0;
             }
         } );
 
         this.registerEvent( 'colorChanged', ( hsv ) => {
-            this._helper.setColor( hsv );
+            this.setColor( hsv );
         } );
 
         this.mesh = null;
+
+        this.registeredStrokes = {
+            withTex: new AbstractBrushStroke( isVR ),
+            withoutTex: new AbstractBrushStroke( isVR, 'material_without_tex' ),
+            testAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'test-shader' } ),
+            squaresAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 } ),
+            rainbowAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'rainbow-shader', timeModCondition: 3 } ),
+            matrixAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'matrix-shader' } ),
+            dongAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'dong-shader', thicknessMult: 2.0 } ),
+            fractalAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'fractal-shader' } ),
+            electricAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'electric-shader', thicknessMult: 2.0 } ),
+            starsAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'stars-shader' } ),
+            blueAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'blue-shader' } ),
+            crypticAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'cryptic-shader' } ),
+            hypergreenAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'hypergreen-shader' } ),
+            rastaAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'rasta-shader' } ),
+            trippyRastaAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'trippy-rasta-shader' } ),
+            voronoiAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'voronoi-shader' } ),
+            waveAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'wave-shader' } )
+        };
+
+        this.currentStroke = stroke;
+
+        this._lastHsv = { h: 0.0, s: 0.0, v: 0.0 };
+
+    }
+
+    onItemChanged( id ) {
+
+        this.currentStroke = id;
+        this._updateStrokeData();
+
+    }
+
+    update( data ) {
+
+        for ( let s in this.registeredStrokes )
+            this.registeredStrokes[ s ].update( data );
 
     }
 
     use( data ) {
 
-        this._helper.addPoint(
-            data.position.world, data.orientation, data.pressure
-        );
+        this.registeredStrokes[ this.currentStroke ].use( data );
 
     }
 
     trigger() {
 
-        this.mesh = this._helper.createMesh();
-        this.worldGroup.addTHREEObject( this.mesh );
-
-        return new AddCommand( this.worldGroup, this.mesh );
+        this.registeredStrokes[ this.currentStroke ].trigger( this );
 
     }
 
@@ -85,25 +117,25 @@ export default class BrushTool extends AbstractTool {
 
         this.options.brushThickness =
             data.controller.sizeMesh.scale.x * SIZE_FACTOR;
-        this._helper.setThickness( this.options.brushThickness );
+
+        let stroke = this.registeredStrokes[ this.currentStroke ];
+        stroke._helper.setThickness( this.options.brushThickness );
 
     }
 
+    setColor( hsv ) {
+
+        this.registeredStrokes[ this.currentStroke ].setColor( hsv );
+        Object.assign( this._lastHsv, hsv );
+
+    }
+
+    _updateStrokeData() {
+
+        let stroke = this.registeredStrokes[ this.currentStroke ];
+        stroke._helper.setThickness( this.options.brushThickness );
+
+        stroke.setColor( this._lastHsv );
+
+    }
 }
-
-BrushTool.registeredBrushes = [ {
-        maxSpread: 20,
-        brushThickness: 0.1,
-        enablePressure: false,
-        color: 0x808080,
-        materialId: 'material_with_tex'
-    },
-    {
-        maxSpread: 20,
-        brushThickness: 0.5,
-        texture: null,
-        enablePressure: true,
-        color: 0x808080,
-        materialId: 'material_without_tex'
-    }
-];

@@ -84,7 +84,6 @@ export default class ViveController extends THREE.Object3D {
                 value: 0.0,
                 triggerEvent() {
 
-                    self.userData.vrui.pressed = self._gamepad.buttons[ 1 ].pressed;
                     self._triggerValueButton(
                         'trigger', self._gamepad.buttons[ 1 ].value
                     );
@@ -178,7 +177,7 @@ export default class ViveController extends THREE.Object3D {
         let button = this.buttons[ buttonID ];
         button.value = value;
 
-        let newPressed = value >= 0.05;
+        let newPressed = value >= 0.005;
         if ( button.pressed !== newPressed ) {
             this.dispatchEvent( {
                 type: buttonID,

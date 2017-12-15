@@ -138,6 +138,9 @@ class Manager {
 
     _loadRequiredAssets() {
 
+        // Does not return a promise, because the loading is synchronous.
+        this._loadPrimitives();
+
         let promises = [];
 
         promises.push(
@@ -172,12 +175,58 @@ class Manager {
                 TEXTURE, this._texturePath, 'particle_raw' )
         );
         promises.push(
+            this.load( 'perlin-512', '.png',
+                TEXTURE, this._texturePath, 'particle_noise' )
+        );
+        promises.push(
             this.load( 'water_normal', '.png', TEXTURE, this._texturePath )
         );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_position' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_velocity' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_position_out' )
+        );
+        promises.push(
+            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
+                'particle_velocity_out' )
+        );
 
-        /*
-            Loads UI assets
-        */
+        this._loadUIAssets( promises );
+
+        return Promise.all( promises );
+
+    }
+
+
+    /**
+     *
+     * Instanciates basic geometries needed in the whole program.
+     * e.g: cube, plane.
+     *
+     * @param {any} promises
+     * @memberof Manager
+     */
+    _loadPrimitives() {
+
+        this.assets.model.cube = new THREE.BoxGeometry( 1, 1, 1 );
+
+        let line = new THREE.Geometry();
+        line.vertices.push( new THREE.Vector3( 0, 0, 0 ) );
+        line.vertices.push( new THREE.Vector3( 0, 0, - 1 ) );
+
+        this.assets.model.line = line;
+
+    }
+
+    _loadUIAssets( promises ) {
+
         promises.push(
             this.load( 'ui/background', '.png', TEXTURE, this._texturePath,
                 'ui-background' )
@@ -189,6 +238,10 @@ class Manager {
         promises.push(
             this.load( 'ui/button-hover', '.png', TEXTURE, this._texturePath,
                 'ui-button-hover' )
+        );
+        promises.push(
+            this.load( 'ui/home-icon', '.png', TEXTURE, this._texturePath,
+                'ui-home' )
         );
         promises.push(
             this.load( 'ui/arrow-icon', '.png', TEXTURE, this._texturePath,
@@ -207,9 +260,7 @@ class Manager {
                 'ui-slider-button' )
         );
 
-        /*
-            Loads UI tool textures
-        */
+        // Loads tool textures
         for ( let elt of ['brush', 'particles', 'water', 'tree'] ) {
             promises.push(
                 this.load( 'ui/tools/' + elt + '-icon', '.png',
@@ -217,7 +268,176 @@ class Manager {
             );
         }
 
-        return Promise.all( promises );
+        //
+        // Brush items
+        //
+        promises.push(
+            this.load(
+                'ui/items/brush/unified', '.png',
+                TEXTURE, this._texturePath, 'brush-item-unified'
+            )
+        );
+        promises.push(
+            this.load(
+                'ui/items/brush/confettis', '.png',
+                TEXTURE, this._texturePath, 'confetti-item'
+            )
+        );
+        promises.push(
+            this.load(
+                'ui/items/brush/snow', '.png',
+                TEXTURE, this._texturePath, 'snow-item'
+            )
+        );
+        promises.push(
+            this.load(
+                'ui/items/brush/spiral', '.png',
+                TEXTURE, this._texturePath, 'spiral-item'
+            )
+        );
+
+        //
+        // Tree items
+        //
+        for ( let elt of [ 'bush', 'contextSens', 'cube', 'simple', 'tilt' ] ) {
+            promises.push(
+                this.load( 'ui/items/tree/' + elt, '.png',
+                    TEXTURE, this._texturePath, 'tree-item-' + elt )
+            );
+        }
+
+        promises.push(
+            this.load(
+                'ui/items/brush/rainbow', '.png',
+                TEXTURE, this._texturePath, 'brush-item-rainbow'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/rainbow', '.png',
+                TEXTURE, this._texturePath, 'brush-item-rainbow'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/square', '.png',
+                TEXTURE, this._texturePath, 'brush-item-squares'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/wave', '.png',
+                TEXTURE, this._texturePath, 'brush-item-wave'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/blue', '.png',
+                TEXTURE, this._texturePath, 'brush-item-blue'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/matrix', '.png',
+                TEXTURE, this._texturePath, 'brush-item-matrix'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/fractal', '.png',
+                TEXTURE, this._texturePath, 'brush-item-fractal'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/lightning', '.png',
+                TEXTURE, this._texturePath, 'brush-item-electric'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/stars', '.png',
+                TEXTURE, this._texturePath, 'brush-item-stars'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/spiral', '.png',
+                TEXTURE, this._texturePath, 'brush-item-cryptic'
+            )
+        );
+
+        /*promises.push(
+            this.load(
+                'ui/items/brush/baianat', '.png',
+                TEXTURE, this._texturePath, 'brush-item-blue'
+            )
+        );*/
+
+        /*promises.push(
+            this.load(
+                'ui/items/brush/epic_coders', '.png',
+                TEXTURE, this._texturePath, 'brush-item-wave'
+            )
+        );*/
+
+        /*promises.push(
+            this.load(
+                'ui/items/brush/freepik_2', '.png',
+                TEXTURE, this._texturePath, 'brush-item-stars'
+            )
+        );*/
+
+        promises.push(
+            this.load(
+                'ui/items/brush/freepik_6', '.png',
+                TEXTURE, this._texturePath, 'brush-item-void'
+            )
+        );
+
+        promises.push(
+            this.load(
+                'ui/items/brush/rasta', '.png',
+                TEXTURE, this._texturePath, 'brush-item-trippy-rasta'
+            )
+        );
+
+        /*promises.push(
+            this.load(
+                'ui/items/brush/nikita_golubev', '.png',
+                TEXTURE, this._texturePath, 'brush-item-hyper-green'
+            )
+        );*/
+
+        /*promises.push(
+            this.load(
+                'ui/items/brush/nikita_golubev', '.png',
+                TEXTURE, this._texturePath, 'brush-item-rasta'
+            )
+        );*/
+
+        /*promises.push(
+            this.load(
+                'ui/items/brush/nikita_golubev', '.png',
+                TEXTURE, this._texturePath, 'brush-item-electric'
+            )
+        );*/
+
+        /*promises.push(
+            this.load(
+                'ui/items/brush/smash_icons_3', '.png',
+                TEXTURE, this._texturePath, 'brush-item-voronoi'
+            )
+        );*/
 
     }
 

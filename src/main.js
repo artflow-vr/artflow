@@ -49,7 +49,7 @@ class Main {
 
     }
 
-    init( w, h ) {
+    init( w, h, callback ) {
 
         this._renderer.setPixelRatio( window.devicePixelRatio );
         this._renderer.setSize( w, h );
@@ -69,7 +69,7 @@ class Main {
                     this._renderer.vr.setDevice( display );
 
                     ModuleManager.vr = true;
-                    this._initData( w, h );
+                    this._initData( w, h, callback );
 
                 } );
 
@@ -79,7 +79,7 @@ class Main {
                 document.body.appendChild(
                     WebVR.getMessageContainer( message )
                 );
-                this._initData( w, h );
+                this._initData( w, h, callback );
 
             } );
 
@@ -125,13 +125,15 @@ class Main {
 
     }
 
-    _initData( w, h ) {
+    _initData( w, h, callback ) {
 
         MainView.init( w, h, this._renderer, ModuleManager.vr );
         ModuleManager.init();
 
         this.resize( w, h );
         this._renderer.animate( this._animate.bind( this ) );
+
+        if ( callback ) callback( Artflow.modules, MainView );
 
     }
 

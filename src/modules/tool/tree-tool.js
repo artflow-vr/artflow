@@ -32,13 +32,14 @@ import { LSystem } from '../../utils/l-system';
 
 class State {
 
-    constructor( pos, angle, step , orientation, pressure ) {
+    constructor( pos, hlu /*, angle, step , orientation, pressure*/ ) {
 
         this.pos = pos;
-        this.angle = angle;
-        this.step = step;
-        this.orientation = orientation;
-        this.pressure = pressure;
+        this.hlu = hlu;
+        //this.angle = angle;
+        //this.step = step;
+        //this.orientation = orientation;
+        //this.pressure = pressure;
 
     }
 
@@ -55,24 +56,34 @@ class Tree {
             this.helper.setColor( hsv );
         }
 
+        this.curIdx = 0;
+        this.newMesh = false;
+        this.needPoint = false;
+        this.time = 0;
+
     }
 
-    init( data, angle, step, str ) {
+    init( data, lSysID /*angle, step, str, speed */ ) {
+
+        let m = new THREE.Matrix3();
+        m.set( 0, -1, 0,
+               1, 0, 0,
+               0, 0, 1 );
 
         this.pushState(
-            data.position.world, Math.PI / 2, step, data.orientation,
-            data.pressure
+            data.position.world, m /*, angle, step, data.orientation, data.pressure */
         );
-        this.angle = angle;
-        this.step = step;
-        this.str = str;
+
+        this.lSysID = lSysID;
+        this.ori = data.orientation.clone();
+        this.pres = data.pressure;
 
     }
 
-    pushState( pos, angle, step, orientation, pressure ) {
+    pushState( pos, hlu /*, angle, step, orientation, pressure*/ ) {
 
         let state = new State(
-            pos.clone(), angle, step, orientation.clone(), pressure
+            pos.clone(), hlu.clone() /*, angle, step, orientation.clone(), pressure */
         );
         this.states.push( state );
 
@@ -93,19 +104,18 @@ class Tree {
 
 export default class TreeTool extends AbstractTool {
 
-    constructor( options ) {
+    constructor() {
 
-        super( options );
-
-        this.registeredBrushes = null;
-
-        this.setOptionsIfUndef( options, {
+        super( {
             maxSpread: 20,
             brushThickness: 0.1,
+            texture: null,
             enablePressure: true,
-            color: 0x808080,
+            color: 0x45220a,
             materialId: 'material_without_tex'
         } );
+
+        this.dynamic = true;
 
         this.registerEvent( 'interact', {
             trigger: this.trigger.bind( this ),
@@ -118,36 +128,97 @@ export default class TreeTool extends AbstractTool {
 
         this._hsv = null;
 
-        //this._lSystem = new LSystem( '--F[+F][-F[-F]F]F[+F][-F]', '' );
-        //this._lSystem = new LSystem( 'F-F-F-F-F', 'F->F-F+F+FF-F-F+F' );
 
-        this.axiom = 'X';
+        this.lSystems = {};
 
-        this.grammar = `X->F[+X][-X]FX
-                        F->FF`;
+        this.lSystems.bush = new LSystem(
+            'A',
+            `A->[&FLA]\/\/\/\/\/[&FLA]\/\/\/\/\/\/\/[&FLA]
+             F->S\/\/\/\/\/F
+             S->F`,
+            22.5 / 180.0 * Math.PI,
+            7,
+            0.1,
+            0.5
+        );
 
-        this._lSystem = new LSystem( this.axiom, this.grammar );
+        this.lSystems.hilbertCube = new LSystem(
+            'A',
+            `A->B-F+CFC+F-D&F^D-F+&&CFC+F+B\/\/
+             B->A&F^CFB^F^D^^-F-D^|F^B|FC^F^A\/\/
+             C->|D^|F^B-F+C^F^A&&FA&F^C+F+B^F^D\/\/
+             D->|CFB-F+B|FA&F^A&&FB-F+B|FC\/\/`,
+             Math.PI / 2.0,
+             2,
+             0.5,
+             1
+        );
 
-        this._str = this._lSystem.derivate( 3 );
+        this.lSystems.contextSensitive = new LSystem(
+            'F',
+            `F->F[-EF]E[+F]
+             F<E->F[&F][^F]`,
+             25.0 / 180.0 * Math.PI,
+             4,
+             0.1,
+             1
+        );
 
-        this.step = 0.25;
+        this.lSystems.simpleTree = new LSystem(
+            'X',
+            `X->F[+X][-X]FX
+             F->FF`,
+             25.7 / 180.0 * Math.PI,
+             5,
+             0.1,
+             1
+        );
 
-        this.angle = ( 25.7 / 360 ) * 2 * Math.PI;
+        this.lSystems.tiltTree = new LSystem(
+            'F',
+            'F->FF-[-F+F+F]+[+F-F-F]',
+            22.5 / 180.0 * Math.PI,
+            3,
+            0.1,
+            1
+        );
+
+        this._changeTree( 'simpleTree' );
 
         this.interpretations = {
             'F': this.drawForward.bind( this ),
             'f': this.moveForward.bind( this ),
-            '+': this.turnLeft.bind( this ),
-            '-': this.turnRight.bind( this ),
+            '+': this.turnLeft.bind( this, 1.0 ),
+            '-': this.turnLeft.bind( this, -1.0 ),
+            '&': this.turnDown.bind( this, 1.0 ),
+            '^': this.turnDown.bind( this, -1.0 ),
+            '\\': this.rollLeft.bind( this, 1.0 ),
+            '/': this.rollLeft.bind( this, -1.0 ),
+            '|': this.turnAround.bind( this ),
             '[': this.pushState.bind( this ),
             ']': this.popState.bind( this )
         };
 
         this.trees = [];
+
     }
+
+    _changeTree( treeID ) {
+
+        this._lSysID = treeID;
+        this.lSystems[ treeID ].derivate();
+        //this._str = this._lSystem.derivate();
+        //this.angle = this._lSystem.defaultAngle;
+        //this.step = this._lSystem.defaultStep;
+        //this.speed = this._lSystem.defaultSpeed;
+
+    }
+
 
     trigger() {
 
+        if ( this.trees.length >= 3 ) return;
+        this._triggered = true;
         let tree = new Tree( this.options, this._hsv );
         this.trees.push( tree );
         this._addMesh( tree );
@@ -156,12 +227,38 @@ export default class TreeTool extends AbstractTool {
 
     release( data ) {
 
+        if ( !this._triggered ) return;
+
+        this._triggered = false;
         let tree = this.trees[ this.trees.length - 1 ];
+
         if ( !tree ) return;
 
-        tree.init( data, this.angle, this.step, this._str );
+        tree.init( data, this._lSysID );
+        //tree.init( data, this.angle, this.step, this._str, this.speed );
         this._draw( tree );
-        this._interpretSbs( tree, 0 );
+
+    }
+
+    update( data ) {
+
+        let toRemove = [];
+
+        for ( let i = 0; i < this.trees.length; ++i ) {
+            if ( this._interpretNext( i, data.delta ) )
+                toRemove.push( i );
+        }
+
+        for ( let i of toRemove ) {
+          if ( this.trees[ i ].needPoint ) this._draw( this.trees[ i ] );
+          this.trees.splice( i, 1 );
+        }
+
+    }
+
+    onItemChanged( itemID ) {
+
+        this._changeTree( itemID );
 
     }
 
@@ -169,51 +266,47 @@ export default class TreeTool extends AbstractTool {
 
         let mesh = tree.helper.createMesh();
         this.worldGroup.addTHREEObject( mesh );
-        //return new AddCommand( this.worldGroup, mesh );
+        return new AddCommand( this.worldGroup, mesh );
 
     }
 
-    //_interpret( tree ) {
+    _interpretNext( treeIdx, delta ) {
 
-        //for ( let i = 0; i < tree.str.length; ++i ) {
-            //let newMesh = i + 1 < tree.str.length
-                          //&& tree.str[ i + 1 ].symbol !== ']'
-                          //&& tree.str[ i + 1 ].symbol !== '[';
-            //let clbk = this.interpretations[ tree.str[ i ].symbol ];
-            //if ( clbk ) {
-                //clbk( tree, newMesh );
-            //}
-        //}
+        let tree = this.trees[ treeIdx ];
 
-        //this.trees.pop();
+        if ( tree.lSysID === undefined ) return false;
+        //if ( !tree || !tree.str ) return false;
 
-    //}
+        tree.time += delta * 100.0;
 
-    _interpretSbs( tree, i ) {
+        let speed = this.lSystems[ tree.lSysID ].defaultSpeed;
 
-        if ( i >= tree.str.length ) {
-            this.trees.slice( this.trees.indexOf( tree ) );
-            return;
-        }
+        if ( !( tree.time / speed ) ) return false;
+        //if ( !( tree.time / tree.speed ) ) return false;
 
-        let newMesh = i + 1 < tree.str.length
-                      && tree.str[ i + 1 ].symbol !== ']'
-                      && tree.str[ i + 1 ].symbol !== '[';
-        let clbk = this.interpretations[ tree.str[ i ].symbol ];
+        tree.time %= speed;
+        //tree.time %= tree.speed;
 
-        if ( clbk ) {
-            clbk( tree, newMesh );
-        }
+        let i = tree.curIdx;
 
-        setTimeout( this._interpretSbs.bind( this, tree, i + 1 ), 3 );
+        let str = this.lSystems[ tree.lSysID ].resAxiom;
+        let clbk = this.interpretations[ str[ i ].symbol ];
+        if ( clbk ) clbk( tree );
+
+        return ++tree.curIdx >= str.length;
 
     }
 
     _movePos( tree ) {
 
         let state = tree.peekState();
-        state.pos.x += state.step * Math.cos( state.angle );
-        state.pos.y += state.step * Math.sin( state.angle );
+        state.pos.x += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 0 ];
+        state.pos.y += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 1 ];
+        state.pos.z += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 2 ];
+
+        //state.pos.x += state.step * state.hlu.elements[ 0 ];
+        //state.pos.y += state.step * state.hlu.elements[ 1 ];
+        //state.pos.z += state.step * state.hlu.elements[ 2 ];
 
     }
 
@@ -221,76 +314,123 @@ export default class TreeTool extends AbstractTool {
 
         let state = tree.peekState();
         tree.helper.addPoint(
-            state.pos, state.orientation, state.pressure
+            state.pos, tree.ori, tree.pres
         );
+        tree.needPoint = false;
 
     }
 
     drawForward( tree ) {
 
+        if ( tree.newMesh ) {
+            this._addMesh( tree );
+            this._draw( tree );
+            tree.newMesh = false;
+        } else if ( tree.needPoint ) {
+          this._draw( tree );
+        }
+
         this._movePos( tree );
-        this._draw( tree );
 
     }
 
     moveForward( tree ) {
 
-        this._addMesh( tree );
+        tree.newMesh = true;
         this._movePos( tree );
 
     }
 
-    turnLeft( tree ) {
+    _updateAngle( tree, rmat ) {
 
-        tree.peekState().angle -= tree.angle;
+        tree.needPoint = true;
+        tree.peekState().hlu.multiply( rmat );
 
     }
 
-    turnRight( tree ) {
+    _getRuMatrix( angle ) {
 
-       tree.peekState().angle += tree.angle;
+        let m = new THREE.Matrix3();
+        let c = Math.cos( angle );
+        let s = Math.sin( angle );
+
+        m.set(
+            c, s, 0,
+            -s, c, 0,
+            0, 0, 1
+        );
+
+        return m;
+
     }
 
-    pushState( tree, newMesh ) {
+    turnLeft( sign, tree ) {
+
+        let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
+        //let a = tree.peekState().angle * sign;
+        let m = this._getRuMatrix( a );
+        this._updateAngle( tree, m );
+
+    }
+
+    turnAround( tree ) {
+
+        let m = this._getRuMatrix( Math.PI );
+        this._updateAngle( tree, m );
+
+    }
+
+
+    turnDown( sign, tree ) {
+
+        let m = new THREE.Matrix3();
+        let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
+        //let a = sign * tree.peekState().angle;
+        let c = Math.cos( a );
+        let s = Math.sin( a );
+
+        m.set(
+            c, 0, -s,
+            0, 1, 0,
+            s, 0, c
+        );
+
+        this._updateAngle( tree, m );
+    }
+
+    rollLeft( sign, tree ) {
+
+        let m = new THREE.Matrix3();
+        let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
+        //let a = sign * tree.peekState().angle;
+        let c = Math.cos( a );
+        let s = Math.sin( a );
+
+        m.set(
+            1, 0, 0,
+            0, c, -s,
+            0, s, c
+        );
+
+        this._updateAngle( tree, m );
+    }
+
+    pushState( tree ) {
 
         let state = tree.peekState();
         tree.pushState(
-            state.pos, state.angle, state.step, state.orientation,
-            state.pressure
+            state.pos, state.hlu /*, state.angle, state.step, state.orientation,
+            state.pressure */
         );
-
-        if ( newMesh ) {
-            this._addMesh( tree );
-            this._draw( tree );
-        }
 
     }
 
-    popState( tree, newMesh ) {
+    popState( tree ) {
 
+        if ( tree.needPoint ) this._draw( tree );
         tree.popState();
-
-        if ( newMesh ) {
-            this._addMesh( tree );
-            this._draw( tree );
-        }
+        tree.newMesh = true;
 
     }
 }
 
-TreeTool.registeredBrushes = [ {
-        maxSpread: 20,
-        brushThickness: 0.5,
-        enablePressure: false,
-        color: 0x808080,
-        materialId: 'material_with_tex'
-    },
-    {
-        maxSpread: 20,
-        brushThickness: 0.5,
-        texture: null,
-        enablePressure: true,
-        color: 0x808080,
-        materialId: 'material_without_tex'
-    }
-];

@@ -1,11 +1,31 @@
 import VRUI from 'vr-ui';
 
-import ColorUtils from '../utils/color';
+import MainView from './main-view';
 import EventDispatcher from '../utils/event-dispatcher';
 
 const INIT_POINTER_LEN = 3.5;
+
 const GUI_WIDTH = 0.4; // In Three.js units.
 const GUI_HEIGHT = 0.4; // In Three.js units
+
+const DEFAULT_HOME_POS = new THREE.Vector3( 0, 0.5, -0.2 );
+const DEFAULT_COLOR_POS = new THREE.Vector3( 0.75, 0.5, 0.5 );
+const DEFAULT_COLOR_POS_VR = new THREE.Vector3( 0.25, 0.5, 0.0 );
+
+const GUI_FACTOR_NO_VR = 4.0;
+
+const GRID_ID = 'elementGrid';
+const TOOL_GRID_SIZE = { columns: 4, rows: 3 };
+const ITEMS_GRID_SIZE = { columns: 3, rows: 3 };
+
+const HOVER_GEOM = new THREE.PlaneGeometry( 1, 1 );
+
+const HOVER_MATERIAL = new THREE.MeshBasicMaterial( {
+    color: 0xFFFFFF,
+    opacity: 1.0,
+    transparent: true,
+    visible: false
+} );
 
 let setPointerVisibility = ( element, visibility ) => {
     let child = null;
@@ -19,27 +39,49 @@ class UI {
 
     constructor() {
 
-        this._currPage = 0;
+        // This variable allows us to know if *any* of all the UI
+        // is targeted by the cursor.
+        // This is really important to stop event propagation.
+        this.hover = false;
+
+        this._vr = null;
         this._textures = null;
-        this._homeUIs = [];
-        this._colorUI = null;
+
+        // Contains all the UI's:
+        //  * Home: contains the tools
+        //  * Color: contains the color wheel
+        //  * Items: contains the VRUI *for each* tool
+        this._ui = {
+            home: null,
+            color: null,
+            items: {}
+        };
+        this._dimensions = { width: 0.0, height: 0.0 };
+        this._templates = {
+            home: null,
+            items: null,
+            color: null
+        };
 
         this._show = false;
         this._pagesGroup = new THREE.Group();
         this._pagesGroup.name = 'ui';
+
+        // This variable allows us to quickly hide an item UI, without
+        // having to loop through every UI. When no item UI is currently open,
+        // this variable has a null value.
+        this._currItemUI = null;
 
         this._prevController = null;
         this._controllers = null;
 
         // Cache reference toward each line making the pointer mesh.
         // This allows to avoid retrieving them at each update.
-        this._lineMeshes = new Array( 2 );
-        this._tipMeshes = new Array( 2 );
+        this._lineMeshes = null;
+        this._tipMeshes = null;
 
         this._hoverContainer = null;
         this._hoverCursor = null;
-
-        this._vr = false;
 
         // Cache refrences to data extracted from the UI.
         // This alow to avoid instanciating temporary values, that are often
@@ -50,154 +92,242 @@ class UI {
 
     init( textures, controllers ) {
 
-        let expectedTex = [
-            'background', 'arrowLeft', 'buttonBackground', 'buttonHover'
-        ];
-        for ( let elt of expectedTex ) {
-            if ( !textures[ elt ] ) {
-                let warnMsg = 'no `' + elt + '\' texture provided.';
-                console.warn( 'UI.createToolsUI(): ' + warnMsg );
-            }
-        }
-
-        this._textures = textures;
-        this.triggerShow = this._triggerShowNOVR;
-
-        this._hoverCursor = new THREE.Mesh( new THREE.PlaneGeometry( 1, 1 ),
-            new THREE.MeshBasicMaterial( {
-                color: 0xFFFFFF,
-                opacity: 1.0,
-                transparent: true,
-                map: textures.buttonHover,
-                visible: false
-            } )
-        );
-
         this._vr = controllers !== undefined && controllers !== null;
+        this._textures = textures;
+        this._templates.home = this._createPageTemplate( TOOL_GRID_SIZE, true );
+        this._templates.items = this._createPageTemplate( ITEMS_GRID_SIZE );
+        this._templates.color = this._createColorTemplate( );
+
+        this._dimensions.width = GUI_WIDTH;
+        this._dimensions.height = GUI_HEIGHT;
+
+        // We activate the callback for laser pointer only when using
+        // VR controllers.
+        let colorPos = DEFAULT_COLOR_POS;
         if ( this._vr ) {
             this._initControllers( controllers );
+            // Changes the function pointer at init time.
             this.triggerShow = this._triggerShowVR;
+
+            let enterCallback = this._layoutHoverEnter.bind( this );
+            let exitCallback = this._layoutHoverExit.bind( this );
+
+            this._templates.home.onHoverEnter( enterCallback )
+                                .onHoverExit( exitCallback );
+            this._templates.color.onHoverEnter( enterCallback )
+                                 .onHoverExit( exitCallback );
+            colorPos = DEFAULT_COLOR_POS_VR;
+        } else {
+            // Changes the function pointer at init time.
+            this.triggerShow = this._triggerShowNOVR;
+            // Changes the size of the GUI because camera is not as close
+            // to the objects in Non-VR as in VR.
+            this._dimensions.width *= GUI_FACTOR_NO_VR;
+            this._dimensions.height *= GUI_FACTOR_NO_VR;
+            // If we are not in VR, we will hack to position the UI in the world,
+            // close to the origin. This is nice just to see how ArtFlow works,
+            // and does not provide a good experience.
+            MainView._group.add( this._pagesGroup );
+            this._pagesGroup.position.x = 0.0;
+            this._pagesGroup.position.y = 2.0;
+            this._pagesGroup.position.z = 0.0;
         }
 
-        // Creates the initial UI page.
-        this._createToolsUI();
+        // Color UI.
+        this._ui.color = new VRUI.VRUI( {
+            width: this._dimensions.width,
+            height: this._dimensions.height
+        } , this._templates.color );
 
-        // Creates the Color UI
-        this._colorUI = this._createColorUI( textures );
-        this._colorUI.refresh();
-        this._colorUI.root.group.rotation.y = - Math.PI / 2.0;
-        this._colorUI.root.group.position.x = 0.25;
-        this._colorUI.root.group.position.z = -0.2;
-        this._colorUI.root.group.position.y = 0.5;
-        this._pagesGroup.add( this._colorUI.root.group );
+        this._ui.color.pageGroup.rotation.y = - Math.PI / 2.0;
+        this._ui.color.pageGroup.position.set(
+            colorPos.x, colorPos.y, colorPos.z
+        );
+
+        this._traverseUI( ( ui ) => {
+
+            if ( !ui ) return;
+
+            if ( !this._vr ) {
+                ui.enableMouse( MainView._camera, MainView._renderer );
+                ui.pages[ 0 ].setVisible( true );
+            }
+
+            ui.refresh();
+
+            // Adds each UI to the `pageGroup' variable.
+            this._pagesGroup.add( ui.pageGroup );
+
+        } );
+
+        // Creates the cursor used hover the UI.
+        HOVER_MATERIAL.map = textures.buttonHover;
+        this._hoverCursor = new THREE.Mesh( HOVER_GEOM, HOVER_MATERIAL );
 
     }
 
     update() {
 
-        this._colorUI.update();
-        this._homeUIs[ this._currPage ].update();
+        this.hover = false;
+        this._traverseUI( ( ui ) => {
+
+            this.hover = this.hover || ( ui.update() !== null );
+
+        } );
 
     }
 
-    addTool( toolID, toolTexture, toolBackground, callback ) {
+    addTool( tool, background, callback ) {
 
-        if ( !toolTexture ) {
-            let warnMsg = 'provided texture is undefined.';
-            console.warn( 'UI.addTool(): ' + warnMsg );
-            return;
-        }
+        let toolID = tool.id;
+        let texture = tool.data.uiTexture;
+        let homeGUI = this._ui.home;
 
-        let GUI = this._homeUIs[ this._homeUIs.length - 1 ];
-        if ( !GUI ) {
-            let warnMsg = 'you have to create a UI before using addTool';
-            console.warn( 'UI.addTool(): ' + warnMsg );
-            return;
-        }
+        let events = {
+            enter: this._buttonHoverEnter.bind( this ),
+            exit: this._buttonHoverExit.bind( this ),
+            change: this._homeToolChanged.bind( this, callback )
+        };
 
-        let button = new VRUI.view.ImageButton( toolTexture, {
+        this._ui.home = this._add( toolID, homeGUI, {
+            background: background,
+            button: texture
+        }, events );
+
+    }
+
+    addToolItem( toolID, item, background, callback ) {
+
+        let texture = item.data.uiTexture;
+        let events = {
+            change: ( object, evt ) => {
+                let controllerID = 0;
+                if ( this._vr ) controllerID = ( this._prevController + 1 ) % 2;
+                callback( item.id, controllerID, evt );
+            }
+        };
+
+        let itemsUI = this._ui.items[ toolID ];
+        let ui = this._add(
+            item.id, itemsUI, { background: background, button: texture },
+            events, true
+        );
+
+        // Shows the items UI only if it was previously visible.
+        let show = this._show && !this._ui.home.enabled;
+        this._hideShowUI( ui, show );
+
+        this._ui.items[ toolID ] = ui;
+
+    }
+
+    setPressed( trigger ) {
+
+        this._traverseUI( ( ui ) => {
+
+            ui.setPressed( trigger );
+
+        } );
+
+    }
+
+    _add( id, ui, textures, events, isItem ) {
+
+        let button = new VRUI.view.ImageButton( {
+            innerMaterial: textures.button
+        }, {
             height: 0.7,
             aspectRatio: 1.0,
-            padding: { top: 0.1, bottom: 0.1, left: 0.1, right: 0.1 },
-            background: toolBackground
+            background: textures.background
         } );
-        button.userData.id = toolID;
-        button.onHoverEnter( this._buttonHoverEnter.bind( this ) );
-        button.onHoverExit( this._buttonHoverExit.bind( this ) );
-        button.onChange( ( object, evt ) => {
+        button.userData.id = id;
 
-            let controllerID = ( this._prevController + 1 ) % 2;
-            callback( toolID, controllerID, evt );
+        if ( events.enter )
+            button.onHoverEnter( events.enter );
+        if ( events.exit )
+            button.onHoverExit( events.exit );
+        if ( events.change )
+            button.onChange( events.change );
 
-        } );
-
-        // Adds the button to the GUI GridLayout.
-        // If the GridLayout is full, this creates a new page (so a new GUI).
-        let nbElts = GUI.root._elements[ 0 ]._elements.length;
-        let maxElts = GUI.root._elements[ 0 ].nbRows * GUI.root._elements[ 0 ].nbColumns;
-        if ( nbElts === maxElts ) {
-            GUI = this._createToolsUI( this._textures );
-            this._homeUIs.push( GUI );
-            // Hides added page
-            GUI.root.group.traverse ( function ( child ) {
-                if ( child instanceof THREE.Mesh ) {
-                    child.visible = false;
-                }
+        let outUi = ui;
+        // We are attempting to add a button inside the UI, but it has not
+        // been created yet, we create it!
+        if ( !outUi ) {
+            let template = isItem ? this._templates.items : this._templates.home;
+            outUi = new VRUI.VRUI( {
+                width: this._dimensions.width,
+                height: this._dimensions.height,
+                mode: { template: template }
             } );
+            outUi.pageGroup.position.set(
+                DEFAULT_HOME_POS.x, DEFAULT_HOME_POS.y, DEFAULT_HOME_POS.z
+            );
+            // Adds the newly created UI to the UI group.
+            this._pagesGroup.add( outUi.pageGroup );
+
+            // If we are not in VR, we have to force the UI to use
+            // the mouse.
+            if ( !this._vr )
+                outUi.enableMouse( MainView._camera, MainView._renderer );
         }
 
-        let grid = GUI.root._elements[ 0 ];
-        grid.add( button );
+        outUi.add( button, GRID_ID );
+        outUi.refresh();
+        return outUi;
 
     }
 
     /*
         The `_triggerShowNOVR()` and `_triggerShowVR()` method are bound
         when calling the `init()` method.
-        It avoids checking each time the method is called, whether we are in
+        It avoids checking each time which method to call, whether we are in
         VR or not.
     */
 
     _triggerShowNOVR() {
 
         this._show = !this._show;
-        if ( this._show ) {
-            this._pagesGroup.traverse ( function ( child ) {
-                if ( child instanceof THREE.Mesh ) child.visible = true;
-            } );
-            return;
-        }
         this._pagesGroup.traverse ( function ( child ) {
-            if ( child instanceof THREE.Mesh ) child.visible = false;
+
+            if ( child instanceof THREE.Mesh ) child.visible = this._show;
+
         } );
 
     }
 
     _triggerShowVR( controllerID ) {
-
-        this._show = !this._show;
-        if ( !this._show ) {
-            this._pagesGroup.traverse ( function ( child ) {
-                if ( child instanceof THREE.Mesh ) child.visible = false;
-            } );
-            this._homeUIs[ this._currPage ].enabled = false;
-            this._colorUI.enabled = false;
-            setPointerVisibility( this._controllers[ 0 ], false );
-            setPointerVisibility( this._controllers[ 1 ], false );
-            return;
-        }
-
         // Re-displays the UI, and reactivate the input with the opposite
         // controller.
         let nextController = ( controllerID + 1 ) % 2;
-        this._pagesGroup.traverse ( function ( child ) {
-            if ( child instanceof THREE.Mesh ) child.visible = true;
+
+        setPointerVisibility( this._controllers[ 0 ], false );
+        setPointerVisibility( this._controllers[ 1 ], false );
+
+        this._show = !this._show;
+
+        // Shows/Hides all UIs by simply showing/hidding the group.
+        this._pagesGroup.traverse ( ( child ) => {
+
+            if ( child instanceof THREE.Mesh ) child.visible = this._show;
+
         } );
-        this._homeUIs[ this._currPage ].enabled = true;
-        this._homeUIs[ this._currPage ].addInput( this._controllers[ nextController ] );
-        this._colorUI.enabled = true;
-        this._colorUI.addInput( this._controllers[ nextController ] );
-        setPointerVisibility( this._controllers[ nextController ], true );
+
+        // Enables/Disables each UI.
+        this._traverseUI( ( ui, isItem ) => {
+
+            ui.setPressed( false );
+            // TODO: THIS IS SO GROSS, fix VRUI.
+            ui.pages[ 0 ]._forceExit();
+
+            if ( isItem ) {
+                this._hideShowUI( ui, false );
+                return;
+            }
+            this._hideShowUI( ui, this._show );
+            ui.addInput( this._controllers[ nextController ] );
+
+        } );
+        setPointerVisibility( this._controllers[ nextController ], this._show );
 
         if ( controllerID === this._prevController ) return;
 
@@ -207,6 +337,7 @@ class UI {
             this._prevController = controllerID;
             return;
         }
+
 
         let prevController = this._controllers[ this._prevController ];
         // Removes the UI from the previous controller
@@ -250,11 +381,13 @@ class UI {
 
         // Keeps track of the pointer meshes, in order to show / hide
         // them more efficiently.
+        this._lineMeshes = new Array( 2 );
         this._lineMeshes[ 0 ] = line0;
         this._lineMeshes[ 1 ] = line1;
 
         // Keeps track of the tip meshes, in order to change their material
         // more efficiently.
+        this._tipMeshes = new Array( 2 );
         this._controllers[ 0 ].traverse( ( elt ) => {
             if ( elt.name === 'tip' ) this._tipMeshes[ 0 ] = elt;
         } );
@@ -264,112 +397,108 @@ class UI {
 
     }
 
-    _createToolsUI() {
+    _createPageTemplate( gridData, isHome ) {
 
         let textures = this._textures;
-        let homeUI = this._createHomeUI( textures.background );
-        homeUI.root.add(
-            this._createArrowLine( textures.arrowLeft, textures.buttonBackground )
-        );
-        homeUI.root.group.position.z = -0.2;
-        homeUI.root.group.position.y = 0.5;
+        let gridInfo = gridData || { columns: 1, rows: 1 };
 
-        this._homeUIs.push( homeUI );
-        this._pagesGroup.add( homeUI.root.group );
+        // Clone the texture to make a symetry for left arrow.
+        let rightArrowTex = textures.arrowLeft;
+        let leftArrowTex = rightArrowTex.clone();
+        leftArrowTex.needsUpdate = true;
+        leftArrowTex.wrapS = THREE.RepeatWrapping;
+        leftArrowTex.repeat.x = - 1;
 
-    }
-
-    _createArrowLine( rightTex, leftTexBackground ) {
-
-        let layout = new VRUI.layout.HorizontalLayout( {
-            height: 0.2,
-            background: null,
-            align: 'bottom'
+        // Creates parent layout, containing the Grid Layout and the
+        // Horizontal Layout.
+        let parentLayout = new VRUI.layout.VerticalLayout( null, {
+            background: textures.background,
+            padding: { top: 0.05, bottom: 0.18 }
         } );
 
-        let leftTex = rightTex.clone();
-        leftTex.needsUpdate = true;
-        leftTex.wrapS = THREE.RepeatWrapping;
-        leftTex.repeat.x = - 1;
-
-        let leftArrow = new VRUI.view.ImageButton( leftTex, {
-            height: 0.45,
-            width: 0.1,
-            position: 'left',
-            margin: { left: 0.1 },
-            padding: { top: 0.08, bottom: 0.08, left: 0.01, right: 0.01 },
-            background: leftTexBackground
-        } );
-
-        let rightArrow = new VRUI.view.ImageButton( rightTex, {
-            height: 0.45,
-            width: 0.1,
-            position: 'right',
-            margin: { right: 0.1 },
-            padding: { top: 0.08, bottom: 0.08, left: 0.01, right: 0.01 },
-            background: leftTexBackground
-        } );
-
-        layout.add( leftArrow, rightArrow );
-        return layout;
-
-    }
-
-    _createHomeUI ( background ) {
-
-        let layout = new VRUI.layout.VerticalLayout( {
-            background: background,
-            padding: {
-                top: 0.05
-            }
-        } )
-        .onHoverEnter( this._layoutHoverEnter.bind( this ) )
-        .onHoverExit( this._layoutHoverExit.bind( this ) );
-
+        // Creates the Grid Layout containing each ImageButton.
         let gridLayout = new VRUI.layout.GridLayout( {
-            height: 0.8,
-            columns: 4,
-            rows: 3,
-            hspace: 0.0,
-            vspace: 0.0
+            id: GRID_ID, columns: gridInfo.columns, rows: gridInfo.rows
         }, {
             position: 'left',
-            padding: {
-                left: 0.1,
-                right: 0.1,
-                top: 0.1,
-                bottom: 0.1
-            }
+            padding: { left: 0.1, right: 0.1, top: 0.1 }
         } );
 
-        layout.add( gridLayout );
-        return new VRUI.VRUI( layout, GUI_WIDTH, GUI_HEIGHT );
+        // Creates the Horizontal Layout at the bottom containg the
+        // previous & next page buttons.
+        let bottomLayout = new VRUI.layout.HorizontalLayout(
+            null,
+            {
+                height: 0.2,
+                padding: { left: 0.1, right: 0.1 }
+            }
+        );
 
+        // Creates previous and next buttons for the bottom layout.
+        let button = new VRUI.view.ImageButton(
+            { innerMaterial: leftArrowTex },
+            {
+                height: 0.5, aspectRatio: 1.0, position: 'left',
+                background: textures.buttonBackground
+            }
+        );
+        let button2 = new VRUI.view.ImageButton(
+            { innerMaterial: rightArrowTex },
+            {
+                height: 0.5, aspectRatio: 1.0, position: 'right',
+                background: textures.buttonBackground
+            }
+        );
+
+        if ( !isHome ) {
+            button.onChange( this._arrowButtonChanged.bind( this, true ) );
+            button2.onChange( this._arrowButtonChanged.bind( this, false ) );
+        }
+
+        // Adds both buttons to the layout
+        bottomLayout.add( button );
+        // Adds Grid Layout and Horizontal Layout to the parent layout.
+        parentLayout.add( gridLayout, bottomLayout );
+
+        if ( !isHome ) {
+            let homeButton = new VRUI.view.ImageButton(
+                { innerMaterial: textures.home },
+                {
+                    height: 1.0, aspectRatio: 1.0, position: 'left',
+                    margin: { left: 0.32, bottom: 0.05 },
+                    background: textures.buttonBackground
+                }
+            ).onChange( this._homeButtonChanged.bind( this ) );
+            bottomLayout.add( homeButton );
+        }
+
+        bottomLayout.add( button2 );
+        // The template is now complete!
+        return parentLayout;
     }
 
-    _createColorUI( textures ) {
+    _createColorTemplate() {
 
-        let layout = new VRUI.layout.VerticalLayout( {
-            background: textures.background,
-            padding: { top: 0.06 }
-        } )
-        .onHoverEnter( this._layoutHoverEnter.bind( this ) )
-        .onHoverExit( this._layoutHoverExit.bind( this ) );
+        let textures = this._textures;
+        let layout = new VRUI.layout.VerticalLayout( null, {
+            background: textures.background, padding: { top: 0.06 }
+        } );
 
-        let wheel = new VRUI.view.ImageButton( textures.colorWheel, {
-            height: 0.65,
-            aspectRatio: 1.0
+        let wheel = new VRUI.view.ImageButton( {
+            innerMaterial: textures.colorWheel
+        }, {
+            height: 0.65, aspectRatio: 1.0
         } )
         .onChange( ( object, data ) => {
 
-            if ( data.pressed ) {
-                let x = data.info.uv.x - 0.5;
-                let y = data.info.uv.y - 0.5;
-                this._hsv.s = ( Math.sqrt( x * x + y * y ) * 2.0 );
-                let angle = ( 180.0 * Math.atan2( y, x ) ) / Math.PI;
-                this._hsv.h = ( ( angle + 300.0 ) % 360.0 ) / 360;
-                this._updateColor( this._hsv );
-            }
+            if ( !data.pressed ) return;
+
+            let x = data.info.uv.x - 0.5;
+            let y = data.info.uv.y - 0.5;
+            this._hsv.s = ( Math.sqrt( x * x + y * y ) * 2.0 );
+            let angle = ( 180.0 * Math.atan2( y, x ) ) / Math.PI;
+            this._hsv.h = ( ( angle + 300.0 ) % 360.0 ) / 360;
+            this._updateColor( this._hsv );
 
         } );
 
@@ -377,10 +506,9 @@ class UI {
             background: textures.slider,
             handle: textures.sliderButton
         }, {
-            align: 'bottom',
-            height: 0.2,
-            width: 0.85
-        } ).onChange( ( object, data ) => {
+            align: 'bottom', height: 0.2, width: 0.85
+        } )
+        .onChange( ( object, data ) => {
 
             this._hsv.v = 1.0 - data.value;
             this._updateColor( this._hsv );
@@ -388,7 +516,7 @@ class UI {
         } );
 
         layout.add( wheel, slider );
-        return new VRUI.VRUI( layout, GUI_WIDTH, GUI_HEIGHT );
+        return layout;
 
     }
 
@@ -400,17 +528,85 @@ class UI {
 
     _updateColor( ) {
 
+        EventDispatcher.dispatch( 'colorChange', this._hsv );
+        if ( !this._tipMeshes ) return;
+
         let controller = ( this._prevController + 1 ) % 2;
         this._tipMeshes[ controller ].material.color.setHSL(
             this._hsv.h, this._hsv.s, this._hsv.v
         );
-        EventDispatcher.dispatch( 'colorChange', this._hsv );
+
+    }
+
+    _homeButtonChanged( object, evt ) {
+
+        if ( !evt.pressed ) return;
+
+        this._traverseUI( ( ui ) => {
+
+            ui.setPressed( false );
+
+        } );
+
+        let itemsUI = this._ui.items[ this._currItemUI ];
+        // Hides itemUI
+        this._hideShowUI( itemsUI, false );
+        // Shows Home UI
+        this._hideShowUI( this._ui.home, true );
+
+        // TODO: THIS IS SO GROSS, fix VRUI.
+        this._ui.home.pages[ 0 ]._forceExit();
+
+        // Do not forget to set the variable to null to indicate
+        // that no items UI is open.
+        this._currItemUI = null;
+
+    }
+
+    _homeToolChanged( callback, object, evt ) {
+
+        let id = object.userData.id;
+
+        let controllerID = 0;
+        if ( this._vr ) controllerID = ( this._prevController + 1 ) % 2;
+
+        callback( id, controllerID, evt );
+
+        // Display the items UI if the tool support it.
+        if ( id in this._ui.items ) {
+            // Hides Home UI
+            this._hideShowUI( this._ui.home, false );
+            // Displays items UI
+            let ui = this._ui.items[ id ];
+            this._hideShowUI( ui, true );
+            if ( this._vr ) {
+                ui.addInput( this._controllers[ controllerID ] );
+                setPointerVisibility( this._controllers[ controllerID ], this._show );
+            }
+            this._currItemUI = id;
+        }
+        this._traverseUI( ( u ) => {
+
+            u.setPressed( false );
+
+        } );
+
+    }
+
+    _arrowButtonChanged( isLeft ) {
+
+        let ui = this._ui.items[ this._currItemUI ];
+        if ( isLeft )
+            ui.prevPage();
+        else
+            ui.nextPage();
 
     }
 
     _layoutHoverEnter( object, data ) {
 
         if ( !data ) return;
+
         this._lineMeshes[ 0 ].scale.z = data.info.distance;
         this._lineMeshes[ 1 ].scale.z = data.info.distance;
 
@@ -454,8 +650,35 @@ class UI {
     _buttonHoverExit( object ) {
 
         this._hoverCursor.material.visible = false;
+        if ( !object.userData.prevScale ) return;
+
         object.group.scale.x = object.userData.prevScale.x;
         object.group.scale.y = object.userData.prevScale.y;
+
+    }
+
+    _hideShowUI( ui, trigger ) {
+
+        ui.pageGroup.traverse ( function ( child ) {
+
+            if ( child instanceof THREE.Mesh )
+                child.visible = trigger;
+
+        } );
+        ui.enabled = trigger;
+
+    }
+
+    _traverseUI( callback ) {
+
+        // ArtFlow will not change on this. We do not need to over engineer,
+        // we can hardcode the traversal.
+
+        // Applies on home UI.
+        callback( this._ui.home );
+        callback( this._ui.color );
+        // Items UI traversal.
+        for ( let k in this._ui.items ) callback( this._ui.items[ k ], true );
 
     }
 

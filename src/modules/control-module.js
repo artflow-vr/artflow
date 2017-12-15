@@ -37,6 +37,30 @@ let AssetManager = Utils.AssetManager;
 let FPSControls = Controller.FPSControls;
 let ViveController = Controller.ViveController;
 
+const ACTIONS = {
+    trigger: 'interact',
+    menu: 'menu'
+};
+
+/**
+ * Maps known command event from keyboard, mouse, or VR Headset controllers
+ * to custom Artflow events. This structure allows to use a single pipeline
+ * for all actions.
+ */
+const MOUSE_TO_ACTION = {
+    0: 'interact', // Left click
+    2: 'thumbpad' // Right click
+};
+
+const CONTROLLER_TO_ACTION = {
+    thumbpad: 'thumbpad',
+    trigger: 'interact',
+    triggerdown: 'interactDown',
+    triggerup: 'interactUp',
+    axisChanged: 'axisChanged',
+    menu: 'menu'
+};
+
 class Control {
 
     constructor( ) {
@@ -73,48 +97,15 @@ class Control {
 
         this._HTMLView = null;
 
-        /**
-         * Maps known command event from keyboard, mouse, or
-         * VR Headset controllers to custom Artflow events.
-         * This structure allows to use a single pipeline for all actions.
-         */
-        this._mouseToAction = {
-            0: 'interact', // Left click
-            2: 'thumbpad' // Right click
-        };
-
-        this._controllerToAction = {
-            thumbpad: 'thumbpad',
-            trigger: 'interact',
-            triggerdown: 'interactDown',
-            triggerup: 'interactUp',
-            axisChanged: 'axisChanged',
-            menu: 'menu'
-        };
-
     }
 
     init( vr ) {
-
-        this.vr = vr;
-        // If VR is activated, we will registers other events,
-        // display meshes for controllers, etc...
-        if ( this.vr ) {
-            this._initVRControllers();
-            this._registerControllerEvents();
-            this.update = this._updateVR;
-        } else {
-            this._initKeyboardMouse();
-            this._registerKeyboardMouseEvents();
-            this.update = this._updateNOVR;
-            MainView.getCamera().position.y = 1.5;
-            MainView.backgroundView.toggleVisibility( true );
-        }
 
         // Creates the UI and add initial offsets.
         // The UI will grow when new item will be registered.
         let uiTextures = {
             background: AssetManager.assets.texture[ 'ui-background' ],
+            home: AssetManager.assets.texture[ 'ui-home' ],
             arrowLeft: AssetManager.assets.texture[ 'ui-arrow-left' ],
             buttonBackground: AssetManager.assets.texture[ 'ui-button-back' ],
             buttonHover: AssetManager.assets.texture[ 'ui-button-hover' ],
@@ -122,19 +113,36 @@ class Control {
             slider: AssetManager.assets.texture[ 'ui-slider' ],
             sliderButton: AssetManager.assets.texture[ 'ui-slider-button' ]
         };
-        UI.init( uiTextures, this.vr ? this._controllers : null );
 
-        // Registers event for menu openning
-        EventDispatcher.registerFamily(
-            'menu', {
-                trigger: function( data ) {
-                   UI.triggerShow( data.controllerID );
-                }
-            }
-        );
+        this.vr = vr;
+        // If VR is activated, we will registers other events,
+        // display meshes for controllers, etc...
+        if ( this.vr ) {
+            this._updateBody = this._updateVR;
+            this._initVRControllers();
+            this._registerControllerEvents();
+            UI.init( uiTextures, this._controllers );
+        } else {
+            this._updateBody = this._updateNOVR;
+            this._initKeyboardMouse();
+            this._registerKeyboardMouseEvents();
+            MainView.getCamera().position.y = 1.5;
+            MainView.backgroundView.toggleVisibility( true );
+            UI.init( uiTextures, null );
+        }
+        this._initUI( this.vr );
 
-        // UI._homeUIs[ 0 ].root.group.rotation.x = Math.PI * 0.5;
-        // MainView.controllers[ 0 ].add( UI._homeUIs[ 0 ].root.group );
+    }
+
+    update( data ) {
+
+        // Updates the UI inputs
+        UI.update();
+
+        // Updates:
+        // VR: Controllers, controller events, etc...
+        // NON-VR: FPS Camera, mouse orientation, etc...
+        this._updateBody( data );
 
     }
 
@@ -173,9 +181,6 @@ class Control {
         position1.world.x -= MainView.getGroup().position.x;
         position1.world.z -= MainView.getGroup().position.z;
 
-        // Updates the UI inputs
-        UI.update();
-
     }
 
     _updateNOVR( data ) {
@@ -193,6 +198,46 @@ class Control {
                 pressure: 0.5
             } );
         }
+
+    }
+
+    _initUI( vr ) {
+
+        if ( !vr ) {
+            let callback = () => {
+                return !UI.hover;
+            };
+            EventDispatcher.registerFamily( CONTROLLER_TO_ACTION.trigger, {
+                use: callback,
+                trigger: callback,
+                release: callback
+            }, 0 );
+
+            return;
+        }
+
+        // This callback is in charge of stopping event propagation
+        // if the UI intercept input events.
+        let triggerCallback = ( ) => {
+            UI.setPressed( true );
+            return !UI.hover;
+        };
+        let releaseCallback = ( ) => {
+            UI.setPressed( false );
+            return true;
+        };
+        // We will put the events on the UI as the most important event.
+        // UI events have priority 0, meaning they are executed first and
+        // can stop propagation to others.
+        EventDispatcher.registerFamily( CONTROLLER_TO_ACTION.trigger, {
+                release: releaseCallback,
+                trigger: triggerCallback,
+                use: () => {
+                    UI.setPressed( false );
+                    return !UI.hover;
+                }
+            }, 0
+        );
 
     }
 
@@ -244,11 +289,13 @@ class Control {
     _registerControllerEvents() {
 
         let self = this;
+
+
         let registerEventForController = ( cID, evt ) => {
 
             self._controllers[ cID ].addEventListener( evt, function ( data ) {
 
-                let eventID = self._controllerToAction[ evt ];
+                let eventID = CONTROLLER_TO_ACTION[ evt ];
                 if ( data.status )
                     eventID += data.status;
 
@@ -267,10 +314,19 @@ class Control {
 
         };
 
-        for ( let elt in this._controllerToAction ) {
+        // We start by registering events on both controllers. We will
+        // use the event dispatcher of Three.js, that will call our
+        // dispatcher to send global events.
+        for ( let elt in CONTROLLER_TO_ACTION ) {
             registerEventForController( 0, elt );
             registerEventForController( 1, elt );
         }
+
+        // We can start to listen to the menu event, which is not related
+        // to any tool.
+        EventDispatcher.register( CONTROLLER_TO_ACTION.menu + 'Down', ( data ) => {
+                UI.triggerShow( data.controllerID );
+        } );
 
     }
 
@@ -279,8 +335,11 @@ class Control {
         let camera = MainView.getCamera();
 
         this._fpsController = new FPSControls( camera, MainView.getGroup() );
-        this._fpsController.fixedHeight = true;
+        this._fpsController.fixedHeight = false;
         this._fpsController.enabled = false;
+
+        // By defaults, the screen is locked, so no events should be dipatched.
+        EventDispatcher.enabled = false;
 
         let checkPointerLock = 'pointerLockElement' in document ||
             'mozPointerLockElement' in document ||
@@ -299,6 +358,8 @@ class Control {
 
             MainView.backgroundView.toggleVisibility( !this._pointerLocked );
             this._fpsController.enabled = this._pointerLocked;
+
+            EventDispatcher.enabled = this._pointerLocked;
 
         };
         document.addEventListener( 'pointerlockchange', pointLockEvent, false );
@@ -325,7 +386,7 @@ class Control {
 
         document.addEventListener( 'mousedown', ( event ) => {
 
-            let eventID = this._mouseToAction[ event.button ];
+            let eventID = MOUSE_TO_ACTION[ event.button ];
             this._mouseUseEvent = eventID;
 
             EventDispatcher.dispatch( eventID + 'Down', {
@@ -338,7 +399,7 @@ class Control {
         }, false );
         document.addEventListener( 'mouseup', ( event ) => {
 
-            let eventID = this._mouseToAction[ event.button ];
+            let eventID = MOUSE_TO_ACTION[ event.button ];
             this._mousedown = false;
             this._mouseUseEvent = null;
 
@@ -363,6 +424,7 @@ class Control {
                     EventDispatcher.dispatch( 'redo' );
                     break;
                 case 65:
+                case 81:
                     this._fpsController.left = true;
                     break; // A
                 case 68:
@@ -379,9 +441,12 @@ class Control {
                     break; // Z
             }
         }, false );
+
         document.addEventListener( 'keyup', ( event ) => {
+
             switch ( event.keyCode ) {
                 case 65:
+                case 81:
                     this._fpsController.left = false;
                     break; // A
                 case 68:
@@ -420,13 +485,14 @@ class Control {
         if ( this._mouseUseEvent === 'interact' ) {
             MainView.getCamera().getWorldDirection( this._pointerDirection );
             position.local.copy( this._pointerDirection );
-            position.local.multiplyScalar( 5.0 );
+            position.local.multiplyScalar( 3.0 );
         } else {
             MainView.getCamera().getWorldPosition( position.local );
         }
 
         position.world.copy( position.local );
         position.world.x -= MainView.getGroup().position.x;
+        position.world.y -= MainView.getGroup().position.y;
         position.world.z -= MainView.getGroup().position.z;
 
     }
