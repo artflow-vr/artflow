@@ -10,6 +10,7 @@ const GUI_HEIGHT = 0.4; // In Three.js units
 
 const DEFAULT_HOME_POS = new THREE.Vector3( 0, 0.5, -0.2 );
 const DEFAULT_COLOR_POS = new THREE.Vector3( 0.75, 0.5, 0.5 );
+const DEFAULT_COLOR_POS_VR = new THREE.Vector3( 0.25, -0.2, 0.5 );
 
 const GUI_FACTOR_NO_VR = 4.0;
 
@@ -93,7 +94,6 @@ class UI {
 
         this._vr = controllers !== undefined && controllers !== null;
         this._textures = textures;
-
         this._templates.home = this._createPageTemplate( TOOL_GRID_SIZE, true );
         this._templates.items = this._createPageTemplate( ITEMS_GRID_SIZE );
         this._templates.color = this._createColorTemplate( );
@@ -103,6 +103,7 @@ class UI {
 
         // We activate the callback for laser pointer only when using
         // VR controllers.
+        let colorPos = DEFAULT_COLOR_POS;
         if ( this._vr ) {
             this._initControllers( controllers );
             // Changes the function pointer at init time.
@@ -115,6 +116,7 @@ class UI {
                                 .onHoverExit( exitCallback );
             this._templates.color.onHoverEnter( enterCallback )
                                  .onHoverExit( exitCallback );
+            colorPos = DEFAULT_COLOR_POS_VR;
         } else {
             // Changes the function pointer at init time.
             this.triggerShow = this._triggerShowNOVR;
@@ -139,7 +141,7 @@ class UI {
 
         this._ui.color.pageGroup.rotation.y = - Math.PI / 2.0;
         this._ui.color.pageGroup.position.set(
-            DEFAULT_COLOR_POS.x, DEFAULT_COLOR_POS.y, DEFAULT_COLOR_POS.z
+            colorPos.x, colorPos.y, colorPos.z
         );
 
         this._traverseUI( ( ui ) => {
@@ -294,7 +296,6 @@ class UI {
     }
 
     _triggerShowVR( controllerID ) {
-
         // Re-displays the UI, and reactivate the input with the opposite
         // controller.
         let nextController = ( controllerID + 1 ) % 2;
@@ -305,19 +306,24 @@ class UI {
         this._show = !this._show;
 
         // Shows/Hides all UIs by simply showing/hidding the group.
-        this._pagesGroup.traverse ( function ( child ) {
+        this._pagesGroup.traverse ( ( child ) => {
 
             if ( child instanceof THREE.Mesh ) child.visible = this._show;
 
         } );
 
         // Enables/Disables each UI.
-        this._traverseUI( ( ui ) => {
+        this._traverseUI( ( ui, isItem ) => {
 
-            ui.enabled = this._show;
+            if ( isItem ) {
+                this._hideShowUI( ui, false );
+                return;
+            }
+            this._hideShowUI( ui, this._show );
             ui.addInput( this._controllers[ nextController ] );
 
         } );
+        setPointerVisibility( this._controllers[ nextController ], true );
 
         if ( controllerID === this._prevController ) return;
 
@@ -327,6 +333,7 @@ class UI {
             this._prevController = controllerID;
             return;
         }
+
 
         let prevController = this._controllers[ this._prevController ];
         // Removes the UI from the previous controller
@@ -560,7 +567,9 @@ class UI {
 
     _layoutHoverEnter( object, data ) {
 
+        console.log(object, data);
         if ( !data ) return;
+
         this._lineMeshes[ 0 ].scale.z = data.info.distance;
         this._lineMeshes[ 1 ].scale.z = data.info.distance;
 
@@ -630,7 +639,7 @@ class UI {
         callback( this._ui.home );
         callback( this._ui.color );
         // Items UI traversal.
-        for ( let k in this._ui.items ) callback( this._ui.items[ k ] );
+        for ( let k in this._ui.items ) callback( this._ui.items[ k ], true );
 
     }
 

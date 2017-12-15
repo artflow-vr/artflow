@@ -38,7 +38,8 @@ let FPSControls = Controller.FPSControls;
 let ViveController = Controller.ViveController;
 
 const ACTIONS = {
-    trigger: 'interact'
+    trigger: 'interact',
+    menu: 'menu'
 };
 
 /**
@@ -202,7 +203,7 @@ class Control {
             let callback = () => {
                 return !UI.hover;
             };
-            EventDispatcher.registerFamily( ACTIONS.trigger, {
+            EventDispatcher.registerFamily( CONTROLLER_TO_ACTION.trigger, {
                 use: callback,
                 trigger: callback,
                 release: callback
@@ -220,13 +221,13 @@ class Control {
             }
             return true;
         };
+        callback.toto = 5;
         let triggerCallback = callback.bind( true );
         let releaseCallback = callback.bind( false );
-
         // We will put the events on the UI as the most important event.
         // UI events have priority 0, meaning they are executed first and
         // can stop propagation to others.
-        EventDispatcher.registerFamily( ACTIONS.trigger, {
+        EventDispatcher.registerFamily( CONTROLLER_TO_ACTION.trigger, {
                 use: triggerCallback,
                 trigger: triggerCallback,
                 release: releaseCallback
@@ -318,7 +319,7 @@ class Control {
 
         // We can start to listen to the menu event, which is not related
         // to any tool.
-        EventDispatcher.register( ACTIONS.menu + 'Down', ( data ) => {
+        EventDispatcher.register( CONTROLLER_TO_ACTION.menu + 'Down', ( data ) => {
                 UI.triggerShow( data.controllerID );
         } );
 
