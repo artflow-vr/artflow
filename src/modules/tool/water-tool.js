@@ -82,8 +82,11 @@ export default class WaterTool extends AbstractTool {
             color: new THREE.Vector3()
         } );
 
-        let geometry = new THREE.PlaneBufferGeometry( 2, 2 );
-        THREE.BufferGeometryUtils.computeTangents( geometry );
+        let cubeGeom = AssetManager.assets.model.cube;
+        this._wireframe = new THREE.Mesh( cubeGeom, MARKER_MATERIAL.clone() );
+        this._wireframe.scale.set( MARKER_SCALE.x, MARKER_SCALE.y, MARKER_SCALE.z );
+        this._wireframe.material.wireframe = true;
+        this._wireframe.material.needsUpdate = true;
 
         // Contains the spline drawn by the user. Whenever the drawing is ready,
         // this will be deleted.
@@ -95,6 +98,7 @@ export default class WaterTool extends AbstractTool {
         this.worldGroup.addTHREEObject( this._splineGroup );
         this.worldGroup.addTHREEObject( this._waterGroup );
 
+        this.localGroup.addTHREEObject( this._wireframe );
         // Contains a reference to the previous marked added. This is used
         // to link them with a visual line.
         this._prevMarker = null;
@@ -108,6 +112,10 @@ export default class WaterTool extends AbstractTool {
 
         this.registerEvent( 'interact', {
             trigger: this.trigger.bind( this )
+        } );
+
+        this.registerEvent( 'axisChanged', {
+            use: this.useAxisChanged.bind( this )
         } );
 
         this.test = [];
@@ -144,6 +152,15 @@ export default class WaterTool extends AbstractTool {
 
     }
 
+    use ( data ) {
+
+        let localPos = data.position.local;
+
+        this._wireframe.orientation.applyQuaternion( data.orientation );
+        this._wireframe.position.set( localPos.x, localPos.y, localPos.z );
+
+    }
+
     trigger( data ) {
 
         this.test.push( {
@@ -153,7 +170,7 @@ export default class WaterTool extends AbstractTool {
 
         // Adds a new marker to the group.
         let mesh = new THREE.Mesh( AssetManager.assets.model.cube, MARKER_MATERIAL );
-        mesh.scale.set( MARKER_SCALE, MARKER_SCALE, MARKER_SCALE );
+        mesh.scale.set( MARKER_SCALE_VR, MARKER_SCALE_VR, MARKER_SCALE_VR );
         mesh.position.set(
             data.position.world.x, data.position.world.y, data.position.world.z
         );
@@ -182,7 +199,7 @@ export default class WaterTool extends AbstractTool {
 
         this._prevMarker = mesh;
 
-        if ( this.test.length === 4 ) {
+        if ( this.test.length === 8 ) {
             let geometry = buildPath( this.test, { uvFactor: 0.5 } );
             let material = WATER_MATERIAL.clone();
             let m = new THREE.Mesh( geometry, material );
@@ -210,17 +227,15 @@ export default class WaterTool extends AbstractTool {
         }
     }
 
+    useAxisChanged( data ) {
+        
+        //data.controller.sizeMesh.scale.x * 1.0;
+        let val = data.controller.sizeMesh.scale.x;
+        let scale = this._wireframe.scale;
+        this._wireframe.scale.set( val, scale.y, scale.z );
+        
+    }
+
     release() {}
 
 }
-
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////// REGISTERED SUBTOOLS /////////////////////////////
-
-WaterTool.items = {
-
-    plane: {
-        uiTexture: ''
-    }
-
-};

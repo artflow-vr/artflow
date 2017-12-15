@@ -41,7 +41,7 @@ let createLockPoints = ( point, initQuat, outAxisLock, outA, outB ) => {
     outAxisLock.z = initQuat.z;
 
     outAxisLock.applyQuaternion( point.orientation );
-    outAxisLock.multiplyScalar( 0.5 );
+    outAxisLock.multiplyScalar( 0.1 );
 
     outA.set( point.coords.x, point.coords.y, point.coords.z );
     outB.set( point.coords.x, point.coords.y, point.coords.z );

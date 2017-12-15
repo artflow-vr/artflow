@@ -64,7 +64,6 @@ export default class BrushHelper {
         this._verticesCount = 0;
         this._normalsCount = 0;
         this._uvCount = 0;
-
         this._vboLimit = INIT_VBO_LIMIT;
 
         this._material = null;
@@ -105,7 +104,6 @@ export default class BrushHelper {
         this._material = data.material || this._material;
 
         this._geometry = new THREE.BufferGeometry();
-
         this._vertices = new Float32Array( this._vboLimit * 3 );
         this._normals = new Float32Array( this._vboLimit * 3 );
         this._uvs = new Float32Array( this._vboLimit * 2 );

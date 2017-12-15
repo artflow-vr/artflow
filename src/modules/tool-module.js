@@ -222,8 +222,8 @@ class ToolModule {
         this.instanciate( 'Water' );
         this.instanciate( 'Tree' );
 
-        this._selected[ 0 ] = this._instance.Brush[ 0 ];
-        this._selected[ 1 ] = this._instance.Brush[ 1 ];
+        this._selected[ 0 ] = this._instance.Water[ 0 ];
+        this._selected[ 1 ] = this._instance.Water[ 1 ];
 
         // TODO: Add onEnterChild & onExitChild event trigger.
 

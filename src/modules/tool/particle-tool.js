@@ -289,10 +289,6 @@ export default class ParticleTool extends AbstractTool {
     constructor() {
         super();
 
-        this.dynamic = true;
-
-        this.options = ParticleTool.items.snow.data;
-
         this._thickness = this.options.thickness;
         this._maxEmitters = this.options.maxEmitters;
         this._particlesPerEmitter = this.options.initialParticlesPerEmitter;
