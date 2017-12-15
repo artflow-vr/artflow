@@ -53,8 +53,10 @@ export default class TeleporterTool extends AbstractTool {
         this._mesh = AssetManager.assets.model.teleporter;
         this._mesh.traverse( function ( child ) {
 
-            if ( child instanceof THREE.Mesh )
+            if ( child instanceof THREE.Mesh ) {
                 child.material = MATERIAL;
+                child.visible = false;
+            }
 
         } );
 
