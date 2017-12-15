@@ -231,7 +231,8 @@ class Control {
         // can stop propagation to others.
         EventDispatcher.registerFamily( CONTROLLER_TO_ACTION.trigger, {
                 release: releaseCallback,
-                trigger: triggerCallback
+                trigger: triggerCallback,
+                use: triggerCallback
             }, 0
         );
 

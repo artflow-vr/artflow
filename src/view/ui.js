@@ -316,6 +316,8 @@ class UI {
         this._traverseUI( ( ui, isItem ) => {
 
             ui.setPressed( false );
+            // TODO: THIS IS SO GROSS, fix VRUI.
+            ui.pages[ 0 ]._forceExit();
 
             if ( isItem ) {
                 this._hideShowUI( ui, false );
