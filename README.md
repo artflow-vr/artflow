@@ -79,20 +79,26 @@ ToolModule.register('MyNiceTool', toolDescription);
 ### TODO
 
 #### All
-* [ ] Remove _movingGroup and add a dolly group above the camera
 * [ ] Use pow2 textures. It would be nice to reduce the number of requests, by merging textures together and using different UVs (for instance for the UI).
+* [ ] Add the shake events
+* [ ] Add icon above controler showing which tool is selected
+* [ ] Add tool to take screenshot
+* [ ] Add small tutorial showing how to open menu, how to draw, etc...
+* [ ] Add cubemap selection
+* [ ] Mouse pointer
 
 #### Brushes
 * [X] Add pressure
-* [ ] Add strokes system
-* [ ] Move temporary allocation to initialization
-* [ ] Move Helper folder from `tool/` folder
 * [ ] Remove call to ToolModule from BrushHelper. (The dependecy should come from the UI, or somewhere else).
-* [ ] Change stroke registration, by adding a `registerStroke` function, taking as parameter the description of a stroke. A stroke could be for instance described by a UI image, an update function to call, a material, and some predifined options (thickness, etc).
+* [ ] Remove hardcoded strokes from AbstractBrushTool
+* [ ] Move BrushHelper to BrushTool instead of AbstractBrushTool
+* [ ] Fix stroke not working when we do not change the size of the brush
+* [ ] Use color in when possible, even if the stroke is dynamic.
 
 #### Particles
-* [ ] Make a POC of GPU particles, without any interactions, but with options (color, glow, etc...)
-* [ ] Make a POC of GPU particles with depth buffer intereactions.
+* [ ] Fix particles not working in VR
 
 #### Water
-* [ ] Add input to draw the water plane
+* [ ] Reduce speed in VR
+* [ ] Improve plane delimiters
+* [ ] Validate water plane on shake
