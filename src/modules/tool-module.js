@@ -394,12 +394,12 @@ class ToolModule {
                 initialParticlesPerEmitter: 20,
                 maxParticlesPerEmitter: 512 * 512,
                 bufferSide: 512,
-                maxEmitters: 20,
+                maxEmitters: 1000,
                 debugPlane: false,
                 positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
                 velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
                 renderingUniforms: {
-                    pointMaxSize: { type: 'f', value: 20 },
+                    pointMaxSize: { type: 'f', value: 200 },
                     brushSize: { type: 'f', value: 3 } },
                 positionUniforms: {
                     normVelocity: { type:'f', value: 10.0 },

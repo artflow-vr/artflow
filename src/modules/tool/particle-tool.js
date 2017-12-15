@@ -317,13 +317,13 @@ export default class ParticleTool extends AbstractTool {
         } );
     }
 
-    _spawnParticleEmitter() {
+    _spawnParticleEmitter( data ) {
         if ( this._particleEmitters.length < this._maxEmitters ) {
             let c = new ParticleEmitter( this._particlesPerEmitter, this );
             this._particleEmitters.push( c );
             this.worldGroup.addTHREEObject( c );
             for ( let i = 0; i < this._particlesPerEmitter; i++ )
-                c.spawnParticle( this._cursorMesh.position );
+                c.spawnParticle( data.position.world );
         }
     }
 
@@ -365,15 +365,12 @@ export default class ParticleTool extends AbstractTool {
     trigger() {
     }
 
-    release() {
-        console.log( this.options );
-        this._spawnParticleEmitter();
+    release( data ) {
+        this._spawnParticleEmitter( data );
     }
 
     onItemChanged( id ) {
-        console.log( 'Changing system to ', id, typeof id );
         this.options = ParticleTool.items[ id.slice( 0 ) ].data;
-        console.log( 'currStroke after change', id.slice ( 0 ) );
     }
 
 }

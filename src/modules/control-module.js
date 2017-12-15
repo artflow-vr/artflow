@@ -232,7 +232,10 @@ class Control {
         EventDispatcher.registerFamily( CONTROLLER_TO_ACTION.trigger, {
                 release: releaseCallback,
                 trigger: triggerCallback,
-                use: triggerCallback
+                use: () => {
+                    UI.setPressed( false );
+                    return !UI.hover;
+                }
             }, 0
         );
 
