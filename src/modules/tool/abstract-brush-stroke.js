@@ -32,7 +32,7 @@ export default class AbstractBrushStroke {
     }
 
     use( data ) {
-        
+
         this._helper.addPoint( data.position.world, data.orientation, data.pressure );
 
     }

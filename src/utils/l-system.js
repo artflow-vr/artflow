@@ -238,6 +238,8 @@ class LSystem {
 
     derivate( n ) {
 
+      if ( this.resAxiom ) return;
+
       let nIte = n === undefined ? this.defaultN : n;
       let prevAxiom = JSON.parse( JSON.stringify( this.axiom ) );
 
@@ -263,7 +265,7 @@ class LSystem {
         prevAxiom = newAxiom;
     }
 
-    return prevAxiom;
+    this.resAxiom = prevAxiom;
   }
 
   reverse( axiom ) {

@@ -329,7 +329,7 @@ class ToolModule {
 
         return {
             use: ( data ) => {
-                
+
                 this._selected[ data.controllerID ].triggerEvent(
                     eventID, data, 'use'
                 );

@@ -32,14 +32,14 @@ import { LSystem } from '../../utils/l-system';
 
 class State {
 
-    constructor( pos, angle, hlu, step , orientation, pressure ) {
+    constructor( pos, hlu /*, angle, step , orientation, pressure*/ ) {
 
         this.pos = pos;
-        this.angle = angle;
         this.hlu = hlu;
-        this.step = step;
-        this.orientation = orientation;
-        this.pressure = pressure;
+        //this.angle = angle;
+        //this.step = step;
+        //this.orientation = orientation;
+        //this.pressure = pressure;
 
     }
 
@@ -63,7 +63,7 @@ class Tree {
 
     }
 
-    init( data, angle, step, str, speed ) {
+    init( data, lSysID /*angle, step, str, speed */ ) {
 
         let m = new THREE.Matrix3();
         m.set( 0, -1, 0,
@@ -71,18 +71,19 @@ class Tree {
                0, 0, 1 );
 
         this.pushState(
-            data.position.world, angle, m, step, data.orientation, data.pressure
+            data.position.world, m /*, angle, step, data.orientation, data.pressure */
         );
 
-        this.str = str;
-        this.speed = speed;
+        this.lSysID = lSysID;
+        this.ori = data.orientation.clone();
+        this.pres = data.pressure;
 
     }
 
-    pushState( pos, angle, hlu, step, orientation, pressure ) {
+    pushState( pos, hlu /*, angle, step, orientation, pressure*/ ) {
 
         let state = new State(
-            pos.clone(), angle, hlu.clone(), step, orientation.clone(), pressure
+            pos.clone(), hlu.clone() /*, angle, step, orientation.clone(), pressure */
         );
         this.states.push( state );
 
@@ -204,17 +205,20 @@ export default class TreeTool extends AbstractTool {
 
     _changeTree( treeID ) {
 
-        this._lSystem = this.lSystems[ treeID ];
-        this._str = this._lSystem.derivate();
-        this.angle = this._lSystem.defaultAngle;
-        this.step = this._lSystem.defaultStep;
-        this.speed = this._lSystem.defaultSpeed;
+        this._lSysID = treeID;
+        this.lSystems[ treeID ].derivate();
+        //this._str = this._lSystem.derivate();
+        //this.angle = this._lSystem.defaultAngle;
+        //this.step = this._lSystem.defaultStep;
+        //this.speed = this._lSystem.defaultSpeed;
 
     }
 
 
     trigger() {
 
+        if ( this.trees.length >= 3 ) return;
+        this._triggered = true;
         let tree = new Tree( this.options, this._hsv );
         this.trees.push( tree );
         this._addMesh( tree );
@@ -223,11 +227,15 @@ export default class TreeTool extends AbstractTool {
 
     release( data ) {
 
+        if ( !this._triggered ) return;
+
+        this._triggered = false;
         let tree = this.trees[ this.trees.length - 1 ];
 
         if ( !tree ) return;
 
-        tree.init( data, this.angle, this.step, this._str, this.speed );
+        tree.init( data, this._lSysID );
+        //tree.init( data, this.angle, this.step, this._str, this.speed );
         this._draw( tree );
 
     }
@@ -262,33 +270,43 @@ export default class TreeTool extends AbstractTool {
 
     }
 
-
     _interpretNext( treeIdx, delta ) {
 
         let tree = this.trees[ treeIdx ];
-        if ( !tree || !tree.str ) return false;
+
+        if ( tree.lSysID === undefined ) return false;
+        //if ( !tree || !tree.str ) return false;
 
         tree.time += delta * 100.0;
 
-        if ( !( tree.time / tree.speed ) ) return false;
+        let speed = this.lSystems[ tree.lSysID ].defaultSpeed;
 
-        tree.time %= tree.speed;
+        if ( !( tree.time / speed ) ) return false;
+        //if ( !( tree.time / tree.speed ) ) return false;
+
+        tree.time %= speed;
+        //tree.time %= tree.speed;
 
         let i = tree.curIdx;
 
-        let clbk = this.interpretations[ tree.str[ i ].symbol ];
+        let str = this.lSystems[ tree.lSysID ].resAxiom;
+        let clbk = this.interpretations[ str[ i ].symbol ];
         if ( clbk ) clbk( tree );
 
-        return ++tree.curIdx >= tree.str.length;
+        return ++tree.curIdx >= str.length;
 
     }
 
     _movePos( tree ) {
 
         let state = tree.peekState();
-        state.pos.x += state.step * state.hlu.elements[ 0 ];
-        state.pos.y += state.step * state.hlu.elements[ 1 ];
-        state.pos.z += state.step * state.hlu.elements[ 2 ];
+        state.pos.x += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 0 ];
+        state.pos.y += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 1 ];
+        state.pos.z += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 2 ];
+
+        //state.pos.x += state.step * state.hlu.elements[ 0 ];
+        //state.pos.y += state.step * state.hlu.elements[ 1 ];
+        //state.pos.z += state.step * state.hlu.elements[ 2 ];
 
     }
 
@@ -296,7 +314,7 @@ export default class TreeTool extends AbstractTool {
 
         let state = tree.peekState();
         tree.helper.addPoint(
-            state.pos, state.orientation, state.pressure
+            state.pos, tree.ori, tree.pres
         );
         tree.needPoint = false;
 
@@ -348,7 +366,8 @@ export default class TreeTool extends AbstractTool {
 
     turnLeft( sign, tree ) {
 
-        let a = tree.peekState().angle * sign;
+        let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
+        //let a = tree.peekState().angle * sign;
         let m = this._getRuMatrix( a );
         this._updateAngle( tree, m );
 
@@ -365,7 +384,8 @@ export default class TreeTool extends AbstractTool {
     turnDown( sign, tree ) {
 
         let m = new THREE.Matrix3();
-        let a = sign * tree.peekState().angle;
+        let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
+        //let a = sign * tree.peekState().angle;
         let c = Math.cos( a );
         let s = Math.sin( a );
 
@@ -381,7 +401,8 @@ export default class TreeTool extends AbstractTool {
     rollLeft( sign, tree ) {
 
         let m = new THREE.Matrix3();
-        let a = sign * tree.peekState().angle;
+        let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
+        //let a = sign * tree.peekState().angle;
         let c = Math.cos( a );
         let s = Math.sin( a );
 
@@ -398,8 +419,8 @@ export default class TreeTool extends AbstractTool {
 
         let state = tree.peekState();
         tree.pushState(
-            state.pos, state.angle, state.hlu, state.step, state.orientation,
-            state.pressure
+            state.pos, state.hlu /*, state.angle, state.step, state.orientation,
+            state.pressure */
         );
 
     }

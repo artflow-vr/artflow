@@ -543,7 +543,7 @@ class UI {
         if ( !evt.pressed ) return;
 
         this._traverseUI( ( ui ) => {
-            
+
             ui.setPressed( false );
 
         } );
@@ -586,7 +586,7 @@ class UI {
             this._currItemUI = id;
         }
         this._traverseUI( ( u ) => {
-            
+
             u.setPressed( false );
 
         } );
