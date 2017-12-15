@@ -205,7 +205,7 @@ export default class TreeTool extends AbstractTool {
 
     _changeTree( treeID ) {
 
-        this._lSysID =  treeID;
+        this._lSysID = treeID;
         this.lSystems[ treeID ].derivate();
         //this._str = this._lSystem.derivate();
         //this.angle = this._lSystem.defaultAngle;
