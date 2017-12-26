@@ -104,14 +104,14 @@ class Control {
         // Creates the UI and add initial offsets.
         // The UI will grow when new item will be registered.
         let uiTextures = {
-            background: AssetManager.assets.texture[ 'ui-background' ],
-            home: AssetManager.assets.texture[ 'ui-home' ],
-            arrowLeft: AssetManager.assets.texture[ 'ui-arrow-left' ],
-            buttonBackground: AssetManager.assets.texture[ 'ui-button-back' ],
-            buttonHover: AssetManager.assets.texture[ 'ui-button-hover' ],
-            colorWheel: AssetManager.assets.texture[ 'ui-color-wheel' ],
-            slider: AssetManager.assets.texture[ 'ui-slider' ],
-            sliderButton: AssetManager.assets.texture[ 'ui-slider-button' ]
+            background: AssetManager.assets.texture.ui.background,
+            home: AssetManager.assets.texture.ui.home,
+            arrowLeft: AssetManager.assets.texture.ui[ 'arrow-left' ],
+            buttonBackground: AssetManager.assets.texture.ui[ 'button-back' ],
+            buttonHover: AssetManager.assets.texture.ui[ 'button-hover' ],
+            colorWheel: AssetManager.assets.texture.ui[ 'color-wheel' ],
+            slider: AssetManager.assets.texture.ui.slider,
+            sliderButton: AssetManager.assets.texture.ui[ 'slider-button' ]
         };
 
         this.vr = vr;
@@ -244,7 +244,7 @@ class Control {
     _initVRControllers() {
 
         let renderer = MainView.getRenderer();
-        let controllerMesh = AssetManager.assets.model[ 'vive-controller' ];
+        let controllerMesh = AssetManager.assets.model.env[ 'vive-controller' ];
         controllerMesh.traverse( function ( child ) {
 
             if ( child instanceof THREE.Mesh && child.name !== 'tip' ) {

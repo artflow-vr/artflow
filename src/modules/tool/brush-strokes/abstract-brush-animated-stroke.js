@@ -30,14 +30,16 @@
 import { MainView } from '../../../view/view';
 import AbstractBrushStroke from '../abstract-brush-stroke';
 
+import { setPropIfUndefined } from 'utils/object.js';
+
 export default class AbstractBrushAnimatedStroke extends AbstractBrushStroke {
 
     constructor( isVR, options ) {
 
         super( isVR, 'material_test_shader' );
 
-        this.options = options;
-        this.setOptionsIfUndef( {
+        this.options = Object.assign( {}, options );
+        setPropIfUndefined( this.options, {
             timeOffset: 0.01,
             timeMod: 0,
             timeModCondition: 0,
@@ -45,7 +47,7 @@ export default class AbstractBrushAnimatedStroke extends AbstractBrushStroke {
             thicknessMult: 1.0
         } );
 
-        this.shader = require( '../../../shader/brushes/' + options.shaderPath );
+        this.shader = require( '../../../shader/brushes/' + this.options.shaderPath );
         this.uniforms = THREE.UniformsUtils.clone( this.shader.uniforms );
 
         let material = new THREE.ShaderMaterial( {
@@ -58,11 +60,11 @@ export default class AbstractBrushAnimatedStroke extends AbstractBrushStroke {
 
         this._helper._material = material.clone();
 
-        this.timeOffset = options.timeOffset;
-        this.timeMod = options.timeMod;
-        this.timeModCondition = options.timeModCondition;
-        this.timeModConditionStart = options.timeModConditionStart;
-        this._helper._thickness *= options.thicknessMult;
+        this.timeOffset = this.options.timeOffset;
+        this.timeMod = this.options.timeMod;
+        this.timeModCondition = this.options.timeModCondition;
+        this.timeModConditionStart = this.options.timeModConditionStart;
+        this._helper._thickness *= this.options.thicknessMult;
 
     }
 
@@ -75,16 +77,9 @@ export default class AbstractBrushAnimatedStroke extends AbstractBrushStroke {
             if ( this.timeMod )
                 m2.material.uniforms.uTime.value %= this.timeMod;
             m2.material.uniforms.uTime.value += this.timeOffset;
+            // TODO: Remove Vector2 instanciation, you can just instanciate it
+            // once and update its value.
             m2.material.uniforms.vResolution.value = new THREE.Vector2( MainView._dimensions.width, MainView._dimensions.height );
         }
-    }
-
-    setOptionsIfUndef( options ) {
-
-        if ( options === undefined || options === null ) return;
-
-        for ( let k in options )
-            if ( !( k in this.options ) ) this.options[ k ] = options[ k ];
-
     }
 }

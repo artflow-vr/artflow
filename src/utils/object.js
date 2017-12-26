@@ -25,7 +25,7 @@
 * SOFTWARE.
 */
 
-export const setPropIfUndefined = ( obj, defaultObj ) => {
+let setPropIfUndefined = ( obj, defaultObj ) => {
 
     for ( let k in defaultObj ) {
         if ( k in obj ) continue;
@@ -39,4 +39,19 @@ export const setPropIfUndefined = ( obj, defaultObj ) => {
         }
     }
 
+};
+
+let findObjVal = ( obj, key ) => {
+
+    for ( let k in obj ) {
+        if ( key === k ) return obj[ key ];
+        if ( typeof obj[ k ] === 'object' ) findObjVal( obj[ k ], key );
+    }
+    return null;
+
+};
+
+export {
+    setPropIfUndefined,
+    findObjVal
 };

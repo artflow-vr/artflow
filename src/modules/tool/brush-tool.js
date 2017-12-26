@@ -61,28 +61,17 @@ export default class BrushTool extends AbstractTool {
 
         this.mesh = null;
 
-        this.registeredStrokes = {
-            withTex: new AbstractBrushStroke( isVR ),
-            withoutTex: new AbstractBrushStroke( isVR, 'material_without_tex' ),
-            testAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'test-shader' } ),
-            squaresAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 } ),
-            rainbowAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'rainbow-shader', timeModCondition: 3 } ),
-            matrixAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'matrix-shader' } ),
-            dongAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'dong-shader', thicknessMult: 2.0 } ),
-            fractalAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'fractal-shader' } ),
-            electricAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'electric-shader', thicknessMult: 2.0 } ),
-            starsAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'stars-shader' } ),
-            blueAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'blue-shader' } ),
-            crypticAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'cryptic-shader' } ),
-            hypergreenAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'hypergreen-shader' } ),
-            rastaAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'rasta-shader' } ),
-            trippyRastaAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'trippy-rasta-shader' } ),
-            voronoiAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'voronoi-shader' } ),
-            waveAnim : new AbstractBrushAnimatedStroke( isVR, { shaderPath: 'wave-shader' } )
-        };
+        this.registeredStrokes = {};
+        for ( let k in BrushTool.items ) {
+            let data = BrushTool.items[ k ].data;
+            this.registeredStrokes[ k ] = new AbstractBrushAnimatedStroke( isVR, data );
+        }
+        this.registeredStrokes.withoutTex = new AbstractBrushStroke(
+            isVR, 'material_without_tex'
+        );
+        this.registeredStrokes.withTex = new AbstractBrushStroke( isVR );
 
         this.currentStroke = stroke;
-
         this._lastHsv = { h: 0.0, s: 0.0, v: 0.0 };
 
     }
@@ -131,6 +120,8 @@ export default class BrushTool extends AbstractTool {
     }
 
     _updateStrokeData() {
+
+        if ( !this.options.brushThickness ) return;
 
         let stroke = this.registeredStrokes[ this.currentStroke ];
         stroke._helper.setThickness( this.options.brushThickness );

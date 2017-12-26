@@ -25,7 +25,6 @@
 * SOFTWARE.
 */
 
-import ToolModule from '../../tool-module';
 import { setPropIfUndefined } from 'utils/object';
 
 const INIT_VBO_LIMIT = 10000;
@@ -38,9 +37,19 @@ const DEFAULT_OPTIONS = {
     computeTangents: false
 };
 
+const DEFAULT_MAT = {
+    noTexutre: new THREE.MeshStandardMaterial( {
+        side: THREE.DoubleSide,
+        transparent: true,
+        depthTest: false,
+        metalness: 0.0,
+        roughness: 0.3
+    } )
+};
+
 export default class BrushHelper {
 
-    constructor( options, uvMode, triangleMode ) {
+    constructor( options, uvMode ) {
 
         this.options = Object.assign( {}, options );
         setPropIfUndefined( this.options, {
@@ -82,14 +91,14 @@ export default class BrushHelper {
         this._lastPressure = 0.0;
         this._thickness = this.options.brushThickness / 2.0;
 
-        this._computeThickness = function () {
+        this._computeThickness = () => {
 
             return this._thickness;
 
         };
 
         // TOOD: Helper shound not access the object pool directly like this.
-        this._material = ToolModule.objectPool.getObject( this.options.materialId );
+        this._material = DEFAULT_MAT.noTexutre;
         if ( 'color' in this._material )
             this._material.color.setHex( this.options.color );
 
@@ -143,6 +152,8 @@ export default class BrushHelper {
         mesh.drawMode = THREE.TriangleStripDrawMode;
         mesh.frustumCulled = false;
 
+        // TODO: this is gross. It is better to keep
+        // a Tree.Group and to traverse it in the tool.
         this._meshes.push( mesh );
 
         return mesh;
@@ -173,7 +184,8 @@ export default class BrushHelper {
 
         if ( !this._uvs || !this._geometry || !this._vertices ) return;
 
-        if ( this._lastPoint.distanceTo( pointCoords ) < this._delta && this._uvs.length >= this._vboLimit )
+        if ( this._lastPoint.distanceTo( pointCoords ) < MIN_DIST
+             && this._uvs.length >= this._vboLimit )
             return;
 
         let max = this.options.maxSpread;
@@ -195,6 +207,9 @@ export default class BrushHelper {
 
         this._geometry.setDrawRange( 0, this._verticesCount / 3 );
 
+        // TODO: Use copy instead of clone! this instanciate
+        // a new point, you can just copy the data one
+        // by one or call to copy()!
         this._lastPoint = pointCoords.clone();
     }
 

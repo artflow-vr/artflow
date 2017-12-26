@@ -66,7 +66,8 @@ class Main {
         // Adds default cubemap as background of the scene
         // TODO: Update the THREE.JS version with the update handling background
         // on both eyes.
-        let cubemap = AssetManager.assets.cubemap.cubemap;
+        console.log( AssetManager.assets );
+        let cubemap = AssetManager.assets.texture.cubemap.cubemap;
         this._rootScene.background = cubemap;
 
         this._createLighting();
@@ -125,7 +126,7 @@ class Main {
 
     _createInitialScene( vr ) {
 
-        let floorTex = AssetManager.assets.texture.floor;
+        let floorTex = AssetManager.assets.texture.env.floor;
         let floor = new THREE.Mesh( new THREE.PlaneGeometry( 6, 6 ),
             new THREE.MeshLambertMaterial( {
                 map: floorTex
@@ -173,10 +174,6 @@ class Main {
     }
 
     _createLighting() {
-
-        // Creates the lightning
-        //let hemLight = new THREE.HemisphereLight( 0X000000, 0x2C3E50, 1.0 );
-        //this._rootScene.add( hemLight );
 
         let dirLight = new THREE.DirectionalLight( 0xffffff, 0.7 );
         dirLight.position.set( -0.58, 0.65, 0.51 );

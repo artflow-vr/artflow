@@ -171,7 +171,7 @@ class UI {
         this.hover = false;
         this._traverseUI( ( ui ) => {
 
-            this.hover = this.hover || ( ui.update() !== null );
+            if ( ui ) this.hover = this.hover || ( ui.update() !== null );
 
         } );
 
@@ -542,11 +542,13 @@ class UI {
 
         if ( !evt.pressed ) return;
 
-        this._traverseUI( ( ui ) => {
+        if ( this._vr ) {
+            this._traverseUI( ( ui ) => {
 
-            ui.setPressed( false );
+                ui.setPressed( false );
 
-        } );
+            } );
+        }
 
         let itemsUI = this._ui.items[ this._currItemUI ];
         // Hides itemUI
@@ -585,11 +587,14 @@ class UI {
             }
             this._currItemUI = id;
         }
-        this._traverseUI( ( u ) => {
 
-            u.setPressed( false );
+        if ( this._vr ) {
+            this._traverseUI( ( u ) => {
 
-        } );
+                u.setPressed( false );
+
+            } );
+        }
 
     }
 

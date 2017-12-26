@@ -67,7 +67,6 @@ class Main {
                     this._renderer.vr.enabled = true;
                     this._renderer.vr.standing = true;
                     this._renderer.vr.setDevice( display );
-
                     ModuleManager.vr = true;
                     this._initData( w, h, callback );
 

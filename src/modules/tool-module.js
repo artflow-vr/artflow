@@ -61,8 +61,6 @@ class ToolModule {
         this.undoStack = [];
         this.redoStack = [];
 
-        this.objectPool = null;
-
     }
 
     /**
@@ -211,7 +209,6 @@ class ToolModule {
 
     init( ) {
 
-        this.objectPool = new Utils.ObjectPool();
         this._registerBasicTools();
         this._registerBasicItems();
 
@@ -363,19 +360,19 @@ class ToolModule {
             Tool: Tool.TeleporterTool
         } );
         this.register( 'Brush', {
-            uiTexture: AssetManager.assets.texture[ 'ui-tool-brush' ],
+            uiTexture: AssetManager.assets.texture.ui.tool[ 'brush-icon' ],
             Tool: Tool.BrushTool
         } );
         this.register( 'Particle', {
-            uiTexture: AssetManager.assets.texture[ 'ui-tool-particles' ],
+            uiTexture: AssetManager.assets.texture.ui.tool[ 'particles-icon' ],
             Tool: Tool.ParticleTool
         } );
         this.register( 'Water', {
-            uiTexture: AssetManager.assets.texture[ 'ui-tool-water' ],
+            uiTexture: AssetManager.assets.texture.ui.tool[ 'water-icon' ],
             Tool: Tool.WaterTool
         } );
         this.register( 'Tree', {
-            uiTexture: AssetManager.assets.texture[ 'ui-tool-tree' ],
+            uiTexture: AssetManager.assets.texture.ui.tool[ 'tree-icon' ],
             Tool: Tool.TreeTool
         } );
 
@@ -383,11 +380,13 @@ class ToolModule {
 
     _registerBasicItems() {
 
+        let itemsTextures = AssetManager.assets.texture.ui.item;
+
         //
         // PARTICLES
         //
         this.registerToolItem( 'Particle', 'snow', {
-            uiTexture: AssetManager.assets.texture[ 'snow-item' ],
+            uiTexture: AssetManager.assets.texture.ui.item[ 'snow-item' ],
             data: {
                 brushSize: 3,
                 thickness: 10,
@@ -464,77 +463,43 @@ class ToolModule {
             }
         } );
 
-        //
-        // BRUSH STROKES
-        //
-        this.registerToolItem( 'Brush', 'withTex', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-unified' ],
-            data: null // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'rainbowAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-rainbow' ],
-            data: 'rainbowAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'blueAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-blue' ],
-            data: 'bluewAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'squaresAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-squares' ],
-            data: 'squaresAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'matrixAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-matrix' ],
-            data: 'matrixAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'fractalAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-fractal' ],
-            data: 'rainbowAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'electricAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-electric' ],
-            data: 'rainbowAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'starsAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-stars' ],
-            data: 'rainbowAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'crypticAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-cryptic' ],
-            data: 'rainbowAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'hypergreenAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-hyper-green' ],
-            data: 'rainbowAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'rastaAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-rasta' ],
-            data: 'rainbowAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'trippyRastaAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-trippy-rasta' ],
-            data: 'rainbowAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'voronoiAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-voronoi' ],
-            data: 'rainbowAnim' // You can pass extra data here
-        } );
-
-        this.registerToolItem( 'Brush', 'waveAnim', {
-            uiTexture: AssetManager.assets.texture[ 'brush-item-wave' ],
-            data: 'rainbowAnim' // You can pass extra data here
+        this.registerToolItems( 'Brush', {
+            squareAnim: {
+                uiTexture: itemsTextures[ 'brush-square' ],
+                data: { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 }
+            },
+            rainbowAnim: {
+                uiTexture: itemsTextures[ 'brush-rainbow' ],
+                data: { shaderPath: 'rainbow-shader', timeModCondition: 3 }
+            },
+            matrixAnim: {
+                uiTexture: itemsTextures[ 'brush-matrix' ],
+                data: { shaderPath: 'matrix-shader' }
+            },
+            fractalAnim: {
+                uiTexture: itemsTextures[ 'brush-fractal' ],
+                data: { shaderPath: 'fractal-shader' }
+            },
+            electricAnim: {
+                uiTexture: itemsTextures[ 'brush-lightning' ],
+                data: { shaderPath: 'electric-shader', thicknessMult: 2.0 }
+            },
+            starsAnim: {
+                uiTexture: itemsTextures[ 'brush-stars' ],
+                data: { shaderPath: 'stars-shader' }
+            },
+            blueAnim: {
+                uiTexture: itemsTextures[ 'brush-blue' ],
+                data: { shaderPath: 'blue-shader' }
+            },
+            trippyRastaAnim: {
+                uiTexture: itemsTextures[ 'brush-trippy-rasta' ],
+                data: { shaderPath: 'trippy-rasta-shader' }
+            },
+            waveAnim: {
+                uiTexture: itemsTextures[ 'brush-wave' ],
+                data: { shaderPath: 'wave-shader' }
+            }
         } );
 
         //
@@ -542,23 +507,23 @@ class ToolModule {
         //
         this.registerToolItems( 'Tree', {
             bush: {
-                uiTexture: AssetManager.assets.texture[ 'tree-item-bush' ],
+                uiTexture: AssetManager.assets.texture.ui.item[ 'tree-bush' ],
                 data: 'bush'
             },
             hilbertCube: {
-                uiTexture: AssetManager.assets.texture[ 'tree-item-cube' ],
+                uiTexture: AssetManager.assets.texture.ui.item[ 'tree-cube' ],
                 data: 'hilbertCube'
             },
             contextSensitive: {
-                uiTexture: AssetManager.assets.texture[ 'tree-item-contextSens' ],
+                uiTexture: AssetManager.assets.texture.ui.item[ 'tree-contextSens' ],
                 data: 'contextSensitive'
             },
             simpleTree: {
-                uiTexture: AssetManager.assets.texture[ 'tree-item-simple' ],
+                uiTexture: AssetManager.assets.texture.ui.item[ 'tree-simple' ],
                 data: 'simpleTree'
             },
             tiltTree: {
-                uiTexture: AssetManager.assets.texture[ 'tree-item-tilt' ],
+                uiTexture: AssetManager.assets.texture.ui.item[ 'tree-tilt' ],
                 data: 'tiltTree'
             }
         } );
