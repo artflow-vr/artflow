@@ -492,9 +492,25 @@ class ToolModule {
                 uiTexture: itemsTextures[ 'brush-blue' ],
                 data: { shaderPath: 'blue-shader' }
             },
+            crypticAnim: {
+                uiTexture: itemsTextures[ 'brush-void' ],
+                data: { shaderPath: 'cryptic-shader' }
+            },
+            hyperGreenAnim: {
+                uiTexture: itemsTextures[ 'brush-spiral' ],
+                data: { shaderPath: 'hypergreen-shader' }
+            },
+            rastaAnim: {
+                uiTexture: itemsTextures[ 'brush-trippy-rasta' ],
+                data: { shaderPath: 'rasta-shader' }
+            },
             trippyRastaAnim: {
                 uiTexture: itemsTextures[ 'brush-trippy-rasta' ],
                 data: { shaderPath: 'trippy-rasta-shader' }
+            },
+            voronoiAnim: {
+                uiTexture: itemsTextures[ 'brush-confettis  ' ],
+                data: { shaderPath: 'voronoi-shader' }
             },
             waveAnim: {
                 uiTexture: itemsTextures[ 'brush-wave' ],
