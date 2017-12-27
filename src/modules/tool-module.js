@@ -50,6 +50,10 @@ class ToolModule {
         this._tools = {};
         this._instance = {};
 
+        // Contains a reference to an array containing the controllers.
+        // The reference is global and should not be messed up.
+        this._controllers = null;
+
         // Contains the tool for each controller. Whenever the user is not in VR,
         // only one tool is accessible at a time.
         this._selected = new Array( 2 );
@@ -87,6 +91,9 @@ class ToolModule {
         }
 
         this._tools[ toolID ] = tool;
+
+        // Sets the name of the preview to find it more easily.
+        if ( tool.preview ) tool.preview.name = 'preview';
 
         // Adds the tool to the UI if a texture was provided.
         if ( !tool.uiTexture ) return;
@@ -295,6 +302,12 @@ class ToolModule {
 
     }
 
+    setControllerRef( controllers ) {
+
+        this._controllers = controllers;
+
+    }
+
     _onColorChange( color ) {
 
         for ( let e in this._instance ) {
@@ -311,6 +324,28 @@ class ToolModule {
         this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
         // TODO: handle onExit.
         this._selected[ controllerID ]._onEnter();
+
+        //
+        // Handles Tool preview
+        //
+
+        if ( this._controllers === null
+            || controllerID >= ( this._controllers.filter( () => true ).length ) )
+            return;
+
+        let controller = this._controllers[ controllerID ];
+
+        // Removes previous preview.
+        for ( let i = controller.children.length - 1; i >= 0; i-- ) {
+            if ( controller.children[ i ].name === 'preview' ) {
+                controller.remove( controller.children[ i ] );
+                break;
+            }
+        }
+
+        // Adds new preview
+        let preview = this._tools[ toolID ].preview;
+        if ( preview ) controller.add( preview );
 
     }
 
@@ -361,18 +396,22 @@ class ToolModule {
         } );
         this.register( 'Brush', {
             uiTexture: AssetManager.assets.texture.ui.tool[ 'brush-icon' ],
+            preview: AssetManager.assets.model.tool.brush_preview,
             Tool: Tool.BrushTool
         } );
         this.register( 'Particle', {
             uiTexture: AssetManager.assets.texture.ui.tool[ 'particles-icon' ],
+            preview: AssetManager.assets.model.tool.particle_preview,
             Tool: Tool.ParticleTool
         } );
         this.register( 'Water', {
             uiTexture: AssetManager.assets.texture.ui.tool[ 'water-icon' ],
+            preview: AssetManager.assets.model.tool.water_preview,
             Tool: Tool.WaterTool
         } );
         this.register( 'Tree', {
             uiTexture: AssetManager.assets.texture.ui.tool[ 'tree-icon' ],
+            preview: AssetManager.assets.model.tool.tree_preview,
             Tool: Tool.TreeTool
         } );
 

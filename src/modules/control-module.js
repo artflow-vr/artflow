@@ -37,11 +37,6 @@ let AssetManager = Utils.AssetManager;
 let FPSControls = Controller.FPSControls;
 let ViveController = Controller.ViveController;
 
-const ACTIONS = {
-    trigger: 'interact',
-    menu: 'menu'
-};
-
 /**
  * Maps known command event from keyboard, mouse, or VR Headset controllers
  * to custom Artflow events. This structure allows to use a single pipeline
@@ -88,8 +83,9 @@ class Control {
             orientation: new THREE.Quaternion()
         };
 
+        this._controllers = new Array( 2 );
+
         this._fpsController = null;
-        this._controllers = null;
         this._currentController = null;
 
         this._mouseUseEvent = null;
@@ -254,8 +250,6 @@ class Control {
             }
 
         } );
-
-        this._controllers = new Array( 2 );
 
         // Makes copy of certain materials / meshes.
         // This allows us to modify for instance the color of the current
