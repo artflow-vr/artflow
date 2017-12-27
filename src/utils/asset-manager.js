@@ -361,7 +361,9 @@ class Manager {
             { file: 'teleporter.obj' },
             { file: 'water_preview.obj' },
             { file: 'tree_preview.obj' },
-            { file: 'particle_preview.obj' }
+            { file: 'particle_preview.obj' },
+            { file: 'brush_preview.obj' }
+
         ];
 
         const envModels = [
