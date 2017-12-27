@@ -310,12 +310,10 @@ class Manager {
                     return;
                 }
 
+                // Multiple loading at once. e.g: spritesheet
                 for ( let elt of object ) {
-                    console.log( object );
                     data.container[ elt.id ] = elt.data;
                 }
-                // Multiple loading at once. e.g: spritesheet
-            console.log( this.assets );
                 resolve();
 
             }, function () {
@@ -399,21 +397,7 @@ class Manager {
             { file: 'tree/simple.png', id: 'tree-simple' },
             { file: 'tree/tilt.png', id: 'tree-tilt' },
             // BRUSH
-            { file: 'brush/unified.png', id: 'brush-unified' },
-            { file: 'brush/confettis.png', id: 'brush-confettis' },
-            { file: 'brush/snow.png', id: 'brush-snow' },
-            { file: 'brush/spiral.png', id: 'brush-spiral' },
-            { file: 'brush/rainbow.png', id: 'brush-rainbow' },
-            { file: 'brush/square.png', id: 'brush-square' },
-            { file: 'brush/wave.png', id: 'brush-wave' },
-            { file: 'brush/blue.png', id: 'brush-blue' },
-            { file: 'brush/matrix.png', id: 'brush-matrix' },
-            { file: 'brush/fractal.png', id: 'brush-fractal' },
-            { file: 'brush/lightning.png', id: 'brush-lightning' },
-            { file: 'brush/spiral.png', id: 'brush-spiral' },
-            { file: 'brush/stars.png', id: 'brush-stars' },
-            { file: 'brush/freepik_6.png', id: 'brush-void' },
-            { file: 'brush/rasta.png', id: 'brush-trippy-rasta' }
+            { file: 'brush/brush_items.spritesheet' }
         ];
 
         const toolModels = [
