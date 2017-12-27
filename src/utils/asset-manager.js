@@ -360,7 +360,8 @@ class Manager {
         const toolModels = [
             { file: 'teleporter.obj' },
             { file: 'water_preview.obj' },
-            { file: 'tree_preview.obj' }
+            { file: 'tree_preview.obj' },
+            { file: 'particle_preview.obj' }
         ];
 
         const envModels = [
