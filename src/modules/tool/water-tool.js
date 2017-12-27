@@ -25,8 +25,6 @@
 * SOFTWARE.
 */
 
-import '../../../vendor/BufferGeometryUtils';
-
 import AbstractTool from './abstract-tool';
 import WaterShader from '../../shader/water/water-shader';
 import { AssetManager } from '../../utils/asset-manager';

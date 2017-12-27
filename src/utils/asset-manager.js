@@ -27,6 +27,9 @@
 
 // OBJLoader is auto-added to the THREE namespace.
 import '../../vendor/OBJLoader';
+// MTLLoader is auto-added to the THREE namespace.
+import '../../vendor/MTLLoader';
+
 
 const ROOT_FOLDER = 'assets/';
 const MODEL_FOLDER = ROOT_FOLDER + 'model/';
@@ -114,14 +117,31 @@ class Manager {
             ( file, ext, path, resolve, reject ) => {
 
                 let fullName = file + '.' + ext;
-                if ( path ) this._OBJLoader.setPath( path );
-                this._OBJLoader.load( fullName, resolve, undefined, reject );
+                let fullPath = path || './';
+
+                let matLoader = new THREE.MTLLoader();
+                matLoader.setPath( fullPath );
+                matLoader.load( file + '.mtl', ( materials ) => {
+
+                    materials.preload();
+
+                    let loader = new THREE.OBJLoader();
+                    loader.setPath( fullPath );
+                    loader.setMaterials( materials );
+                    loader.load( fullName, resolve, undefined, reject );
+
+                }, undefined, () => {
+
+                    let loader = new THREE.OBJLoader();
+                    loader.setPath( fullPath );
+                    loader.load( fullName, resolve, undefined, reject );
+
+                } );
 
             }
 
         ];
 
-        this._OBJLoader = new THREE.OBJLoader();
         this._textureLoader = new THREE.TextureLoader();
         this._cubeTextureLoader = new THREE.CubeTextureLoader();
 
@@ -233,6 +253,7 @@ class Manager {
             this._type[ type ]( fileName, ext, data.path, function ( object ) {
 
                 data.container[ id ] = object;
+                console.log( object );
                 resolve();
 
             }, function () {
@@ -338,7 +359,8 @@ class Manager {
 
         const toolModels = [
             { file: 'teleporter.obj' },
-            { file: 'water.obj' }
+            { file: 'water_preview.obj' },
+            { file: 'tree_preview.obj' }
         ];
 
         const envModels = [

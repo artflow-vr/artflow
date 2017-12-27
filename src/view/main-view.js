@@ -171,6 +171,10 @@ class Main {
         this._group.add( xAxisCube );
         this._group.add( zAxisCube );
 
+        // DEBUG
+        //this._group.add( AssetManager.assets.model.tool.tree_preview );
+        // END DEBUG
+
     }
 
     _createLighting() {

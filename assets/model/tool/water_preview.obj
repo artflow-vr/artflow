@@ -1,6 +1,4 @@
-# Blender v2.79 (sub 0) OBJ File: 'wave_lowpoly.blend'
-# www.blender.org
-mtllib wave_lowpoly.mtl
+mtllib water_preview.mtl
 o Icosphere.008
 v 3.199985 0.245878 -1.847215
 v 3.160094 -0.026040 -1.978338
