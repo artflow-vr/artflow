@@ -167,12 +167,13 @@ class Main {
         xAxisCube.translateX( 2 );
         zAxisCube.translateZ( 2 );
 
-        this._group.add( centerCube );
+        /*this._group.add( centerCube );
         this._group.add( xAxisCube );
-        this._group.add( zAxisCube );
+        this._group.add( zAxisCube );*/
 
         // DEBUG
         //this._group.add( AssetManager.assets.model.tool.tree_preview );
+        this._group.add( AssetManager.assets.model.tool.brush_preview );
         // END DEBUG
 
     }

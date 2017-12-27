@@ -54,7 +54,8 @@ const ASSETS = {
 const ASSETTYPE = {
     TEXTURE: 0,
     CUBEMAP: 1,
-    MODEL: 2
+    MODEL: 2,
+    SPRITESHEET: 3
 };
 
 let splitOnExt = ( file ) => {
@@ -138,6 +139,53 @@ class Manager {
 
                 } );
 
+            },
+            // Spritesheet loading function
+            ( file, ext, path, resolve, reject ) => {
+                let xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+
+                    let fileName = path + file + '.' + ext;
+
+                    if ( this.readyState !== 4 || this.status !== 200 ) return;
+
+                    let sheet = null;
+                    try {
+                        sheet = JSON.parse( xhttp.responseText );
+                    } catch ( e ) {
+                        let msg = 'failed to parse JSON file ' + fileName + ':';
+                        console.warn( 'AssetManager: loadSpritesheet(): ' + msg );
+                        console.warn( e );
+                        return;
+                    }
+
+                    let loader = new THREE.TextureLoader();
+                    loader.setPath( path );
+
+                    loader.load( sheet.file, ( tex ) => {
+
+                        let width = tex.image.width;
+                        let height = tex.image.height;
+
+                        let result = [];
+                        for ( let t of sheet.textures ) {
+                            let cpy = tex.clone();
+                            cpy.wrapS = cpy.wrapT = THREE.RepeatWrapping;
+                            cpy.repeat.x = t.w / width;
+                            cpy.repeat.y = t.h / height;
+                            cpy.offset.x = t.x / width;
+                            cpy.offset.y = t.y / height;
+                            cpy.needsUpdate = true;
+                            result.push( { id: t.name, data: cpy } );
+                        }
+
+                        resolve( result );
+
+                    }, undefined, reject );
+
+                };
+                xhttp.open( 'GET', path + file + '.' + ext, true );
+                xhttp.send();
             }
 
         ];
@@ -186,6 +234,9 @@ class Manager {
                 break;
             case 'obj':
                 fileType = ASSETTYPE.MODEL;
+                break;
+            case 'spritesheet':
+                fileType = ASSETTYPE.SPRITESHEET;
                 break;
             default:
                 let warnMsg = 'ext `' + splitFile.ext + '` not supported';
@@ -250,10 +301,21 @@ class Manager {
 
         return new Promise( ( resolve ) => {
 
-            this._type[ type ]( fileName, ext, data.path, function ( object ) {
+            this._type[ type ]( fileName, ext, data.path, ( object ) => {
 
-                data.container[ id ] = object;
-                console.log( object );
+                // Texture, Model, Cubemap loading...
+                if ( object.constructor !== Array ) {
+                    data.container[ id ] = object;
+                    resolve();
+                    return;
+                }
+
+                for ( let elt of object ) {
+                    console.log( object );
+                    data.container[ elt.id ] = elt.data;
+                }
+                // Multiple loading at once. e.g: spritesheet
+            console.log( this.assets );
                 resolve();
 
             }, function () {
@@ -325,10 +387,7 @@ class Manager {
         ];
 
         const uiToolTextures = [
-            { file: 'brush-icon.png' },
-            { file: 'particles-icon.png' },
-            { file: 'tree-icon.png' },
-            { file: 'water-icon.png' }
+            { file: 'tools.spritesheet' }
         ];
 
         const uiToolItemsTextures = [

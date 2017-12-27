@@ -1,0 +1,9 @@
+{
+    "file": "tools.png",
+    "textures": [
+        { "name": "brush-icon", "x": "0", "y": "418", "w": "418", "h": "418" },
+        { "name": "particles-icon", "x": "418", "y": "418", "w": "418", "h": "418" },
+        { "name": "tree-icon", "x": "0", "y": "0", "w": "418", "h": "418" },
+        { "name": "water-icon", "x": "418", "y": "0", "w": "418", "h": "418" }
+    ]
+}

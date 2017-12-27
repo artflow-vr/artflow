@@ -98,8 +98,10 @@ class ToolModule {
         // Adds the tool to the UI if a texture was provided.
         if ( !tool.uiTexture ) return;
 
+        console.log( tool.uiTexture );
+
         UI.addTool( { id: toolID, data: tool },
-            AssetManager.assets.texture[ 'ui-button-back' ],
+            AssetManager.assets.texture.ui[ 'button-back' ],
             this._onUISelection.bind( this )
         );
 
@@ -151,7 +153,7 @@ class ToolModule {
         // Adds the tool to the UI if a texture was provided.
         if ( !item.uiTexture ) return;
 
-        let buttonBackground = AssetManager.assets.texture[ 'ui-button-back' ];
+        let buttonBackground = AssetManager.assets.texture.ui[ 'button-back' ];
         UI.addToolItem(
             toolID, { id: itemID, data: item },
             buttonBackground, this._onItemSelection.bind( this )
