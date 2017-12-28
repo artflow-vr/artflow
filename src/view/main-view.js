@@ -30,6 +30,8 @@ import HTMLView from './html-view';
 import HTMLTextArea from './html-text-area';
 import '../../vendor/ImageUtils';
 
+import EventDispatcher from 'utils/event-dispatcher';
+
 let AssetManager = Utils.AssetManager;
 let MiscInfoTable = Utils.InfoTable.misc;
 
@@ -66,14 +68,20 @@ class Main {
         // Adds default cubemap as background of the scene
         // TODO: Update the THREE.JS version with the update handling background
         // on both eyes.
-        console.log( AssetManager.assets );
-        let cubemap = AssetManager.assets.texture.cubemap.cubemap;
+        let cubemap = AssetManager.assets.texture.cubemap.galaxy;
         this._rootScene.background = cubemap;
 
         this._createLighting();
         this._createHTMLBackground();
 
         this.resize( w, h );
+
+        // Listen for skybox changes.
+        EventDispatcher.register( 'skyboxChanged', ( skybox ) => {
+
+            this._rootScene.background = skybox;
+
+        } );
 
     }
 

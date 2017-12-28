@@ -46,7 +46,8 @@ const ASSETS = {
         ui: {
             root: TEXTURE_FOLDER + 'ui/',
             tool: TEXTURE_FOLDER + 'ui/tool/',
-            item: TEXTURE_FOLDER + 'ui/item/'
+            item: TEXTURE_FOLDER + 'ui/item/',
+            cubemap: null
         }
     }
 };
@@ -378,7 +379,6 @@ class Manager {
         // Does not return a promise, because the loading is synchronous.
         this._loadPrimitives();
         this._loadDefaultAssets( promises );
-        this._loadDefaultCubemap( promises );
 
         //this._loadUIAssets( promises );
         return Promise.all( promises );
@@ -387,17 +387,22 @@ class Manager {
 
     _loadDefaultAssets( promises ) {
 
-        let autoload = ( list, path, container ) => {
+        let autoload = ( list, path, container, isCubemap ) => {
             for ( let elt of list ) {
                 this.autoload( {
                     file: elt.file, path: path,
-                    promises: promises, id: elt.id, container: container
+                    promises: promises, id: elt.id, container: container,
+                    isCubemap: isCubemap
                 } );
             }
         };
 
-
-        // TODO: make an atlases of related textures.
+        const cubemapTextures = [
+            { file: 'cartoon-cloudy.png' },
+            { file: 'cartoon-nightsky.png' },
+            { file: 'sunset-dark.png' },
+            { file: 'galaxy.jpg' }
+        ];
 
         const envTextures = [
             { file: 'controller-diffuse.png' },
@@ -421,6 +426,10 @@ class Manager {
             { file: 'ui.spritesheet' },
             { file: 'background.png', id: 'background' },
             { file: 'button-hover.png', id: 'button-hover' }
+        ];
+
+        const uiCubemap = [
+            { file: 'skyboxes.spritesheet' }
         ];
 
         const uiToolTextures = [
@@ -451,9 +460,16 @@ class Manager {
             { file: 'vive-controller.obj' }
         ];
 
+        autoload(
+            cubemapTextures,
+            ASSETS.texture.cubemap,
+            this.assets.texture.cubemap,
+            true
+        );
         autoload( envTextures, ASSETS.texture.env, this.assets.texture.env );
         autoload( toolTextures, ASSETS.texture.tool, this.assets.texture.tool );
         autoload( uiTextures, ASSETS.texture.ui.root, this.assets.texture.ui );
+        autoload( uiCubemap, ASSETS.texture.ui.root, this.assets.texture.ui.cubemap );
         autoload(
             uiToolTextures,
             ASSETS.texture.ui.root,
@@ -466,34 +482,6 @@ class Manager {
         );
         autoload( toolModels, ASSETS.model.tool, this.assets.model.tool );
         autoload( envModels, ASSETS.model.env, this.assets.model.env );
-
-    }
-
-    _loadDefaultCubemap( promises ) {
-
-        this.autoload( {
-            file: 'cartoon-cloudy.png', isCubemap: true,
-            path: ASSETS.texture.cubemap,
-            container: this.assets.texture.cubemap,
-            promises: promises,
-            id: 'cubemap'
-        } );
-        /*    uiToolTextures,
-            ASSETS.texture.ui.root,
-            this.assets.texture.ui.tool
-        );*/
-
-        /*const toLoad = [
-            'nightsky'
-        ];
-
-        for ( let elt of toLoad ) {
-            promises.push( this.load( {
-                file: elt, ext: 'png', type: ASSETTYPE.CUBEMAP,
-                container: this.assets.texture.cubemap,
-                path: ASSETS.texture.cubemap, id: 'cubemap'
-            } ) );
-        }*/
 
     }
 

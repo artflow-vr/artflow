@@ -2,6 +2,7 @@ import VRUI from 'vr-ui';
 
 import MainView from './main-view';
 import EventDispatcher from '../utils/event-dispatcher';
+import { AssetManager } from '../utils/asset-manager';
 
 const INIT_POINTER_LEN = 3.5;
 
@@ -11,6 +12,8 @@ const GUI_HEIGHT = 0.4; // In Three.js units
 const DEFAULT_HOME_POS = new THREE.Vector3( 0, 0.5, -0.2 );
 const DEFAULT_COLOR_POS = new THREE.Vector3( 0.75, 0.5, 0.5 );
 const DEFAULT_COLOR_POS_VR = new THREE.Vector3( 0.25, 0.5, 0.0 );
+const DEFAULT_SKYBOX_POS = new THREE.Vector3( -0.75, 0.5, 0.5 );
+const DEFAULT_SKYBOX_POS_VR = new THREE.Vector3( -0.25, 0.5, 0.0 );
 
 const GUI_FACTOR_NO_VR = 4.0;
 
@@ -54,6 +57,7 @@ class UI {
         this._ui = {
             home: null,
             color: null,
+            skybox: null,
             items: {}
         };
         this._dimensions = { width: 0.0, height: 0.0 };
@@ -104,6 +108,7 @@ class UI {
         // We activate the callback for laser pointer only when using
         // VR controllers.
         let colorPos = DEFAULT_COLOR_POS;
+        let skyboxPos = DEFAULT_SKYBOX_POS;
         if ( this._vr ) {
             this._initControllers( controllers );
             // Changes the function pointer at init time.
@@ -117,6 +122,7 @@ class UI {
             this._templates.color.onHoverEnter( enterCallback )
                                  .onHoverExit( exitCallback );
             colorPos = DEFAULT_COLOR_POS_VR;
+            skyboxPos = DEFAULT_SKYBOX_POS_VR;
         } else {
             // Changes the function pointer at init time.
             this.triggerShow = this._triggerShowNOVR;
@@ -140,9 +146,19 @@ class UI {
         } , this._templates.color );
 
         this._ui.color.pageGroup.rotation.y = - Math.PI / 2.0;
-        this._ui.color.pageGroup.position.set(
-            colorPos.x, colorPos.y, colorPos.z
-        );
+        this._ui.color.pageGroup.position.copy( colorPos );
+
+        // Skyboxes UI.
+        this._ui.skybox = new VRUI.VRUI( {
+            width: this._dimensions.width,
+            height: this._dimensions.height,
+            mode: {
+                template: this._templates.home
+            }
+        } );
+        this._ui.skybox.pageGroup.rotation.y = Math.PI / 2.0;
+        this._ui.skybox.pageGroup.position.copy( skyboxPos );
+        this._initSkyboxUI();
 
         this._traverseUI( ( ui ) => {
 
@@ -394,6 +410,31 @@ class UI {
         this._controllers[ 1 ].traverse( ( elt ) => {
             if ( elt.name === 'tip' ) this._tipMeshes[ 1 ] = elt;
         } );
+
+    }
+
+    _initSkyboxUI() {
+
+        let events = {
+            change: ( object, evt ) => {
+
+                if ( evt.pressed ) {
+                    let id = object.userData.id;
+                    let skybox = AssetManager.assets.texture.cubemap[ id ];
+                    EventDispatcher.dispatch( 'skyboxChanged', skybox );
+                }
+
+            }
+        };
+
+        for ( let k in AssetManager.assets.texture.ui.cubemap ) {
+            let tex = AssetManager.assets.texture.ui.cubemap[ k ];
+            console.log( this._ui );
+            this._add( k, this._ui.skybox, {
+                background: this._textures.background,
+                button: tex
+            }, events );
+        }
 
     }
 
@@ -673,12 +714,13 @@ class UI {
 
     _traverseUI( callback ) {
 
+
         // ArtFlow will not change on this. We do not need to over engineer,
         // we can hardcode the traversal.
-
-        // Applies on home UI.
         callback( this._ui.home );
         callback( this._ui.color );
+        callback( this._ui.skybox );
+
         // Items UI traversal.
         for ( let k in this._ui.items ) callback( this._ui.items[ k ], true );
 
