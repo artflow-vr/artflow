@@ -72,6 +72,61 @@ let splitOnExt = ( file ) => {
 
 };
 
+let loadCubemap = ( file, ext, path, resolve, reject ) => {
+
+    let fullName = file + '.' + ext;
+
+    let img = new Image();
+    img.src = path + fullName;
+    img.addEventListener( 'error', () => {
+        reject();
+    } );
+
+    img.addEventListener( 'load', () => {
+
+        let w = img.width;
+        let h = img.height;
+
+        if ( h / 6 !== w ) {
+            let warn = '`' + fullName + '\' does not represent a cubemap.';
+            console.warn( 'AssetManager: loadCubemap(): ' + warn );
+            reject();
+            return;
+        }
+
+        let canvas = document.createElement( 'canvas' );
+        canvas.width = w;
+        canvas.height = h;
+
+        let context = canvas.getContext( '2d' );
+        context.drawImage( img, 0, 0, w, h );
+
+        let data = context.getImageData( 0, 0, w, h ).data;
+
+        let cubemapFaces = new Array( 6 );
+        let texture = new THREE.CubeTexture( cubemapFaces );
+        for ( let i = 0; i < 6; ++i ) {
+            let start = i * w * w * 4;
+            let rawData = data.slice( start, start + w * w * 4 - 1 );
+            // Copies back the image to the canvas
+            canvas.width = w;
+            canvas.height = w;
+            let idata = context.createImageData( w, w );
+            idata.data.set( rawData );
+            // Updates canvas with new data
+            context.putImageData( idata, 0, 0 );
+
+            cubemapFaces[ i ] = new Image();
+            cubemapFaces[ i ].src = canvas.toDataURL();
+        }
+        texture.needsUpdate = true;
+        resolve( texture );
+
+    }, false );
+
+
+};
+
 class Manager {
 
     constructor() {
@@ -100,20 +155,7 @@ class Manager {
 
             },
             // Cubemap loading function
-            ( file, ext, path, resolve, reject ) => {
-
-                let urls = [
-                    file + '-px.' + ext, file + '-nx.' + ext,
-                    file + '-py.' + ext, file + '-ny.' + ext,
-                    file + '-pz.' + ext, file + '-nz.' + ext
-                ];
-
-                if ( path ) this._cubeTextureLoader.setPath( path );
-                let toLoad = this._cubeTextureLoader.load( urls, resolve,
-                    undefined, reject );
-                toLoad.format = THREE.RGBFormat;
-
-            },
+            loadCubemap,
             // Model loading function
             ( file, ext, path, resolve, reject ) => {
 
@@ -232,7 +274,7 @@ class Manager {
         switch ( splitFile.ext ) {
             case 'jpg':
             case 'png':
-                fileType = ASSETTYPE.TEXTURE;
+                fileType = data.isCubemap ? ASSETTYPE.CUBEMAP : ASSETTYPE.TEXTURE;
                 break;
             case 'obj':
                 fileType = ASSETTYPE.MODEL;
@@ -347,10 +389,10 @@ class Manager {
 
         let autoload = ( list, path, container ) => {
             for ( let elt of list ) {
-                promises.push( this.autoload( {
+                this.autoload( {
                     file: elt.file, path: path,
                     promises: promises, id: elt.id, container: container
-                } ) );
+                } );
             }
         };
 
@@ -429,7 +471,19 @@ class Manager {
 
     _loadDefaultCubemap( promises ) {
 
-        const toLoad = [
+        this.autoload( {
+            file: 'cartoon-cloudy.png', isCubemap: true,
+            path: ASSETS.texture.cubemap,
+            container: this.assets.texture.cubemap,
+            promises: promises,
+            id: 'cubemap'
+        } );
+        /*    uiToolTextures,
+            ASSETS.texture.ui.root,
+            this.assets.texture.ui.tool
+        );*/
+
+        /*const toLoad = [
             'nightsky'
         ];
 
@@ -439,7 +493,7 @@ class Manager {
                 container: this.assets.texture.cubemap,
                 path: ASSETS.texture.cubemap, id: 'cubemap'
             } ) );
-        }
+        }*/
 
     }
 
