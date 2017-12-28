@@ -45,8 +45,8 @@ const ASSETS = {
         tool: TEXTURE_FOLDER + 'tool/',
         ui: {
             root: TEXTURE_FOLDER + 'ui/',
-            item: TEXTURE_FOLDER + 'ui/item/',
-            tool: TEXTURE_FOLDER + 'ui/tool/'
+            tool: TEXTURE_FOLDER + 'ui/tool/',
+            item: TEXTURE_FOLDER + 'ui/item/'
         }
     }
 };
@@ -175,6 +175,8 @@ class Manager {
                             cpy.repeat.y = t.h / height;
                             cpy.offset.x = t.x / width;
                             cpy.offset.y = t.y / height;
+                            cpy.userData = {};
+                            cpy.userData.uvWidth = t.w / width;
                             cpy.needsUpdate = true;
                             result.push( { id: t.name, data: cpy } );
                         }
@@ -374,14 +376,9 @@ class Manager {
         ];
 
         const uiTextures = [
+            { file: 'ui.spritesheet' },
             { file: 'background.png', id: 'background' },
-            { file: 'button-background.png', id: 'button-back' },
-            { file: 'button-hover.png', id: 'button-hover' },
-            { file: 'home-icon.png', id: 'home' },
-            { file: 'arrow-icon.png', id: 'arrow-left' },
-            { file: 'slider-bright.png', id: 'slider' },
-            { file: 'slider-button.png' },
-            { file: 'color-wheel.png' }
+            { file: 'button-hover.png', id: 'button-hover' }
         ];
 
         const uiToolTextures = [
@@ -391,7 +388,6 @@ class Manager {
         const uiToolItemsTextures = [
             // TREE
             { file: 'tree/bush.png', id: 'tree-bush' },
-            { file: 'tree/contextSens.png', id: 'tree-contextSens' },
             { file: 'tree/contextSens.png', id: 'tree-contextSens' },
             { file: 'tree/cube.png', id: 'tree-cube' },
             { file: 'tree/simple.png', id: 'tree-simple' },
@@ -418,7 +414,7 @@ class Manager {
         autoload( uiTextures, ASSETS.texture.ui.root, this.assets.texture.ui );
         autoload(
             uiToolTextures,
-            ASSETS.texture.ui.tool,
+            ASSETS.texture.ui.root,
             this.assets.texture.ui.tool
         );
         autoload(

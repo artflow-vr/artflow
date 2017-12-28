@@ -403,11 +403,8 @@ class UI {
         let gridInfo = gridData || { columns: 1, rows: 1 };
 
         // Clone the texture to make a symetry for left arrow.
-        let rightArrowTex = textures.arrowLeft;
-        let leftArrowTex = rightArrowTex.clone();
-        leftArrowTex.needsUpdate = true;
-        leftArrowTex.wrapS = THREE.RepeatWrapping;
-        leftArrowTex.repeat.x = - 1;
+        let rightArrowTex = textures.arrowRight;
+        let leftArrowTex = textures.arrowLeft;
 
         // Creates parent layout, containing the Grid Layout and the
         // Horizontal Layout.

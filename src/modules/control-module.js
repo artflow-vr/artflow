@@ -103,6 +103,7 @@ class Control {
             background: AssetManager.assets.texture.ui.background,
             home: AssetManager.assets.texture.ui.home,
             arrowLeft: AssetManager.assets.texture.ui[ 'arrow-left' ],
+            arrowRight: AssetManager.assets.texture.ui[ 'arrow-right' ],
             buttonBackground: AssetManager.assets.texture.ui[ 'button-back' ],
             buttonHover: AssetManager.assets.texture.ui[ 'button-hover' ],
             colorWheel: AssetManager.assets.texture.ui[ 'color-wheel' ],

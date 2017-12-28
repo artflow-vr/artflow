@@ -173,7 +173,7 @@ class Main {
 
         // DEBUG
         //this._group.add( AssetManager.assets.model.tool.tree_preview );
-        this._group.add( AssetManager.assets.model.tool.brush_preview );
+        //this._group.add( AssetManager.assets.model.tool.brush_preview );
         // END DEBUG
 
     }
