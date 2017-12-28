@@ -93,7 +93,11 @@ class ToolModule {
         this._tools[ toolID ] = tool;
 
         // Sets the name of the preview to find it more easily.
-        if ( tool.preview ) tool.preview.name = 'preview';
+        if ( tool.preview ) {
+            tool.preview.name = 'preview';
+            tool.preview.position.z -= 0.07;
+            tool.preview.scale.set( 0.01, 0.01, 0.01 );
+        }
 
         // Adds the tool to the UI if a texture was provided.
         if ( !tool.uiTexture ) return;

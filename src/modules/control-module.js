@@ -245,8 +245,8 @@ class Control {
         controllerMesh.traverse( function ( child ) {
 
             if ( child instanceof THREE.Mesh && child.name !== 'tip' ) {
-                child.material.map = AssetManager.assets.texture[ 'controller-diffuse' ];
-                child.material.specularMap = AssetManager.assets.texture[ 'controller-specular' ];
+                child.material.map = AssetManager.assets.texture.env[ 'controller-diffuse' ];
+                child.material.specularMap = AssetManager.assets.texture.env[ 'controller-specular' ];
                 child.material.needsUpdate = true;
             }
 
