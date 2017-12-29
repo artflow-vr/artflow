@@ -27,35 +27,214 @@
 
 // OBJLoader is auto-added to the THREE namespace.
 import '../../vendor/OBJLoader';
+// MTLLoader is auto-added to the THREE namespace.
+import '../../vendor/MTLLoader';
 
-let TEXTURE = 'texture';
-let CUBEMAP = 'cubemap';
-let MODEL = 'model';
+
+const ROOT_FOLDER = 'assets/';
+const MODEL_FOLDER = ROOT_FOLDER + 'model/';
+const TEXTURE_FOLDER = ROOT_FOLDER + 'texture/';
+const ASSETS = {
+    model: {
+        tool: MODEL_FOLDER + 'tool/',
+        env: MODEL_FOLDER + 'env/'
+    },
+    texture: {
+        cubemap: TEXTURE_FOLDER + 'cubemap/',
+        env: TEXTURE_FOLDER + 'env/',
+        tool: TEXTURE_FOLDER + 'tool/',
+        ui: {
+            root: TEXTURE_FOLDER + 'ui/',
+            tool: TEXTURE_FOLDER + 'ui/tool/',
+            item: TEXTURE_FOLDER + 'ui/item/',
+            cubemap: null
+        }
+    }
+};
+
+const ASSETTYPE = {
+    TEXTURE: 0,
+    CUBEMAP: 1,
+    MODEL: 2,
+    SPRITESHEET: 3
+};
+
+let splitOnExt = ( file ) => {
+
+    let charIdx = file.lastIndexOf( '.' );
+    if ( charIdx === -1 ) return null;
+
+    let fileName = file.substr( 0, charIdx );
+
+    ++charIdx;
+    let ext = file.substr( charIdx, file.length - charIdx );
+
+    return { file: fileName, ext: ext };
+
+};
+
+let loadCubemap = ( file, ext, path, resolve, reject ) => {
+
+    let fullName = file + '.' + ext;
+
+    let img = new Image();
+    img.src = path + fullName;
+    img.addEventListener( 'error', () => {
+        reject();
+    } );
+
+    img.addEventListener( 'load', () => {
+
+        let w = img.width;
+        let h = img.height;
+
+        if ( h / 6 !== w ) {
+            let warn = '`' + fullName + '\' does not represent a cubemap.';
+            console.warn( 'AssetManager: loadCubemap(): ' + warn );
+            reject();
+            return;
+        }
+
+        let canvas = document.createElement( 'canvas' );
+        canvas.width = w;
+        canvas.height = h;
+
+        let context = canvas.getContext( '2d' );
+        context.drawImage( img, 0, 0, w, h );
+
+        let data = context.getImageData( 0, 0, w, h ).data;
+
+        let cubemapFaces = new Array( 6 );
+        let texture = new THREE.CubeTexture( cubemapFaces );
+        for ( let i = 0; i < 6; ++i ) {
+            let start = i * w * w * 4;
+            let rawData = data.slice( start, start + w * w * 4 - 1 );
+            // Copies back the image to the canvas
+            canvas.width = w;
+            canvas.height = w;
+            let idata = context.createImageData( w, w );
+            idata.data.set( rawData );
+            // Updates canvas with new data
+            context.putImageData( idata, 0, 0 );
+
+            cubemapFaces[ i ] = new Image();
+            cubemapFaces[ i ].src = canvas.toDataURL();
+        }
+        texture.needsUpdate = true;
+        resolve( texture );
+
+    }, false );
+
+
+};
 
 class Manager {
 
     constructor() {
 
-        this._assetRoot = 'assets/';
-        this._modelPath = this._assetRoot + 'models/';
-        this._texturePath = this._assetRoot + 'textures/';
-        this._cubemapPath = this._texturePath + 'cubemap/';
+        let buildAssetDict = ( base, target ) => {
 
-        this.assets = {
-            texture: {
-                ui: { }
+            for ( let k in base ) {
+                if ( k !== 'root' ) target[ k ] = {};
+                if ( typeof base[ k ] === 'object' )
+                    buildAssetDict( base[ k ], target[ k ] );
+            }
+
+        };
+
+        // Build an object with the same structure as loaded assets graph.
+        this.assets = {};
+        buildAssetDict( ASSETS, this.assets );
+
+        this._type = [
+            // Texture loading function
+            ( file, ext, path, resolve, reject ) => {
+
+                let fullName = file + '.' + ext;
+                if ( path ) this._textureLoader.setPath( path );
+                this._textureLoader.load( fullName, resolve, undefined, reject );
+
             },
-            cubemap: {},
-            model: {}
-        };
+            // Cubemap loading function
+            loadCubemap,
+            // Model loading function
+            ( file, ext, path, resolve, reject ) => {
 
-        this._type = {
-            texture: this._loadTexture.bind( this ),
-            cubemap: this._loadCubemap.bind( this ),
-            model: this._loadModel.bind( this )
-        };
+                let fullName = file + '.' + ext;
+                let fullPath = path || './';
 
-        this._OBJLoader = new THREE.OBJLoader();
+                let matLoader = new THREE.MTLLoader();
+                matLoader.setPath( fullPath );
+                matLoader.load( file + '.mtl', ( materials ) => {
+
+                    materials.preload();
+
+                    let loader = new THREE.OBJLoader();
+                    loader.setPath( fullPath );
+                    loader.setMaterials( materials );
+                    loader.load( fullName, resolve, undefined, reject );
+
+                }, undefined, () => {
+
+                    let loader = new THREE.OBJLoader();
+                    loader.setPath( fullPath );
+                    loader.load( fullName, resolve, undefined, reject );
+
+                } );
+
+            },
+            // Spritesheet loading function
+            ( file, ext, path, resolve, reject ) => {
+                let xhttp = new XMLHttpRequest();
+                xhttp.onreadystatechange = function() {
+
+                    let fileName = path + file + '.' + ext;
+
+                    if ( this.readyState !== 4 || this.status !== 200 ) return;
+
+                    let sheet = null;
+                    try {
+                        sheet = JSON.parse( xhttp.responseText );
+                    } catch ( e ) {
+                        let msg = 'failed to parse JSON file ' + fileName + ':';
+                        console.warn( 'AssetManager: loadSpritesheet(): ' + msg );
+                        console.warn( e );
+                        return;
+                    }
+
+                    let loader = new THREE.TextureLoader();
+                    loader.setPath( path );
+
+                    loader.load( sheet.file, ( tex ) => {
+
+                        let width = tex.image.width;
+                        let height = tex.image.height;
+
+                        let result = [];
+                        for ( let t of sheet.textures ) {
+                            let cpy = tex.clone();
+                            cpy.wrapS = cpy.wrapT = THREE.RepeatWrapping;
+                            cpy.repeat.x = t.w / width;
+                            cpy.repeat.y = t.h / height;
+                            cpy.offset.x = t.x / width;
+                            cpy.offset.y = t.y / height;
+                            cpy.userData = {};
+                            cpy.userData.uvWidth = t.w / width;
+                            cpy.needsUpdate = true;
+                            result.push( { id: t.name, data: cpy } );
+                        }
+
+                        resolve( result );
+
+                    }, undefined, reject );
+
+                };
+                xhttp.open( 'GET', path + file + '.' + ext, true );
+                xhttp.send();
+            }
+
+        ];
+
         this._textureLoader = new THREE.TextureLoader();
         this._cubeTextureLoader = new THREE.CubeTextureLoader();
 
@@ -67,38 +246,125 @@ class Manager {
 
     }
 
-    load( file, ext, type, path, assetID ) {
+    autoload( data ) {
 
-        if ( !( type in this._type ) ) {
-            let errorMsg = 'type \'' + type + '\' is not recognized.';
-            throw Error( 'AssetManager: ' + errorMsg );
+        if ( !data ) {
+            let warnMsg = 'no data object has been provided.';
+            console.warn( 'AssetManager: autoload(): ' + warnMsg );
+            return undefined;
         }
 
-        let self = this;
-        let id = ( assetID === undefined || assetID === null ) ? file :
-            assetID;
+        if ( !data.file || !data.file instanceof String ) {
+            let warnMsg = 'given object does not contain a valid `file`.';
+            console.warn( 'AssetManager: autoload(): ' + warnMsg );
+            return undefined;
+        }
 
-        if ( id in this.assets[ type ] ) {
+        let file = data.file;
+        let basePath = data.path || '';
+
+        let splitFile = splitOnExt( file );
+        if ( splitFile === null ) {
+            let warnMsg = 'asset ' + file + ' can not be autoloaded ';
+            warnMsg += 'if its name does not contain an extension.';
+            console.warn( 'AssetManager: autoload(): ' + warnMsg );
+            return undefined;
+        }
+
+        let fileType = null;
+        switch ( splitFile.ext ) {
+            case 'jpg':
+            case 'png':
+                fileType = data.isCubemap ? ASSETTYPE.CUBEMAP : ASSETTYPE.TEXTURE;
+                break;
+            case 'obj':
+                fileType = ASSETTYPE.MODEL;
+                break;
+            case 'spritesheet':
+                fileType = ASSETTYPE.SPRITESHEET;
+                break;
+            default:
+                let warnMsg = 'ext `' + splitFile.ext + '` not supported';
+                console.warn( 'AssetManager: autoload(): ' + warnMsg );
+        }
+
+        let promise = this.load( {
+            file: splitFile.file,
+            ext: splitFile.ext,
+            type: fileType,
+            path: basePath,
+            id: data.id,
+            container: data.container
+        } );
+        if ( !data.promises ) return promise;
+
+        // In-place adding to a promises list
+        data.promises.push( promise );
+        return undefined;
+    }
+
+    load( data ) {
+
+        if ( !data ) {
+            let warnMsg = 'no data object has been provided.';
+            console.warn( 'AssetManager: load(): ' + warnMsg );
+            return null;
+        }
+
+        if ( data.type === undefined
+            || data.type < 0 || data.type >= this._type.length ) {
+            let warnMsg = 'type \'' + data.type + '\' is not recognized.';
+            throw console.warn( 'AssetManager: load(): ' + warnMsg );
+        }
+
+        if ( !data.container || typeof data.container !== 'object' ) {
+            let warnMsg = 'no container provided to save the loaded asset.';
+            throw console.warn( 'AssetManager: load(): ' + warnMsg );
+        }
+
+        let type = data.type;
+        let fileName = null;
+        let ext = null;
+        let id = null;
+
+        // Checks whether we were given an absolute path or not.
+        if ( !data.absolute ) {
+            if ( !data.file || !data.ext ) {
+                let warnMsg = 'no extension or no file name provided.';
+                console.warn( 'AssetManager: load(): ' + warnMsg );
+                return null;
+            }
+            fileName = data.file;
+            ext = data.ext;
+        }
+
+        id = data.id || fileName;
+        if ( id in data.container ) {
             let warnMsg = 'asset ' + id + ' had already been registered.';
             console.warn( 'AssetManager: ' + warnMsg );
         }
 
-        return new Promise( function ( resolve ) {
+        return new Promise( ( resolve ) => {
 
-            let fixedPath = ( path === undefined ) ? '.' : path;
+            this._type[ type ]( fileName, ext, data.path, ( object ) => {
 
-            self._type[ type ]( file, ext, fixedPath, function (
-                object ) {
+                // Texture, Model, Cubemap loading...
+                if ( object.constructor !== Array ) {
+                    data.container[ id ] = object;
+                    resolve();
+                    return;
+                }
 
-                self.assets[ type ][ id ] = object;
+                // Multiple loading at once. e.g: spritesheet
+                for ( let elt of object ) {
+                    data.container[ elt.id ] = elt.data;
+                }
                 resolve();
 
             }, function () {
 
-                let warnMsg = 'failed to load \'' + file +
-                    '\'\n';
-                warnMsg +=
-                    'Please check the path, filename, and provided type.';
+                let warnMsg = 'failed to load \'' + fileName + '\'\n';
+                warnMsg += 'Please check the path, filename, and type.';
                 console.warn( 'AssetManager: ' + warnMsg );
 
             } );
@@ -107,103 +373,117 @@ class Manager {
 
     }
 
-    _loadTexture( file, ext, path, resolve, reject ) {
-
-        this._textureLoader.setPath( path );
-        this._textureLoader.load( file + ext, resolve, undefined, reject );
-
-    }
-
-    _loadModel( file, ext, path, resolve, reject ) {
-
-        this._OBJLoader.setPath( path );
-        this._OBJLoader.load( file + ext, resolve, undefined, reject );
-
-    }
-
-    _loadCubemap( file, ext, path, resolve, reject ) {
-
-        let urls = [
-            file + '-px' + ext, file + '-nx' + ext,
-            file + '-py' + ext, file + '-ny' + ext,
-            file + '-pz' + ext, file + '-nz' + ext
-        ];
-
-        this._cubeTextureLoader.setPath( path );
-        let toLoad = this._cubeTextureLoader.load( urls, resolve,
-            undefined, reject );
-        toLoad.format = THREE.RGBFormat;
-
-    }
-
     _loadRequiredAssets() {
 
+        let promises = [];
         // Does not return a promise, because the loading is synchronous.
         this._loadPrimitives();
+        this._loadDefaultAssets( promises );
 
-        let promises = [];
-
-        promises.push(
-            this.load( 'teleporter', '.obj', MODEL, this._modelPath )
-        );
-        promises.push(
-            this.load( 'vive-controller', '.obj', MODEL, this._modelPath )
-        );
-        promises.push(
-            this.load( 'controller-diffuse', '.png', TEXTURE, this._texturePath )
-        );
-        promises.push(
-            this.load( 'controller-specular', '.png', TEXTURE, this._texturePath )
-        );
-        promises.push(
-            this.load( 'nightsky', '.png',
-                CUBEMAP, this._cubemapPath, 'cubemap' )
-        );
-        promises.push(
-            this.load( 'floor', '.jpg', TEXTURE, this._texturePath )
-        );
-        promises.push(
-            this.load( 'brush3', '.png', TEXTURE, this._texturePath,
-                'brush1' )
-        );
-        promises.push(
-            this.load( 'brush3_N', '.png',
-                TEXTURE, this._texturePath, 'brush1_N' )
-        );
-        promises.push(
-            this.load( 'particle_raw', '.png',
-                TEXTURE, this._texturePath, 'particle_raw' )
-        );
-        promises.push(
-            this.load( 'perlin-512', '.png',
-                TEXTURE, this._texturePath, 'particle_noise' )
-        );
-        promises.push(
-            this.load( 'water_normal', '.png', TEXTURE, this._texturePath )
-        );
-        promises.push(
-            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
-                'particle_position' )
-        );
-        promises.push(
-            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
-                'particle_velocity' )
-        );
-        promises.push(
-            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
-                'particle_position_out' )
-        );
-        promises.push(
-            this.load( 'noise', '.jpg', TEXTURE, this._texturePath,
-                'particle_velocity_out' )
-        );
-
-        this._loadUIAssets( promises );
-
+        //this._loadUIAssets( promises );
         return Promise.all( promises );
 
     }
 
+    _loadDefaultAssets( promises ) {
+
+        let autoload = ( list, path, container, isCubemap ) => {
+            for ( let elt of list ) {
+                this.autoload( {
+                    file: elt.file, path: path,
+                    promises: promises, id: elt.id, container: container,
+                    isCubemap: isCubemap
+                } );
+            }
+        };
+
+        const cubemapTextures = [
+            { file: 'cartoon-cloudy.png' },
+            { file: 'cartoon-nightsky.png' },
+            { file: 'sunset-dark.png' },
+            { file: 'galaxy.jpg' }
+        ];
+
+        const envTextures = [
+            { file: 'controller-diffuse.png' },
+            { file: 'controller-specular.png' },
+            { file: 'floor.jpg' }
+        ];
+
+        const toolTextures = [
+            { file: 'brush3.png', id: 'brush1' },
+            { file: 'brush3_N.png', id: 'brush1_N' },
+            { file: 'particle_raw.png', id: 'brush1_N' },
+            { file: 'perlin-512.png', id: 'particle_noise' },
+            { file: 'noise.jpg', id: 'particle_position' },
+            { file: 'noise.jpg', id: 'particle_velocity' }, // Why?
+            { file: 'noise.jpg', id: 'particle_position_out' }, // Why?
+            { file: 'noise.jpg', id: 'particle_velocity_out' }, // Why?
+            { file: 'water_normal.png' }
+        ];
+
+        const uiTextures = [
+            { file: 'ui.spritesheet' },
+            { file: 'background.png', id: 'background' },
+            { file: 'button-hover.png', id: 'button-hover' }
+        ];
+
+        const uiCubemap = [
+            { file: 'skyboxes.spritesheet' }
+        ];
+
+        const uiToolTextures = [
+            { file: 'tools.spritesheet' }
+        ];
+
+        const uiToolItemsTextures = [
+            // TREE
+            { file: 'tree/bush.png', id: 'tree-bush' },
+            { file: 'tree/contextSens.png', id: 'tree-contextSens' },
+            { file: 'tree/cube.png', id: 'tree-cube' },
+            { file: 'tree/simple.png', id: 'tree-simple' },
+            { file: 'tree/tilt.png', id: 'tree-tilt' },
+            // BRUSH
+            { file: 'brush/brush_items.spritesheet' }
+        ];
+
+        const toolModels = [
+            { file: 'teleporter.obj' },
+            { file: 'water_preview.obj' },
+            { file: 'tree_preview.obj' },
+            { file: 'particle_preview.obj' },
+            { file: 'brush_preview.obj' }
+
+        ];
+
+        const envModels = [
+            { file: 'vive-controller.obj' }
+        ];
+
+        autoload(
+            cubemapTextures,
+            ASSETS.texture.cubemap,
+            this.assets.texture.cubemap,
+            true
+        );
+        autoload( envTextures, ASSETS.texture.env, this.assets.texture.env );
+        autoload( toolTextures, ASSETS.texture.tool, this.assets.texture.tool );
+        autoload( uiTextures, ASSETS.texture.ui.root, this.assets.texture.ui );
+        autoload( uiCubemap, ASSETS.texture.ui.root, this.assets.texture.ui.cubemap );
+        autoload(
+            uiToolTextures,
+            ASSETS.texture.ui.root,
+            this.assets.texture.ui.tool
+        );
+        autoload(
+            uiToolItemsTextures,
+            ASSETS.texture.ui.item,
+            this.assets.texture.ui.item
+        );
+        autoload( toolModels, ASSETS.model.tool, this.assets.model.tool );
+        autoload( envModels, ASSETS.model.env, this.assets.model.env );
+
+    }
 
     /**
      *
@@ -224,230 +504,11 @@ class Manager {
         this.assets.model.line = line;
 
     }
-
-    _loadUIAssets( promises ) {
-
-        promises.push(
-            this.load( 'ui/background', '.png', TEXTURE, this._texturePath,
-                'ui-background' )
-        );
-        promises.push(
-            this.load( 'ui/button-background', '.png', TEXTURE, this._texturePath,
-                'ui-button-back' )
-        );
-        promises.push(
-            this.load( 'ui/button-hover', '.png', TEXTURE, this._texturePath,
-                'ui-button-hover' )
-        );
-        promises.push(
-            this.load( 'ui/home-icon', '.png', TEXTURE, this._texturePath,
-                'ui-home' )
-        );
-        promises.push(
-            this.load( 'ui/arrow-icon', '.png', TEXTURE, this._texturePath,
-                'ui-arrow-left' )
-        );
-        promises.push(
-            this.load( 'ui/color-wheel', '.png', TEXTURE, this._texturePath,
-                'ui-color-wheel' )
-        );
-        promises.push(
-            this.load( 'ui/slider-bright', '.png', TEXTURE, this._texturePath,
-                'ui-slider' )
-        );
-        promises.push(
-            this.load( 'ui/slider-button', '.png', TEXTURE, this._texturePath,
-                'ui-slider-button' )
-        );
-
-        // Loads tool textures
-        for ( let elt of ['brush', 'particles', 'water', 'tree'] ) {
-            promises.push(
-                this.load( 'ui/tools/' + elt + '-icon', '.png',
-                    TEXTURE, this._texturePath, 'ui-tool-' + elt )
-            );
-        }
-
-        //
-        // Brush items
-        //
-        promises.push(
-            this.load(
-                'ui/items/brush/unified', '.png',
-                TEXTURE, this._texturePath, 'brush-item-unified'
-            )
-        );
-        promises.push(
-            this.load(
-                'ui/items/brush/confettis', '.png',
-                TEXTURE, this._texturePath, 'confetti-item'
-            )
-        );
-        promises.push(
-            this.load(
-                'ui/items/brush/snow', '.png',
-                TEXTURE, this._texturePath, 'snow-item'
-            )
-        );
-        promises.push(
-            this.load(
-                'ui/items/brush/spiral', '.png',
-                TEXTURE, this._texturePath, 'spiral-item'
-            )
-        );
-
-        //
-        // Tree items
-        //
-        for ( let elt of [ 'bush', 'contextSens', 'cube', 'simple', 'tilt' ] ) {
-            promises.push(
-                this.load( 'ui/items/tree/' + elt, '.png',
-                    TEXTURE, this._texturePath, 'tree-item-' + elt )
-            );
-        }
-
-        promises.push(
-            this.load(
-                'ui/items/brush/rainbow', '.png',
-                TEXTURE, this._texturePath, 'brush-item-rainbow'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/rainbow', '.png',
-                TEXTURE, this._texturePath, 'brush-item-rainbow'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/square', '.png',
-                TEXTURE, this._texturePath, 'brush-item-squares'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/wave', '.png',
-                TEXTURE, this._texturePath, 'brush-item-wave'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/blue', '.png',
-                TEXTURE, this._texturePath, 'brush-item-blue'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/matrix', '.png',
-                TEXTURE, this._texturePath, 'brush-item-matrix'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/fractal', '.png',
-                TEXTURE, this._texturePath, 'brush-item-fractal'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/lightning', '.png',
-                TEXTURE, this._texturePath, 'brush-item-electric'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/stars', '.png',
-                TEXTURE, this._texturePath, 'brush-item-stars'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/spiral', '.png',
-                TEXTURE, this._texturePath, 'brush-item-cryptic'
-            )
-        );
-
-        /*promises.push(
-            this.load(
-                'ui/items/brush/baianat', '.png',
-                TEXTURE, this._texturePath, 'brush-item-blue'
-            )
-        );*/
-
-        /*promises.push(
-            this.load(
-                'ui/items/brush/epic_coders', '.png',
-                TEXTURE, this._texturePath, 'brush-item-wave'
-            )
-        );*/
-
-        /*promises.push(
-            this.load(
-                'ui/items/brush/freepik_2', '.png',
-                TEXTURE, this._texturePath, 'brush-item-stars'
-            )
-        );*/
-
-        promises.push(
-            this.load(
-                'ui/items/brush/freepik_6', '.png',
-                TEXTURE, this._texturePath, 'brush-item-void'
-            )
-        );
-
-        promises.push(
-            this.load(
-                'ui/items/brush/rasta', '.png',
-                TEXTURE, this._texturePath, 'brush-item-trippy-rasta'
-            )
-        );
-
-        /*promises.push(
-            this.load(
-                'ui/items/brush/nikita_golubev', '.png',
-                TEXTURE, this._texturePath, 'brush-item-hyper-green'
-            )
-        );*/
-
-        /*promises.push(
-            this.load(
-                'ui/items/brush/nikita_golubev', '.png',
-                TEXTURE, this._texturePath, 'brush-item-rasta'
-            )
-        );*/
-
-        /*promises.push(
-            this.load(
-                'ui/items/brush/nikita_golubev', '.png',
-                TEXTURE, this._texturePath, 'brush-item-electric'
-            )
-        );*/
-
-        /*promises.push(
-            this.load(
-                'ui/items/brush/smash_icons_3', '.png',
-                TEXTURE, this._texturePath, 'brush-item-voronoi'
-            )
-        );*/
-
-    }
-
 }
 
 let AssetManager = new Manager();
 
 export {
     AssetManager,
-    TEXTURE,
-    CUBEMAP,
-    MODEL
+    ASSETTYPE
 };

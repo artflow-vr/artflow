@@ -37,11 +37,6 @@ let AssetManager = Utils.AssetManager;
 let FPSControls = Controller.FPSControls;
 let ViveController = Controller.ViveController;
 
-const ACTIONS = {
-    trigger: 'interact',
-    menu: 'menu'
-};
-
 /**
  * Maps known command event from keyboard, mouse, or VR Headset controllers
  * to custom Artflow events. This structure allows to use a single pipeline
@@ -88,8 +83,9 @@ class Control {
             orientation: new THREE.Quaternion()
         };
 
+        this._controllers = new Array( 2 );
+
         this._fpsController = null;
-        this._controllers = null;
         this._currentController = null;
 
         this._mouseUseEvent = null;
@@ -104,14 +100,15 @@ class Control {
         // Creates the UI and add initial offsets.
         // The UI will grow when new item will be registered.
         let uiTextures = {
-            background: AssetManager.assets.texture[ 'ui-background' ],
-            home: AssetManager.assets.texture[ 'ui-home' ],
-            arrowLeft: AssetManager.assets.texture[ 'ui-arrow-left' ],
-            buttonBackground: AssetManager.assets.texture[ 'ui-button-back' ],
-            buttonHover: AssetManager.assets.texture[ 'ui-button-hover' ],
-            colorWheel: AssetManager.assets.texture[ 'ui-color-wheel' ],
-            slider: AssetManager.assets.texture[ 'ui-slider' ],
-            sliderButton: AssetManager.assets.texture[ 'ui-slider-button' ]
+            background: AssetManager.assets.texture.ui.background,
+            home: AssetManager.assets.texture.ui.home,
+            arrowLeft: AssetManager.assets.texture.ui[ 'arrow-left' ],
+            arrowRight: AssetManager.assets.texture.ui[ 'arrow-right' ],
+            buttonBackground: AssetManager.assets.texture.ui[ 'button-back' ],
+            buttonHover: AssetManager.assets.texture.ui[ 'button-hover' ],
+            colorWheel: AssetManager.assets.texture.ui[ 'color-wheel' ],
+            slider: AssetManager.assets.texture.ui.slider,
+            sliderButton: AssetManager.assets.texture.ui[ 'slider-button' ]
         };
 
         this.vr = vr;
@@ -244,18 +241,16 @@ class Control {
     _initVRControllers() {
 
         let renderer = MainView.getRenderer();
-        let controllerMesh = AssetManager.assets.model[ 'vive-controller' ];
+        let controllerMesh = AssetManager.assets.model.env[ 'vive-controller' ];
         controllerMesh.traverse( function ( child ) {
 
             if ( child instanceof THREE.Mesh && child.name !== 'tip' ) {
-                child.material.map = AssetManager.assets.texture[ 'controller-diffuse' ];
-                child.material.specularMap = AssetManager.assets.texture[ 'controller-specular' ];
+                child.material.map = AssetManager.assets.texture.env[ 'controller-diffuse' ];
+                child.material.specularMap = AssetManager.assets.texture.env[ 'controller-specular' ];
                 child.material.needsUpdate = true;
             }
 
         } );
-
-        this._controllers = new Array( 2 );
 
         // Makes copy of certain materials / meshes.
         // This allows us to modify for instance the color of the current

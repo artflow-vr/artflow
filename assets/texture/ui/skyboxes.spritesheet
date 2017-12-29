@@ -1,0 +1,9 @@
+{
+    "file": "skyboxes.png",
+    "textures": [
+        { "name": "cartoon-cloudy", "x": "0", "y": "536", "w": "488", "h": "488" },
+        { "name": "galaxy", "x": "536", "y": "536", "w": "488", "h": "488" },
+        { "name": "sunset-dark", "x": "0", "y": "0", "w": "488", "h": "488" },
+        { "name": "cartoon-nightsky", "x": "536", "y": "0", "w": "488", "h": "488" }
+    ]
+}

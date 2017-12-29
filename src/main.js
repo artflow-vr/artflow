@@ -28,6 +28,7 @@ import * as Artflow from './artflow';
 
 let ModuleManager = Artflow.modules.ModuleManager;
 let ControlModule = Artflow.modules.ControlModule;
+let ToolModule = Artflow.modules.ToolModule;
 let AssetManager = Artflow.utils.AssetManager;
 let MainView = Artflow.view.MainView;
 let WebVR = Artflow.vr.WebVR;
@@ -67,7 +68,6 @@ class Main {
                     this._renderer.vr.enabled = true;
                     this._renderer.vr.standing = true;
                     this._renderer.vr.setDevice( display );
-
                     ModuleManager.vr = true;
                     this._initData( w, h, callback );
 
@@ -129,6 +129,9 @@ class Main {
 
         MainView.init( w, h, this._renderer, ModuleManager.vr );
         ModuleManager.init();
+
+        // Gives an access to the controllers for modules needing it.
+        ToolModule.setControllerRef( ControlModule._controllers );
 
         this.resize( w, h );
         this._renderer.animate( this._animate.bind( this ) );

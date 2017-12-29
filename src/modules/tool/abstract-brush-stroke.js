@@ -20,7 +20,6 @@ export default class AbstractBrushStroke {
             enablePressure: false,
             color: 0x808080,
             materialId: this.materialId
-            //materialId: 'material_with_tex'
         };
 
         this._helper = new BrushHelper( optionsHelper );
@@ -33,18 +32,18 @@ export default class AbstractBrushStroke {
 
     use( data ) {
 
-        this._helper.addPoint( data.position.world, data.orientation, data.pressure );
+        this._helper.addPoint(
+            data.position.world, data.orientation, data.pressure
+        );
 
     }
 
     trigger( brushTool ) {
 
         this.mesh = this._helper.createMesh();
-
-        //this.helper = new THREE.VertexNormalsHelper( this.mesh, 1, 0xff0000, 1 );
-
-        //this.worldGroup.addTHREEObject( this.helper );
         brushTool.worldGroup.addTHREEObject( this.mesh );
+
+        console.log( this.mesh );
 
         return new AddCommand( brushTool.worldGroup, this.mesh );
 

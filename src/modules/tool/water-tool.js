@@ -25,8 +25,6 @@
 * SOFTWARE.
 */
 
-import '../../../vendor/BufferGeometryUtils';
-
 import AbstractTool from './abstract-tool';
 import WaterShader from '../../shader/water/water-shader';
 import { AssetManager } from '../../utils/asset-manager';
@@ -78,7 +76,7 @@ export default class WaterTool extends AbstractTool {
         this.dynamic = true;
 
         this.setOptionsIfUndef( {
-            speed: 2,
+            speed: 0.85,
             color: new THREE.Vector3()
         } );
 
@@ -206,8 +204,8 @@ export default class WaterTool extends AbstractTool {
             m.frustumCulled = false;
             m.drawMode = THREE.TrianglesDrawMode; //default
 
-            let cubemap = AssetManager.assets.cubemap.cubemap;
-            m.material.uniforms.normalMap.value = AssetManager.assets.texture.water_normal;
+            let cubemap = AssetManager.assets.texture.cubemap.cubemap;
+            m.material.uniforms.normalMap.value = AssetManager.assets.texture.tool.water_normal;
             m.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
             m.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
             m.material.uniforms.uSpeed.value = this.options.speed;
@@ -228,12 +226,12 @@ export default class WaterTool extends AbstractTool {
     }
 
     useAxisChanged( data ) {
-        
+
         //data.controller.sizeMesh.scale.x * 1.0;
         let val = data.controller.sizeMesh.scale.x;
         let scale = this._wireframe.scale;
         this._wireframe.scale.set( val, scale.y, scale.z );
-        
+
     }
 
     release() {}

@@ -88,15 +88,17 @@ ToolModule.register('MyNiceTool', toolDescription);
 * [ ] Mouse pointer
 
 #### Brushes
-* [X] Add pressure
-* [ ] Remove call to ToolModule from BrushHelper. (The dependecy should come from the UI, or somewhere else).
-* [ ] Remove hardcoded strokes from AbstractBrushTool
-* [ ] Move BrushHelper to BrushTool instead of AbstractBrushTool
 * [ ] Fix stroke not working when we do not change the size of the brush
 * [ ] Use color in when possible, even if the stroke is dynamic.
+* [ ] Fix missing stroke in UI (wrongly registered)
+* [X] Remove hardcoded strokes from AbstractBrushTool
+* [X] Remove call to ToolModule from BrushHelper. (The dependecy should come from the UI, or somewhere else).
+* [X] Add pressure
+* [X] Move BrushHelper to BrushTool instead of AbstractBrushTool
 
 #### Particles
 * [ ] Fix particles not working in VR
+* [ ] Use default option. When registering items,80% of the values are the same except for shaders.
 
 #### Water
 * [ ] Reduce speed in VR

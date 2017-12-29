@@ -56,7 +56,6 @@ class EventDispatcher {
         }
 
         this._events[ priority ][ eventID ].push( callback );
-        //this._stoppedEvents[ priority ][ eventID ] = false;
 
     }
 
