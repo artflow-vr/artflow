@@ -81,11 +81,10 @@ ToolModule.register('MyNiceTool', toolDescription);
 #### All
 * [ ] Use pow2 textures. It would be nice to reduce the number of requests, by merging textures together and using different UVs (for instance for the UI).
 * [ ] Add the shake events
-* [ ] Add icon above controler showing which tool is selected
 * [ ] Add tool to take screenshot
 * [ ] Add small tutorial showing how to open menu, how to draw, etc...
-* [ ] Add cubemap selection
-* [ ] Mouse pointer
+* [X] Add icon above controler showing which tool is selected
+* [X] Add cubemap selection
 
 #### Brushes
 * [ ] Fix stroke not working when we do not change the size of the brush
