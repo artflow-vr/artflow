@@ -37,6 +37,15 @@ const DEFAULT_OPTIONS = {
     computeTangents: false
 };
 
+const DEFAULT_MAT = new THREE.MeshStandardMaterial( {
+    side: THREE.DoubleSide,
+    transparent: true,
+    depthTest: false,
+    metalness: 0.0,
+    roughness: 0.85,
+    color: 0x000000
+} );
+
 export default class BrushHelper {
 
     constructor( options, uvMode ) {
@@ -86,8 +95,8 @@ export default class BrushHelper {
 
         };
 
-        this._material = this.options.material;
-        if ( 'color' in this._material )
+        this._material = this.options.material || DEFAULT_MAT.clone();
+        if ( this._material.color )
             this._material.color.setHex( this.options.color );
 
     }

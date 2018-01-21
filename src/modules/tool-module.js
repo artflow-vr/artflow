@@ -543,13 +543,21 @@ class ToolModule {
                     'normal': toolTextures.brush1_N
                 }
             },
-            squareAnim: {
-                uiTexture: itemsTextures[ 'brush-square' ],
-                data: { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 }
+            waveAnim: {
+                uiTexture: itemsTextures[ 'brush-wave' ],
+                data: { shaderPath: 'wave-shader' }
             },
             rainbowAnim: {
                 uiTexture: itemsTextures[ 'brush-rainbow' ],
                 data: { shaderPath: 'rainbow-shader', timeModCondition: 3 }
+            },
+            electricAnim: {
+                uiTexture: itemsTextures[ 'brush-lightning' ],
+                data: { shaderPath: 'electric-shader', thicknessMult: 2.0 }
+            },
+            squareAnim: {
+                uiTexture: itemsTextures[ 'brush-square' ],
+                data: { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 }
             },
             matrixAnim: {
                 uiTexture: itemsTextures[ 'brush-matrix' ],
@@ -558,10 +566,6 @@ class ToolModule {
             fractalAnim: {
                 uiTexture: itemsTextures[ 'brush-fractal' ],
                 data: { shaderPath: 'fractal-shader' }
-            },
-            electricAnim: {
-                uiTexture: itemsTextures[ 'brush-lightning' ],
-                data: { shaderPath: 'electric-shader', thicknessMult: 2.0 }
             },
             starsAnim: {
                 uiTexture: itemsTextures[ 'brush-stars' ],
@@ -590,10 +594,6 @@ class ToolModule {
             voronoiAnim: {
                 uiTexture: itemsTextures[ 'brush-confettis  ' ],
                 data: { shaderPath: 'voronoi-shader' }
-            },
-            waveAnim: {
-                uiTexture: itemsTextures[ 'brush-wave' ],
-                data: { shaderPath: 'wave-shader' }
             }
         } );
 

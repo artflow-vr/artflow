@@ -75,9 +75,8 @@ export default class AbstractBrushAnimatedStroke extends AbstractBrushStroke {
             if ( this.timeMod )
                 m2.material.uniforms.uTime.value %= this.timeMod;
             m2.material.uniforms.uTime.value += this.timeOffset;
-            // TODO: Remove Vector2 instanciation, you can just instanciate it
-            // once and update its value.
-            m2.material.uniforms.vResolution.value = new THREE.Vector2( MainView._dimensions.width, MainView._dimensions.height );
+            m2.material.uniforms.vResolution.value.x = MainView._dimensions.width;
+            m2.material.uniforms.vResolution.value.y = MainView._dimensions.height;
         }
     }
 }
