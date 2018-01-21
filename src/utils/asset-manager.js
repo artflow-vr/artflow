@@ -400,8 +400,7 @@ class Manager {
         const cubemapTextures = [
             { file: 'cartoon-cloudy.png' },
             { file: 'cartoon-nightsky.png' },
-            { file: 'sunset-dark.png' },
-            { file: 'galaxy.jpg' }
+            { file: 'sunset-dark.png' }
         ];
 
         const envTextures = [

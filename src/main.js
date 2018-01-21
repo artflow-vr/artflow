@@ -127,7 +127,10 @@ class Main {
 
     _initData( w, h, callback ) {
 
-        MainView.init( w, h, this._renderer, ModuleManager.vr );
+        // Hides the 'loading...' message,
+        // and keeps reference to renderer.
+        MainView.ready( w, h, this._renderer, ModuleManager.vr );
+
         ModuleManager.init();
 
         // Gives an access to the controllers for modules needing it.
