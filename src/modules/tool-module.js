@@ -41,6 +41,8 @@ import PositionUpdate from '../shader/particle/position-update';
 import PositionHelix from '../shader/particle/position-helix';
 import VelocityUpdate from '../shader/particle/velocity-update';
 
+const BASE_TOOL= 'Brush';
+
 class ToolModule {
 
     constructor() {
@@ -94,15 +96,18 @@ class ToolModule {
 
         // Sets the name of the preview to find it more easily.
         if ( tool.preview ) {
-            tool.preview.name = 'preview';
-            tool.preview.position.z -= 0.07;
-            tool.preview.scale.set( 0.01, 0.01, 0.01 );
+            let prev = tool.preview;
+            prev.name = 'preview';
+            prev.position.z -= 0.07;
+            prev.scale.set( 0.01, 0.01, 0.01 );
+
+            tool.previews = new Array( 2 );
+            tool.previews[ 0 ] = prev.clone();
+            tool.previews[ 1 ] = prev.clone();
         }
 
         // Adds the tool to the UI if a texture was provided.
         if ( !tool.uiTexture ) return;
-
-        console.log( tool.uiTexture );
 
         UI.addTool( { id: toolID, data: tool },
             AssetManager.assets.texture.ui[ 'button-back' ],
@@ -232,8 +237,8 @@ class ToolModule {
         this.instanciate( 'Water' );
         this.instanciate( 'Tree' );
 
-        this._selected[ 0 ] = this._instance.Water[ 0 ];
-        this._selected[ 1 ] = this._instance.Water[ 1 ];
+        this._selected[ 0 ] = this._instance[ BASE_TOOL ][ 0 ];
+        this._selected[ 1 ] = this._instance[ BASE_TOOL ][ 1 ];
 
         // TODO: Add onEnterChild & onExitChild event trigger.
 
@@ -311,7 +316,9 @@ class ToolModule {
     setControllerRef( controllers ) {
 
         this._controllers = controllers;
-
+        // Adds preview above each controller.
+        this._changeControllerPreview( 0, BASE_TOOL );
+        this._changeControllerPreview( 1, BASE_TOOL );
     }
 
     _onColorChange( color ) {
@@ -334,24 +341,7 @@ class ToolModule {
         //
         // Handles Tool preview
         //
-
-        if ( this._controllers === null
-            || controllerID >= ( this._controllers.filter( () => true ).length ) )
-            return;
-
-        let controller = this._controllers[ controllerID ];
-
-        // Removes previous preview.
-        for ( let i = controller.children.length - 1; i >= 0; i-- ) {
-            if ( controller.children[ i ].name === 'preview' ) {
-                controller.remove( controller.children[ i ] );
-                break;
-            }
-        }
-
-        // Adds new preview
-        let preview = this._tools[ toolID ].preview;
-        if ( preview ) controller.add( preview );
+        this._changeControllerPreview( controllerID, toolID );
 
     }
 
@@ -392,6 +382,35 @@ class ToolModule {
 
             }
         };
+
+    }
+
+
+    /**
+     * Changes the 3D model displayed on a given controller.
+     *
+     * @memberof ToolModule
+     */
+    _changeControllerPreview( controllerID, toolID ) {
+
+        if ( this._controllers === null ||
+            controllerID >= ( this._controllers.filter( () => true ).length ) )
+            return;
+
+
+        let controller = this._controllers[ controllerID ];
+
+        // Removes previous preview.
+        for ( let i = controller.children.length - 1; i >= 0; i-- ) {
+            if ( controller.children[ i ].name === 'preview' ) {
+                controller.remove( controller.children[ i ] );
+                break;
+            }
+        }
+
+        // Adds new preview
+        let preview = this._tools[ toolID ].previews[ controllerID ];
+        if ( preview ) controller.add( preview );
 
     }
 
