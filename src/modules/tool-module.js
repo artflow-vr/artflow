@@ -1,29 +1,29 @@
 /**
-* ArtFlow application
-* https://github.com/artflow-vr/artflow
-*
-* MIT License
-*
-* Copyright (c) 2017 artflow
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+ * ArtFlow application
+ * https://github.com/artflow-vr/artflow
+ *
+ * MIT License
+ *
+ * Copyright (c) 2017 artflow
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 import * as Tool from './tool/tool';
 import * as Utils from '../utils/utils';
@@ -455,13 +455,17 @@ class ToolModule {
             data: {
                 brushSize: 3,
                 thickness: 10,
-                initialParticlesPerEmitter: 20,
-                maxParticlesPerEmitter: 512 * 512,
-                bufferSide: 512,
-                maxEmitters: 1000,
+                initialParticlesPerEmitter: 20 * 20,
+                maxParticlesPerEmitter: 20 * 20,
+                bufferSide: 20,
+                maxEmitters: 20,
                 debugPlane: false,
-                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
+                positionInitialTex: () => {
+                    return THREE.ImageUtils.generateRandomDataTexture( 20, 20 );
+                },
+                velocityInitialTex: () => {
+                    return THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) );
+                },
                 renderingUniforms: {
                     pointMaxSize: { type: 'f', value: 200 },
                     brushSize: { type: 'f', value: 3 } },
@@ -480,12 +484,16 @@ class ToolModule {
                 brushSize: 3,
                 thickness: 10,
                 initialParticlesPerEmitter: 20,
-                maxParticlesPerEmitter: 512 * 512,
-                bufferSide: 512,
+                maxParticlesPerEmitter: 20 * 20,
+                bufferSide: 20,
                 maxEmitters: 20,
                 debugPlane: false,
-                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
+                positionInitialTex: () => {
+                    return THREE.ImageUtils.generateRandomDataTexture( 20, 20 );
+                },
+                velocityInitialTex: () => {
+                    return THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) );
+                },
                 renderingUniforms: {
                     pointMaxSize: { type: 'f', value: 20 },
                     brushSize: { type: 'f', value: 3 },
@@ -508,12 +516,16 @@ class ToolModule {
                 brushSize: 3,
                 thickness: 10,
                 initialParticlesPerEmitter: 20,
-                maxParticlesPerEmitter: 512 * 512,
-                bufferSide: 512,
+                maxParticlesPerEmitter: 20 * 20,
+                bufferSide: 20,
                 maxEmitters: 20,
                 debugPlane: false,
-                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                velocityInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
+                positionInitialTex: () => {
+                    return THREE.ImageUtils.generateRandomDataTexture( 20, 20 );
+                },
+                velocityInitialTex: () => {
+                    return THREE.ImageUtils.generateRandomDataTexture( 20, 20 );
+                },
                 renderingUniforms: {
                     pointMaxSize: { type: 'f', value: 20 },
                     brushSize: { type: 'f', value: 3 }

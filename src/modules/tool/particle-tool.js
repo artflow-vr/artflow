@@ -30,6 +30,11 @@ import { AssetManager } from '../../utils/asset-manager';
 import BaseShader from '../../shader/particle/base-shader';
 import MainView from '../../view/main-view';
 
+function isFunction( functionToCheck ) {
+    let getType = {};
+    return getType.toString.call( functionToCheck ) === '[object Function]';
+}
+
 class PrimitivesRenderer {
     constructor( options ) {
         this.options = options;
@@ -85,11 +90,16 @@ class PrimitivesRenderer {
         this._velocityRT1 = new THREE.WebGLRenderTarget( this._bufferSide, this._bufferSide, renderTargetParams );
         this._velocityRT2 = new THREE.WebGLRenderTarget( this._bufferSide, this._bufferSide, renderTargetParams );
 
+        if ( isFunction( this.options.positionInitialTex ) )
+            this.options._positionInitialTex = this.options.positionInitialTex();
+        this._positionBufferTex1 = this.options.positionInitialTex;
         this._positionBufferTex1 = this.options.positionInitialTex;
         this._positionInitialTex = THREE.ImageUtils.copyDataTexture( this._positionBufferTex1,
             this._bufferSide, this._bufferSide );
         this._positionBufferTex1.needsUpdate = true;
 
+        if ( isFunction( this.options.velocityInitialTex ) )
+            this.options.velocityInitialTex = this.options.velocityInitialTex();
         this._velocityBufferTex1 = this.options.velocityInitialTex;
         this._velocityInitialTex = THREE.ImageUtils.copyDataTexture( this._velocityBufferTex1,
             this._bufferSide, this._bufferSide );
