@@ -129,6 +129,10 @@ export default class TeleporterTool extends AbstractTool {
             MainView.getCamera().getWorldPosition(), position
         );
 
+        console.log( MainView.getCamera().getWorldPosition() );
+        console.log( position );
+        //console.log( direction );
+
         MainView.getGroup().position.x += direction.x;
         MainView.getGroup().position.z += direction.z;
 

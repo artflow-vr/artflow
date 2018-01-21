@@ -445,6 +445,7 @@ class ToolModule {
     _registerBasicItems() {
 
         let itemsTextures = AssetManager.assets.texture.ui.item;
+        let toolTextures = AssetManager.assets.texture.tool;
 
         //
         // PARTICLES
@@ -527,7 +528,21 @@ class ToolModule {
             }
         } );
 
+        //
+
         this.registerToolItems( 'Brush', {
+            brushBasic: {
+                uiTexture: itemsTextures[ 'brush-basic' ],
+                data: { 'static': true }
+            },
+            brushUnified: {
+                uiTexture: itemsTextures[ 'brush-unified' ],
+                data: {
+                    'static': true,
+                    'texture': toolTextures.brush1,
+                    'normal': toolTextures.brush1_N
+                }
+            },
             squareAnim: {
                 uiTexture: itemsTextures[ 'brush-square' ],
                 data: { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 }

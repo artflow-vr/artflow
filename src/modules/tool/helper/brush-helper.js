@@ -37,16 +37,6 @@ const DEFAULT_OPTIONS = {
     computeTangents: false
 };
 
-const DEFAULT_MAT = {
-    noTexutre: new THREE.MeshStandardMaterial( {
-        side: THREE.DoubleSide,
-        transparent: true,
-        depthTest: false,
-        metalness: 0.0,
-        roughness: 0.3
-    } )
-};
-
 export default class BrushHelper {
 
     constructor( options, uvMode ) {
@@ -55,8 +45,7 @@ export default class BrushHelper {
         setPropIfUndefined( this.options, {
             brushThickness: 1.0,
             maxSpread: 1,
-            color: 0x808080,
-            materialId: 'material_without_tex'
+            color: 0x808080
         } );
 
         // We can choose how the UVs should be computed.
@@ -97,8 +86,7 @@ export default class BrushHelper {
 
         };
 
-        // TOOD: Helper shound not access the object pool directly like this.
-        this._material = DEFAULT_MAT.noTexutre;
+        this._material = this.options.material;
         if ( 'color' in this._material )
             this._material.color.setHex( this.options.color );
 

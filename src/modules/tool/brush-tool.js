@@ -31,6 +31,23 @@ import AbstractBrushAnimatedStroke from './brush-strokes/abstract-brush-animated
 
 const SIZE_FACTOR = 0.2;
 
+const DEFAULT_MAT = new THREE.MeshStandardMaterial( {
+    side: THREE.DoubleSide,
+    transparent: true,
+    depthTest: false,
+    metalness: 0.0,
+    roughness: 0.3
+} );
+
+const TEXTURE_MAT = new THREE.MeshPhongMaterial( {
+    side: THREE.DoubleSide,
+    map: null,
+    normalMap: null,
+    transparent: true,
+    depthTest: false,
+    shininess: 40
+} );
+
 export default class BrushTool extends AbstractTool {
 
     constructor( options ) {
@@ -64,12 +81,19 @@ export default class BrushTool extends AbstractTool {
         this.registeredStrokes = {};
         for ( let k in BrushTool.items ) {
             let data = BrushTool.items[ k ].data;
-            this.registeredStrokes[ k ] = new AbstractBrushAnimatedStroke( isVR, data );
+            if ( !data.static ) {
+                this.registeredStrokes[ k ] = new AbstractBrushAnimatedStroke( isVR, data );
+                continue;
+            }
+            if ( !data.texture ) {
+                this.registeredStrokes[ k ] = new AbstractBrushStroke( isVR, DEFAULT_MAT );
+                continue;
+            }
+            let material = TEXTURE_MAT;
+            material.map = data.texture;
+            material.normalMap = data.normalMap;
+            this.registeredStrokes[ k ] = new AbstractBrushStroke( isVR, material );
         }
-        this.registeredStrokes.withoutTex = new AbstractBrushStroke(
-            isVR, 'material_without_tex'
-        );
-        this.registeredStrokes.withTex = new AbstractBrushStroke( isVR );
 
         this.currentStroke = stroke;
         this._lastHsv = { h: 0.0, s: 0.0, v: 0.0 };
