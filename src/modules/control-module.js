@@ -149,10 +149,10 @@ class Control {
 
     }
 
-    _updateVR() {
+    _updateVR( data ) {
 
-        this._controllers[ 0 ].update();
-        this._controllers[ 1 ].update();
+        this._controllers[ 0 ].update( data );
+        this._controllers[ 1 ].update( data );
 
         // Keeps track of controllers orientation
         // relative to the world origin.
@@ -275,6 +275,8 @@ class Control {
 
             let viveController = new ViveController( i, meshes[ i ] );
             viveController.standingMatrix = renderer.vr.getStandingMatrix();
+            viveController.addGlow( 'menubutton' );
+
             this._controllers[ i ] = viveController;
             MainView.addToScene( this._controllers[ i ] );
         }

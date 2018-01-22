@@ -10,6 +10,12 @@ const MIN_SIZE_SELECTION = 0.25;
 const MAX_SIZE_SELECTION = 1.5;
 const SIZE_SCALE_SPEED = 0.15;
 
+const GLOW = [
+    new THREE.Color( 0.0, 0.0, 0.0 ),
+    new THREE.Color( 52.0 / 255.0, 152.0 / 255.0, 219.0 / 255.0 )
+];
+const GLOW_TIME = 0.65;
+
 export default class ViveController extends THREE.Object3D {
 
     constructor( id, mesh ) {
@@ -34,6 +40,12 @@ export default class ViveController extends THREE.Object3D {
         this.matrixAutoUpdate = false;
 
         this._axesDiff = new Array( 2 );
+
+        this.glow = {
+            delta: 0.0,
+            meshes: [],
+            target: 1
+        };
 
         let self = this;
         this.userData.vrui = {};
@@ -104,7 +116,7 @@ export default class ViveController extends THREE.Object3D {
 
     }
 
-    update() {
+    update( data ) {
 
         this._gamepad = this._findGamepad( this._gamepadID );
         if ( this._gamepad === undefined || this._gamepad.pose ===
@@ -130,6 +142,40 @@ export default class ViveController extends THREE.Object3D {
 
         // Sends trigger / release event for every registered button.
         for ( let bID in this.buttons ) this.buttons[ bID ].triggerEvent();
+
+        // Makes selected material glow (e.g: half of controller).
+        for ( let mat of this.glow.meshes ) {
+            mat.emissive.lerp(
+                GLOW[ this.glow.target ], this.glow.delta / GLOW_TIME
+            );
+        }
+
+        if ( this.glow.delta >= GLOW_TIME ) {
+            this.glow.target = ( this.glow.target + 1 ) % 2;
+            this.glow.delta = 0.0;
+        }
+
+        this.glow.delta += data.delta;
+
+    }
+
+    addGlow( id ) {
+
+        let root = this.children[ 0 ];
+        for ( let i = 0; i < root.children.length; ++i ) {
+            let elt = root.children[ i ];
+            elt.material = elt.material.clone();
+            if ( elt.name === id ) this.glow.meshes.push( elt.material );
+        }
+
+    }
+
+    eraseGlow( id ) {
+
+        for ( let i = 0; i < this.glow.meshes.length; ++i ) {
+            let elt = this.glow.meshes[ i ];
+            if ( elt.name === id ) this.glow.meshes.splice( i, 1 );
+        }
 
     }
 
