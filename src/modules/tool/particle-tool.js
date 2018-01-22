@@ -30,6 +30,10 @@ import { AssetManager } from '../../utils/asset-manager';
 import BaseShader from '../../shader/particle/base-shader';
 import MainView from '../../view/main-view';
 
+import ParticleShader from '../../shader/particle/particle-shader';
+import PositionUpdate from '../../shader/particle/position-update';
+import VelocityUpdate from '../../shader/particle/velocity-update';
+
 function isFunction( functionToCheck ) {
     let getType = {};
     return getType.toString.call( functionToCheck ) === '[object Function]';
@@ -296,8 +300,36 @@ class ParticleEmitter extends THREE.Object3D {
 
 export default class ParticleTool extends AbstractTool {
 
-    constructor() {
-        super();
+    constructor( options ) {
+        super( options );
+        this.setOptionsIfUndef(
+            {
+                brushSize: 3,
+                thickness: 10,
+                initialParticlesPerEmitter: 20 * 20,
+                maxParticlesPerEmitter: 20 * 20,
+                bufferSide: 20,
+                maxEmitters: 20,
+                debugPlane: false,
+                positionInitialTex: () => {
+                    return THREE.ImageUtils.generateRandomDataTexture( 20, 20 );
+                },
+                velocityInitialTex: () => {
+                    return THREE.ImageUtils.generateRandomDataTexture( 20, 20 );
+                },
+                renderingUniforms: {
+                    pointMaxSize: { type: 'f', value: 20 },
+                    brushSize: { type: 'f', value: 3 }
+                },
+                positionUniforms: {
+                    normVelocity: { type:'f', value: 10.0 },
+                    lifespanEntropy: { type:'f', value: 0.001 }
+                },
+                renderingShader: ParticleShader,
+                positionUpdate: PositionUpdate,
+                velocityUpdate: VelocityUpdate
+            }
+        );
 
         this._thickness = this.options.thickness;
         this._maxEmitters = this.options.maxEmitters;
