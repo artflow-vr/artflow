@@ -412,11 +412,7 @@ class Manager {
         const toolTextures = [
             { file: 'brush3.png', id: 'brush1' },
             { file: 'brush3_N.png', id: 'brush1_N' },
-            { file: 'perlin-512.png', id: 'particle_noise' },
-            { file: 'noise.jpg', id: 'particle_position' },
-            { file: 'noise.jpg', id: 'particle_velocity' }, // Why?
-            { file: 'noise.jpg', id: 'particle_position_out' }, // Why?
-            { file: 'noise.jpg', id: 'particle_velocity_out' }, // Why?
+            { file: 'particle_raw.png', id: 'particle_raw' },
             { file: 'water_normal.png' }
         ];
 
