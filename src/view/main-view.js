@@ -70,7 +70,7 @@ class Main {
         // Adds default cubemap as background of the scene
         // TODO: Update the THREE.JS version with the update handling background
         // on both eyes.
-        let cubemap = AssetManager.assets.texture.cubemap['cartoon-cloudy'];
+        let cubemap = AssetManager.assets.texture.cubemap[ 'cartoon-cloudy' ];
         this._rootScene.background = cubemap;
 
         this._createLighting();
@@ -86,8 +86,8 @@ class Main {
         } );
 
         // Hides 'loading...' message
-        this.loadingView.toggleVisibility(false);
-        document.body.removeChild(this.loadingView.getDOMElement());
+        this.loadingView.toggleVisibility( false );
+        document.body.removeChild( this.loadingView.getDOMElement() );
 
     }
 

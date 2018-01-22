@@ -15,6 +15,9 @@ const DEFAULT_COLOR_POS_VR = new THREE.Vector3( 0.25, 0.5, 0.0 );
 const DEFAULT_SKYBOX_POS = new THREE.Vector3( -0.75, 0.5, 0.5 );
 const DEFAULT_SKYBOX_POS_VR = new THREE.Vector3( -0.25, 0.5, 0.0 );
 
+const DEFAULT_ITEM_COL = { r: 1.0, g: 1.0, b: 1.0 };
+const ITEM_SELECTED_COL = { r: 46 / 255.0, g: 204 / 255.0, b: 113 / 255.0 };
+
 const GUI_FACTOR_NO_VR = 4.0;
 
 const GRID_ID = 'elementGrid';
@@ -75,6 +78,9 @@ class UI {
         // having to loop through every UI. When no item UI is currently open,
         // this variable has a null value.
         this._currItemUI = null;
+        // This reference points toward the last THREE.Mesh selected.
+        // This is used to quickly change their color when selected.
+        this._currSelectedItem = null;
 
         this._prevController = null;
         this._controllers = null;
@@ -220,6 +226,22 @@ class UI {
                 let controllerID = 0;
                 if ( this._vr ) controllerID = ( this._prevController + 1 ) % 2;
                 callback( item.id, controllerID, evt );
+
+                // Changes the color of the item to show the user it is
+                // selected.
+                console.log( evt );
+                if ( !evt.pressed ) return;
+
+                if ( this._currSelectedItem )
+                    this._currSelectedItem.material.color.setRGB(
+                        DEFAULT_ITEM_COL.r, DEFAULT_ITEM_COL.g, DEFAULT_ITEM_COL.b
+                    );
+
+                object.mesh.material.color.setRGB(
+                    ITEM_SELECTED_COL.r, ITEM_SELECTED_COL.g, ITEM_SELECTED_COL.b
+                );
+
+                this._currSelectedItem = object.mesh;
             }
         };
 
