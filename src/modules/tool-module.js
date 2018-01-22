@@ -445,6 +445,7 @@ class ToolModule {
     _registerBasicItems() {
 
         let itemsTextures = AssetManager.assets.texture.ui.item;
+        let toolTextures = AssetManager.assets.texture.tool;
 
         //
         // PARTICLES
@@ -527,14 +528,36 @@ class ToolModule {
             }
         } );
 
+        //
+
         this.registerToolItems( 'Brush', {
-            squareAnim: {
-                uiTexture: itemsTextures[ 'brush-square' ],
-                data: { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 }
+            brushBasic: {
+                uiTexture: itemsTextures[ 'brush-basic' ],
+                data: { 'static': true }
+            },
+            brushUnified: {
+                uiTexture: itemsTextures[ 'brush-unified' ],
+                data: {
+                    'static': true,
+                    'texture': toolTextures.brush1,
+                    'normal': toolTextures.brush1_N
+                }
+            },
+            waveAnim: {
+                uiTexture: itemsTextures[ 'brush-wave' ],
+                data: { shaderPath: 'wave-shader' }
             },
             rainbowAnim: {
                 uiTexture: itemsTextures[ 'brush-rainbow' ],
                 data: { shaderPath: 'rainbow-shader', timeModCondition: 3 }
+            },
+            electricAnim: {
+                uiTexture: itemsTextures[ 'brush-lightning' ],
+                data: { shaderPath: 'electric-shader', thicknessMult: 2.0 }
+            },
+            squareAnim: {
+                uiTexture: itemsTextures[ 'brush-square' ],
+                data: { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 }
             },
             matrixAnim: {
                 uiTexture: itemsTextures[ 'brush-matrix' ],
@@ -543,10 +566,6 @@ class ToolModule {
             fractalAnim: {
                 uiTexture: itemsTextures[ 'brush-fractal' ],
                 data: { shaderPath: 'fractal-shader' }
-            },
-            electricAnim: {
-                uiTexture: itemsTextures[ 'brush-lightning' ],
-                data: { shaderPath: 'electric-shader', thicknessMult: 2.0 }
             },
             starsAnim: {
                 uiTexture: itemsTextures[ 'brush-stars' ],
@@ -575,10 +594,6 @@ class ToolModule {
             voronoiAnim: {
                 uiTexture: itemsTextures[ 'brush-confettis  ' ],
                 data: { shaderPath: 'voronoi-shader' }
-            },
-            waveAnim: {
-                uiTexture: itemsTextures[ 'brush-wave' ],
-                data: { shaderPath: 'wave-shader' }
             }
         } );
 
