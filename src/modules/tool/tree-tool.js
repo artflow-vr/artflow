@@ -118,6 +118,13 @@ export default class TreeTool extends AbstractTool {
             release: this.release.bind( this )
         } );
 
+        this.registerEvent( 'axisChanged', {
+            use: ( data ) => {
+                this.options.brushThickness =
+                data.controller.sizeMesh.scale.x * 0.2;
+            }
+        } );
+
         this.registerEvent( 'colorChanged', ( hsv ) => {
             this._hsv.h = hsv.h;
             this._hsv.s = hsv.s;
