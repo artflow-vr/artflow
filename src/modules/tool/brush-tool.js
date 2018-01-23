@@ -91,7 +91,7 @@ export default class BrushTool extends AbstractTool {
             }
             let material = TEXTURE_MAT;
             material.map = data.texture;
-            material.normalMap = data.normalMap;
+            material.normalMap = data.normal;
             this.registeredStrokes[ k ] = new AbstractBrushStroke( isVR, material );
         }
 
