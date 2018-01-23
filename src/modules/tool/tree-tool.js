@@ -32,14 +32,10 @@ import { LSystem } from '../../utils/l-system';
 
 class State {
 
-    constructor( pos, hlu /*, angle, step , orientation, pressure*/ ) {
+    constructor( pos, hlu ) {
 
         this.pos = pos;
         this.hlu = hlu;
-        //this.angle = angle;
-        //this.step = step;
-        //this.orientation = orientation;
-        //this.pressure = pressure;
 
     }
 
@@ -63,7 +59,7 @@ class Tree {
 
     }
 
-    init( data, lSysID /*angle, step, str, speed */ ) {
+    init( data, lSysID ) {
 
         let m = new THREE.Matrix3();
         m.set( 0, -1, 0,
@@ -71,7 +67,7 @@ class Tree {
                0, 0, 1 );
 
         this.pushState(
-            data.position.world, m /*, angle, step, data.orientation, data.pressure */
+            data.position.world, m
         );
 
         this.lSysID = lSysID;
@@ -80,10 +76,10 @@ class Tree {
 
     }
 
-    pushState( pos, hlu /*, angle, step, orientation, pressure*/ ) {
+    pushState( pos, hlu ) {
 
         let state = new State(
-            pos.clone(), hlu.clone() /*, angle, step, orientation.clone(), pressure */
+            pos.clone(), hlu.clone()
         );
         this.states.push( state );
 
@@ -207,10 +203,6 @@ export default class TreeTool extends AbstractTool {
 
         this._lSysID = treeID;
         this.lSystems[ treeID ].derivate();
-        //this._str = this._lSystem.derivate();
-        //this.angle = this._lSystem.defaultAngle;
-        //this.step = this._lSystem.defaultStep;
-        //this.speed = this._lSystem.defaultSpeed;
 
     }
 
@@ -235,7 +227,6 @@ export default class TreeTool extends AbstractTool {
         if ( !tree ) return;
 
         tree.init( data, this._lSysID );
-        //tree.init( data, this.angle, this.step, this._str, this.speed );
         this._draw( tree );
 
     }
@@ -275,17 +266,14 @@ export default class TreeTool extends AbstractTool {
         let tree = this.trees[ treeIdx ];
 
         if ( tree.lSysID === undefined ) return false;
-        //if ( !tree || !tree.str ) return false;
 
         tree.time += delta * 100.0;
 
         let speed = this.lSystems[ tree.lSysID ].defaultSpeed;
 
         if ( !( tree.time / speed ) ) return false;
-        //if ( !( tree.time / tree.speed ) ) return false;
 
         tree.time %= speed;
-        //tree.time %= tree.speed;
 
         let i = tree.curIdx;
 
@@ -303,10 +291,6 @@ export default class TreeTool extends AbstractTool {
         state.pos.x += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 0 ];
         state.pos.y += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 1 ];
         state.pos.z += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 2 ];
-
-        //state.pos.x += state.step * state.hlu.elements[ 0 ];
-        //state.pos.y += state.step * state.hlu.elements[ 1 ];
-        //state.pos.z += state.step * state.hlu.elements[ 2 ];
 
     }
 
@@ -367,7 +351,6 @@ export default class TreeTool extends AbstractTool {
     turnLeft( sign, tree ) {
 
         let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
-        //let a = tree.peekState().angle * sign;
         let m = this._getRuMatrix( a );
         this._updateAngle( tree, m );
 
@@ -385,7 +368,6 @@ export default class TreeTool extends AbstractTool {
 
         let m = new THREE.Matrix3();
         let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
-        //let a = sign * tree.peekState().angle;
         let c = Math.cos( a );
         let s = Math.sin( a );
 
@@ -402,7 +384,6 @@ export default class TreeTool extends AbstractTool {
 
         let m = new THREE.Matrix3();
         let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
-        //let a = sign * tree.peekState().angle;
         let c = Math.cos( a );
         let s = Math.sin( a );
 
@@ -419,8 +400,7 @@ export default class TreeTool extends AbstractTool {
 
         let state = tree.peekState();
         tree.pushState(
-            state.pos, state.hlu /*, state.angle, state.step, state.orientation,
-            state.pressure */
+            state.pos, state.hlu
         );
 
     }
