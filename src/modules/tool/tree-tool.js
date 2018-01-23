@@ -26,9 +26,17 @@
 */
 
 import AbstractTool from './abstract-tool';
-import AddCommand from './command/add-command';
+//import AddCommand from './command/add-command';
 import BrushHelper from './helper/brush-helper';
 import { LSystem } from '../../utils/l-system';
+
+const MAX_TREE = 3;
+const INIT_MAT = new THREE.Matrix3();
+INIT_MAT.set(
+    0, -1, 0,
+    1, 0, 0,
+    0, 0, 1
+);
 
 class State {
 
@@ -43,36 +51,31 @@ class State {
 
 class Tree {
 
-    constructor ( options, hsv ) {
+    constructor () {
 
+        this.activated = false;
         this.states = [];
-        this.helper = new BrushHelper( options );
-
-        if ( hsv ) {
-            this.helper.setColor( hsv );
-        }
-
-        this.curIdx = 0;
-        this.newMesh = false;
-        this.needPoint = false;
-        this.time = 0;
 
     }
 
-    init( data, lSysID ) {
+    init( data, lSysID, options, hsv ) {
 
-        let m = new THREE.Matrix3();
-        m.set( 0, -1, 0,
-               1, 0, 0,
-               0, 0, 1 );
+        this.helper = new BrushHelper( options );
+        this.helper.setColor( hsv );
 
         this.pushState(
-            data.position.world, m
+            data.position.world, INIT_MAT
         );
 
         this.lSysID = lSysID;
         this.ori = data.orientation.clone();
         this.pres = data.pressure;
+
+        this.curIdx = 0;
+        this.newMesh = false;
+        this.needPoint = false;
+        this.time = 0;
+        this.activated = true;
 
     }
 
@@ -114,7 +117,6 @@ export default class TreeTool extends AbstractTool {
         this.dynamic = true;
 
         this.registerEvent( 'interact', {
-            trigger: this.trigger.bind( this ),
             release: this.release.bind( this )
         } );
 
@@ -188,7 +190,7 @@ export default class TreeTool extends AbstractTool {
             1
         );
 
-        this._changeTree( 'simpleTree' );
+        this.onItemChanged( 'simpleTree' );
 
         this.interpretations = {
             'F': this.drawForward.bind( this ),
@@ -206,36 +208,29 @@ export default class TreeTool extends AbstractTool {
 
         this.trees = [];
 
-    }
+        for ( let i = 0; i < MAX_TREE; ++i ) {
+            this.trees.push( new Tree() );
+        }
 
-    _changeTree( treeID ) {
-
-        this._lSysID = treeID;
-        this.lSystems[ treeID ].derivate();
-
-    }
-
-
-    trigger() {
-
-        if ( this.trees.length >= 3 ) return;
-        this._triggered = true;
-        let tree = new Tree( this.options, this._hsv );
-        this.trees.push( tree );
-        this._addMesh( tree );
+        this.m = new THREE.Matrix3();
 
     }
+
 
     release( data ) {
 
-        if ( !this._triggered ) return;
+        let i = 0;
 
-        this._triggered = false;
-        let tree = this.trees[ this.trees.length - 1 ];
+        for ( ; i < MAX_TREE; ++i ) {
+          if ( !this.trees[ i ].activated ) break;
+        }
 
-        if ( !tree ) return;
+        if ( i >= MAX_TREE )
+          return;
 
-        tree.init( data, this._lSysID );
+        let tree = this.trees[ i ];
+        tree.init( data, this._lSysID, this.options, this._hsv );
+        this._addMesh( tree );
         this._draw( tree );
 
     }
@@ -244,21 +239,24 @@ export default class TreeTool extends AbstractTool {
 
         let toRemove = [];
 
-        for ( let i = 0; i < this.trees.length; ++i ) {
+        for ( let i = 0; i < MAX_TREE; ++i ) {
+
             if ( this._interpretNext( i, data.delta ) )
                 toRemove.push( i );
         }
 
         for ( let i of toRemove ) {
           if ( this.trees[ i ].needPoint ) this._draw( this.trees[ i ] );
-          this.trees.splice( i, 1 );
+          this.trees[ i ].activated = false;
+          this.trees[ i ].states.length = 0;
         }
 
     }
 
     onItemChanged( itemID ) {
 
-        this._changeTree( itemID );
+        this._lSysID = itemID;
+        this.lSystems[ itemID ].derivate();
 
     }
 
@@ -266,7 +264,7 @@ export default class TreeTool extends AbstractTool {
 
         let mesh = tree.helper.createMesh();
         this.worldGroup.addTHREEObject( mesh );
-        return new AddCommand( this.worldGroup, mesh );
+        //return new AddCommand( this.worldGroup, mesh );
 
     }
 
@@ -274,6 +272,7 @@ export default class TreeTool extends AbstractTool {
 
         let tree = this.trees[ treeIdx ];
 
+        if ( !tree.activated ) return false;
         if ( tree.lSysID === undefined ) return false;
 
         tree.time += delta * 100.0;
@@ -334,75 +333,70 @@ export default class TreeTool extends AbstractTool {
 
     }
 
-    _updateAngle( tree, rmat ) {
+    _updateAngle( tree ) {
 
         tree.needPoint = true;
-        tree.peekState().hlu.multiply( rmat );
+        tree.peekState().hlu.multiply( this.m );
 
     }
 
     _getRuMatrix( angle ) {
 
-        let m = new THREE.Matrix3();
         let c = Math.cos( angle );
         let s = Math.sin( angle );
 
-        m.set(
+        this.m.set(
             c, s, 0,
             -s, c, 0,
             0, 0, 1
         );
-
-        return m;
 
     }
 
     turnLeft( sign, tree ) {
 
         let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
-        let m = this._getRuMatrix( a );
-        this._updateAngle( tree, m );
+        this._getRuMatrix( a );
+        this._updateAngle( tree );
 
     }
 
     turnAround( tree ) {
 
-        let m = this._getRuMatrix( Math.PI );
-        this._updateAngle( tree, m );
+        this._getRuMatrix( Math.PI );
+        this._updateAngle( tree );
 
     }
 
 
     turnDown( sign, tree ) {
 
-        let m = new THREE.Matrix3();
         let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
         let c = Math.cos( a );
         let s = Math.sin( a );
 
-        m.set(
+        this.m.set(
             c, 0, -s,
             0, 1, 0,
             s, 0, c
         );
 
-        this._updateAngle( tree, m );
+        this._updateAngle( tree );
     }
 
     rollLeft( sign, tree ) {
 
-        let m = new THREE.Matrix3();
         let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
         let c = Math.cos( a );
         let s = Math.sin( a );
 
-        m.set(
+        this.m.set(
             1, 0, 0,
             0, c, -s,
             0, s, c
         );
 
-        this._updateAngle( tree, m );
+        this._updateAngle( tree );
     }
 
     pushState( tree ) {
