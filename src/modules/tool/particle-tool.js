@@ -240,10 +240,6 @@ class ParticleEmitter extends THREE.Object3D {
 
         // material
         this._particleTexture = AssetManager.assets.texture.tool.particle_raw;
-        console.log(AssetManager);
-        console.log(AssetManager.assets.texture);
-        console.log(AssetManager.assets.texture.tool);
-        console.log(this._particleTexture);
         this.particleShaderMat = new THREE.ShaderMaterial( {
             transparent: true,
             depthWrite: false,
