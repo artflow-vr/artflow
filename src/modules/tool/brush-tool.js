@@ -45,7 +45,8 @@ const TEXTURE_MAT = new THREE.MeshPhongMaterial( {
     normalMap: null,
     transparent: true,
     depthTest: false,
-    shininess: 40
+    shininess: 40,
+    normalScale: new THREE.Vector2( 2, 2 )
 } );
 
 export default class BrushTool extends AbstractTool {
