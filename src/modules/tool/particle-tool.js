@@ -42,7 +42,8 @@ function isFunction( functionToCheck ) {
 class PrimitivesRenderer {
     constructor( options ) {
         this.options = options;
-        this._bufferSide = PrimitivesRenderer._getNextPowerTwo( this.options.bufferSide );
+        // this._bufferSide = PrimitivesRenderer._getNextPowerTwo( this.options.bufferSide );
+        this._bufferSide = this.options.bufferSide;
         this._renderer = MainView._renderer;
         this._t = 0.0;
 
@@ -127,6 +128,8 @@ class PrimitivesRenderer {
         } );
         for ( let elt in this.options.positionUniforms )
             this._positionsTargetTextureMat.uniforms[ elt ] = this.options.positionUniforms[ elt ];
+        
+        this._positionsTargetTextureMat.needsUpdate = true;
 
         this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
             uniforms: {
@@ -141,7 +144,7 @@ class PrimitivesRenderer {
             fragmentShader: this.options.velocityUpdate.fragment
         } );
         for ( let elt in this.options.velocityUniforms )
-            this._positionsTargetTextureMat.uniforms[ elt ] = this.options.velocityUniforms[ elt ];
+            this._velocitiesTargetTextureMat.uniforms[ elt ] = this.options.velocityUniforms[ elt ];
 
         this._velocitiesTargetTextureMat.needsUpdate = true;
 
@@ -305,6 +308,7 @@ export default class ParticleTool extends AbstractTool {
 
     constructor( options ) {
         super( options );
+        this.dynamic = true;
         this.setOptionsIfUndef(
             {
                 brushSize: 3,
@@ -313,7 +317,7 @@ export default class ParticleTool extends AbstractTool {
                 maxParticlesPerEmitter: 20 * 20,
                 bufferSide: 20,
                 maxEmitters: 20,
-                debugPlane: false,
+                debugPlane: true,
                 positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 20, 20 ),
                 velocityInitialTex: THREE.ImageUtils.generateRandomDataTexture( 20, 20 ),
                 /*
