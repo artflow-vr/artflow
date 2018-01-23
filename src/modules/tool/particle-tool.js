@@ -94,16 +94,19 @@ class PrimitivesRenderer {
         this._velocityRT1 = new THREE.WebGLRenderTarget( this._bufferSide, this._bufferSide, renderTargetParams );
         this._velocityRT2 = new THREE.WebGLRenderTarget( this._bufferSide, this._bufferSide, renderTargetParams );
 
+        /*
         if ( isFunction( this.options.positionInitialTex ) )
-            this.options._positionInitialTex = this.options.positionInitialTex();
-        this._positionBufferTex1 = this.options.positionInitialTex;
+            this.options.positionInitialTex = this.options.positionInitialTex();
+        */
         this._positionBufferTex1 = this.options.positionInitialTex;
         this._positionInitialTex = THREE.ImageUtils.copyDataTexture( this._positionBufferTex1,
             this._bufferSide, this._bufferSide );
         this._positionBufferTex1.needsUpdate = true;
 
+        /*
         if ( isFunction( this.options.velocityInitialTex ) )
             this.options.velocityInitialTex = this.options.velocityInitialTex();
+        */
         this._velocityBufferTex1 = this.options.velocityInitialTex;
         this._velocityInitialTex = THREE.ImageUtils.copyDataTexture( this._velocityBufferTex1,
             this._bufferSide, this._bufferSide );
@@ -236,7 +239,11 @@ class ParticleEmitter extends THREE.Object3D {
             new THREE.BufferAttribute( new Float32Array( this._particleMaxCount * 2 ), 2 ).setDynamic( true ) );
 
         // material
-        this._particleTexture = AssetManager.assets.texture.particle_raw;
+        this._particleTexture = AssetManager.assets.texture.tool.particle_raw;
+        console.log(AssetManager);
+        console.log(AssetManager.assets.texture);
+        console.log(AssetManager.assets.texture.tool);
+        console.log(this._particleTexture);
         this.particleShaderMat = new THREE.ShaderMaterial( {
             transparent: true,
             depthWrite: false,
@@ -311,12 +318,15 @@ export default class ParticleTool extends AbstractTool {
                 bufferSide: 20,
                 maxEmitters: 20,
                 debugPlane: false,
+                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 20, 20 ),
+                velocityInitialTex: THREE.ImageUtils.generateRandomDataTexture( 20, 20 ),
+                /*
                 positionInitialTex: () => {
                     return THREE.ImageUtils.generateRandomDataTexture( 20, 20 );
-                },
                 velocityInitialTex: () => {
                     return THREE.ImageUtils.generateRandomDataTexture( 20, 20 );
                 },
+                */
                 renderingUniforms: {
                     pointMaxSize: { type: 'f', value: 20 },
                     brushSize: { type: 'f', value: 3 }

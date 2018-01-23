@@ -453,9 +453,12 @@ class ToolModule {
         this.registerToolItem( 'Particle', 'snow', {
             uiTexture: AssetManager.assets.texture.ui.item[ 'snow-item' ],
             data: {
+                /*
                 velocityInitialTex: () => {
                     return THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) );
                 },
+                */
+                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
                 renderingUniforms: {
                     pointMaxSize: { type: 'f', value: 200 },
                     brushSize: { type: 'f', value: 3 } },
@@ -464,9 +467,12 @@ class ToolModule {
         this.registerToolItem( 'Particle', 'spiral', {
             uiTexture: AssetManager.assets.texture[ 'spiral-item' ],
             data: {
+                /*
                 velocityInitialTex: () => {
                     return THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) );
                 },
+                */
+                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
                 renderingUniforms: {
                     pointMaxSize: { type: 'f', value: 20 },
                     brushSize: { type: 'f', value: 3 },

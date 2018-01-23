@@ -54,6 +54,7 @@ module.exports = {
         'void main() {',
         '	vec4 tex = texture2D( tSprite, gl_PointCoord );',
         '	gl_FragColor = vec4( tex );',
+        //'	gl_FragColor = vec4( 1.0, 0.0, 0.0, 1.0 );',
         '}'
 
     ].join( '\n' )
