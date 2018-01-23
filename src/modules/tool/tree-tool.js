@@ -119,10 +119,12 @@ export default class TreeTool extends AbstractTool {
         } );
 
         this.registerEvent( 'colorChanged', ( hsv ) => {
-            this._hsv = hsv;
+            this._hsv.h = hsv.h;
+            this._hsv.s = hsv.s;
+            this._hsv.v = hsv.v;
         } );
 
-        this._hsv = null;
+        this._hsv = {};
 
 
         this.lSystems = {};
