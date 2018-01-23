@@ -41,7 +41,7 @@ import PositionUpdate from '../shader/particle/position-update';
 import PositionHelix from '../shader/particle/position-helix';
 import VelocityUpdate from '../shader/particle/velocity-update';
 
-const BASE_TOOL= 'Brush';
+const BASE_TOOL= 'Particle';
 
 class ToolModule {
 
