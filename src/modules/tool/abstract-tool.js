@@ -83,12 +83,12 @@ export default class Tool {
 
     triggerEvent( eventID, data, status ) {
 
-        if ( !this.enabled ) return;
+        if ( !this.enabled ) return undefined;
 
-        if ( !( eventID in this.listenTo ) ) return;
+        if ( !( eventID in this.listenTo ) ) return undefined;
 
         let callback = this.listenTo[ eventID ];
-        if ( !callback ) return;
+        if ( !callback ) return undefined;
 
         // The event is of the form:
         // {
@@ -98,12 +98,12 @@ export default class Tool {
         // }
 
         if ( typeof callback !== 'function' ) {
-            if ( callback[ status ] ) callback[ status ]( data );
-            return;
+            if ( callback[ status ] ) return callback[ status ]( data );
+            return undefined;
         }
 
         // The event is a function
-        callback( data );
+        return callback( data );
 
     }
 
@@ -119,12 +119,12 @@ export default class Tool {
 
     }
 
-    _update( delta ) {
+    _update( delta, controllerID ) {
 
         if ( !this.enabled || !this.dynamic || !this.update )
             return;
 
-        this.update( delta );
+        this.update( delta, controllerID );
 
     }
 

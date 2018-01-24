@@ -55,15 +55,8 @@ module.exports = {
 
     ].join( '\n' ),
 
-    fragment: [
-
-        'uniform float uTime;',
-        'uniform vec2 vResolution;',
-        'varying vec2 vUv;',
-
-        'void main( void )',
-        '{',
-        '    vec2 uv = ( gl_FragCoord.xy / vResolution.xy ) * 20.0-1.0;',
+        // Old (screen-space):
+        /*'    vec2 uv = ( gl_FragCoord.xy / vResolution.xy ) * 20.0-1.0;',
         '    uv.x *= vResolution.x/vResolution.y;',
         '    ',
         '    vec3 finalColor = vec3( 0.0, 0.0, 0.0 );',
@@ -73,8 +66,30 @@ module.exports = {
         '    ',
         '    finalColor = vec3( 0.0, g, 0.0 );',
         '    ',
+        '    gl_FragColor = vec4( finalColor, 1.0 );',*/
+
+    fragment: [
+
+        // UV-space
+        'uniform float uTime;',
+        'uniform vec2 vResolution;',
+        'varying vec2 vUv;',
+
+        'void main( void )',
+        '{',
+        '    vec2 uv = ( vec2(500.0) + vUv * vResolution.xy / 5.0 ) / vResolution.xy * 20.0-1.0;',
+        '    uv.x *= vResolution.x/vResolution.y;',
+        '    ',
+        '    vec3 finalColor = vec3( 0.0, 0.0, 0.0 );',
+        '    ',
+        '    float g = -mod( vUv.x * vResolution.x / 5.0 + uTime, cos( vUv.y * vResolution.y / 5.0 ) + 0.004 );',
+        '    g = g + clamp(uv.x, -1.0, 0.0);	',
+        '    ',
+        '    finalColor = vec3( 0.0, g, 0.0 );',
+        '    ',
         '    gl_FragColor = vec4( finalColor, 1.0 );',
         '}'
+
 
     ].join( '\n' )
 

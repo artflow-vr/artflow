@@ -56,9 +56,11 @@ class Main {
 
         this._dimensions = { width: 0, height: 0, halfW: 0, halfH: 0 };
 
+        this._createHTMLLoading();
+
     }
 
-    init( w, h, renderer, vr ) {
+    ready( w, h, renderer, vr ) {
 
         this._renderer = renderer;
         this._camera = new THREE.PerspectiveCamera( 70, w / h, 0.1, 100 );
@@ -68,7 +70,7 @@ class Main {
         // Adds default cubemap as background of the scene
         // TODO: Update the THREE.JS version with the update handling background
         // on both eyes.
-        let cubemap = AssetManager.assets.texture.cubemap.galaxy;
+        let cubemap = AssetManager.assets.texture.cubemap[ 'cartoon-cloudy' ];
         this._rootScene.background = cubemap;
 
         this._createLighting();
@@ -82,6 +84,10 @@ class Main {
             this._rootScene.background = skybox;
 
         } );
+
+        // Hides 'loading...' message
+        this.loadingView.toggleVisibility( false );
+        document.body.removeChild( this.loadingView.getDOMElement() );
 
     }
 
@@ -175,15 +181,6 @@ class Main {
         xAxisCube.translateX( 2 );
         zAxisCube.translateZ( 2 );
 
-        /*this._group.add( centerCube );
-        this._group.add( xAxisCube );
-        this._group.add( zAxisCube );*/
-
-        // DEBUG
-        //this._group.add( AssetManager.assets.model.tool.tree_preview );
-        //this._group.add( AssetManager.assets.model.tool.brush_preview );
-        // END DEBUG
-
     }
 
     _createLighting() {
@@ -198,6 +195,29 @@ class Main {
 
         let ambLight = new THREE.AmbientLight( 0xf0f0f0 );
         this._rootScene.add( ambLight );
+
+    }
+
+    _createHTMLLoading() {
+
+        this.loadingView = new HTMLView( {
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            top: '0px',
+            backgroundColor: 'rgba(22, 31, 40, 0.99)'
+        } );
+        this.loadingView.setProp( 'align', 'center' );
+
+        let msg = new HTMLTextArea( null, {
+            position: 'relative',
+            top: '50%'
+        } );
+        msg.setMessage( 'Loading...' );
+
+        this.loadingView.addChild( msg );
+
+        document.body.appendChild( this.loadingView.getDOMElement() );
 
     }
 

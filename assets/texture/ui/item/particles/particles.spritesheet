@@ -1,0 +1,9 @@
+{
+    "file": "particles/particles_items.png",
+
+    "textures": [
+        { "name": "snow", "x": "0", "y": "202", "w": "310", "h": "310" },
+        { "name": "spiral", "x": "342", "y": "202", "w": "306", "h": "310" },
+        { "name": "confetti", "x": "679", "y": "202", "w": "342", "h": "310" }
+    ]
+}

@@ -400,8 +400,7 @@ class Manager {
         const cubemapTextures = [
             { file: 'cartoon-cloudy.png' },
             { file: 'cartoon-nightsky.png' },
-            { file: 'sunset-dark.png' },
-            { file: 'galaxy.jpg' }
+            { file: 'sunset-dark.png' }
         ];
 
         const envTextures = [
@@ -413,12 +412,7 @@ class Manager {
         const toolTextures = [
             { file: 'brush3.png', id: 'brush1' },
             { file: 'brush3_N.png', id: 'brush1_N' },
-            { file: 'particle_raw.png', id: 'brush1_N' },
-            { file: 'perlin-512.png', id: 'particle_noise' },
-            { file: 'noise.jpg', id: 'particle_position' },
-            { file: 'noise.jpg', id: 'particle_velocity' }, // Why?
-            { file: 'noise.jpg', id: 'particle_position_out' }, // Why?
-            { file: 'noise.jpg', id: 'particle_velocity_out' }, // Why?
+            { file: 'particle_raw.png', id: 'particle_raw' },
             { file: 'water_normal.png' }
         ];
 
@@ -444,7 +438,9 @@ class Manager {
             { file: 'tree/simple.png', id: 'tree-simple' },
             { file: 'tree/tilt.png', id: 'tree-tilt' },
             // BRUSH
-            { file: 'brush/brush_items.spritesheet' }
+            { file: 'brush/brush_items.spritesheet' },
+            // PARTICLE
+            { file: 'particles/particles.spritesheet' }
         ];
 
         const toolModels = [

@@ -7,7 +7,19 @@
 **ArtFlow** is greatly influenced by [Tilt Brush](https://www.tiltbrush.com/), and [A-Painter](https://github.com/aframevr/a-painter).
 
 [![ArtFlow Video](https://user-images.githubusercontent.com/8783766/31792707-36e8d1b2-b51d-11e7-9dfc-9b411258deb0.png)
-](https://youtu.be/QyUaBjSxGXc)
+](https://www.youtube.com/watch?v=QtjKiANf6GY)
+
+## Tutorial
+
+The tutorial can be found in the [wiki](https://github.com/artflow-vr/artflow/wiki/Artflow-wiki).
+
+## Art Gallery
+
+<div style="text-align:center"><img src="https://raw.githubusercontent.com/DavidPeicho/davidpeicho.github.io/master/images/artflow/27042720_2057850001140247_1423361200_n.png" data-canonical-src="https://raw.githubusercontent.com/DavidPeicho/davidpeicho.github.io/master/images/artflow/27042720_2057850001140247_1423361200_n.png" width="400" /></div>
+
+<div style="text-align:center"><img src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153314_2057840877807826_914434081_n.png" data-canonical-src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153314_2057840877807826_914434081_n.png" width="400" /></div>
+
+<div style="text-align:center"><img src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153027_2057854184473162_1852103997_n.png" data-canonical-src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153027_2057854184473162_1852103997_n.png" width="400" /></div>
 
 ## Local Execution
 
@@ -81,26 +93,8 @@ ToolModule.register('MyNiceTool', toolDescription);
 #### All
 * [ ] Use pow2 textures. It would be nice to reduce the number of requests, by merging textures together and using different UVs (for instance for the UI).
 * [ ] Add the shake events
-* [ ] Add icon above controler showing which tool is selected
 * [ ] Add tool to take screenshot
-* [ ] Add small tutorial showing how to open menu, how to draw, etc...
-* [ ] Add cubemap selection
-* [ ] Mouse pointer
-
-#### Brushes
-* [ ] Fix stroke not working when we do not change the size of the brush
-* [ ] Use color in when possible, even if the stroke is dynamic.
-* [ ] Fix missing stroke in UI (wrongly registered)
-* [X] Remove hardcoded strokes from AbstractBrushTool
-* [X] Remove call to ToolModule from BrushHelper. (The dependecy should come from the UI, or somewhere else).
-* [X] Add pressure
-* [X] Move BrushHelper to BrushTool instead of AbstractBrushTool
-
-#### Particles
-* [ ] Fix particles not working in VR
-* [ ] Use default option. When registering items,80% of the values are the same except for shaders.
 
 #### Water
-* [ ] Reduce speed in VR
 * [ ] Improve plane delimiters
 * [ ] Validate water plane on shake

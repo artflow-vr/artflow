@@ -1,29 +1,29 @@
 /**
-* ArtFlow application
-* https://github.com/artflow-vr/artflow
-*
-* MIT License
-*
-* Copyright (c) 2017 artflow
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+ * ArtFlow application
+ * https://github.com/artflow-vr/artflow
+ *
+ * MIT License
+ *
+ * Copyright (c) 2017 artflow
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 import * as Tool from './tool/tool';
 import * as Utils from '../utils/utils';
@@ -35,11 +35,10 @@ let AssetManager = Utils.AssetManager;
 let EventDispatcher = Utils.EventDispatcher;
 
 import ParticleShader from '../shader/particle/particle-shader';
-import ParticleShader2 from '../shader/particle/particle-shader2';
 import ParticleHelix from '../shader/particle/particle-helix';
-import PositionUpdate from '../shader/particle/position-update';
 import PositionHelix from '../shader/particle/position-helix';
-import VelocityUpdate from '../shader/particle/velocity-update';
+
+const BASE_TOOL= 'Brush';
 
 class ToolModule {
 
@@ -94,15 +93,18 @@ class ToolModule {
 
         // Sets the name of the preview to find it more easily.
         if ( tool.preview ) {
-            tool.preview.name = 'preview';
-            tool.preview.position.z -= 0.07;
-            tool.preview.scale.set( 0.01, 0.01, 0.01 );
+            let prev = tool.preview;
+            prev.name = 'preview';
+            prev.position.z -= 0.07;
+            prev.scale.set( 0.01, 0.01, 0.01 );
+
+            tool.previews = new Array( 2 );
+            tool.previews[ 0 ] = prev.clone();
+            tool.previews[ 1 ] = prev.clone();
         }
 
         // Adds the tool to the UI if a texture was provided.
         if ( !tool.uiTexture ) return;
-
-        console.log( tool.uiTexture );
 
         UI.addTool( { id: toolID, data: tool },
             AssetManager.assets.texture.ui[ 'button-back' ],
@@ -232,10 +234,10 @@ class ToolModule {
         this.instanciate( 'Water' );
         this.instanciate( 'Tree' );
 
-        this._selected[ 0 ] = this._instance.Water[ 0 ];
-        this._selected[ 1 ] = this._instance.Water[ 1 ];
-
-        // TODO: Add onEnterChild & onExitChild event trigger.
+        for ( let i = 0; i < 2; ++i ) {
+            this._selected[ i ] = this._instance[ BASE_TOOL ][ i ];
+            this._selected[ i ]._onEnter();
+        }
 
         /*
             The Code below registers every supported events, such as the
@@ -302,8 +304,8 @@ class ToolModule {
         let instances = null;
         for ( let toolID in this._instance ) {
             instances = this._instance[ toolID ];
-            instances[ 0 ]._update( data );
-            instances[ 1 ]._update( data );
+            instances[ 0 ]._update( data, 0 );
+            instances[ 1 ]._update( data, 1 );
         }
 
     }
@@ -311,6 +313,9 @@ class ToolModule {
     setControllerRef( controllers ) {
 
         this._controllers = controllers;
+        // Adds preview above each controller.
+        this._changeControllerPreview( 0, BASE_TOOL );
+        this._changeControllerPreview( 1, BASE_TOOL );
 
     }
 
@@ -327,31 +332,18 @@ class ToolModule {
 
         if ( !evt.pressed ) return;
 
-        this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
-        // TODO: handle onExit.
+        let inst = this._instance[ toolID ][ controllerID ];
+        if ( this._selected[ controllerID ] === inst )
+            return;
+
+        this._selected[ controllerID ]._onExit();
+        this._selected[ controllerID ] = inst;
         this._selected[ controllerID ]._onEnter();
 
         //
         // Handles Tool preview
         //
-
-        if ( this._controllers === null
-            || controllerID >= ( this._controllers.filter( () => true ).length ) )
-            return;
-
-        let controller = this._controllers[ controllerID ];
-
-        // Removes previous preview.
-        for ( let i = controller.children.length - 1; i >= 0; i-- ) {
-            if ( controller.children[ i ].name === 'preview' ) {
-                controller.remove( controller.children[ i ] );
-                break;
-            }
-        }
-
-        // Adds new preview
-        let preview = this._tools[ toolID ].preview;
-        if ( preview ) controller.add( preview );
+        this._changeControllerPreview( controllerID, toolID );
 
     }
 
@@ -374,24 +366,62 @@ class ToolModule {
 
             },
             trigger: ( data ) => {
+
                 let cmd = this._selected[ data.controllerID ].triggerEvent(
                     eventID, data, 'trigger'
                 );
-                if ( cmd ) this.undoStack.push( cmd );
+                this._pushActionToUndo( cmd );
 
-                for ( let i = this.redoStack.length - 1; i >= 0; --i ) {
-                    let c = this.redoStack.pop();
-                    if ( c.clear ) c.clear();
-                }
             },
             release: ( data ) => {
 
-                this._selected[ data.controllerID ].triggerEvent(
+                let cmd = this._selected[ data.controllerID ].triggerEvent(
                     eventID, data, 'release'
                 );
+                this._pushActionToUndo( cmd );
 
             }
         };
+
+    }
+
+    _pushActionToUndo( cmd ) {
+
+        if ( cmd ) this.undoStack.push( cmd );
+
+        for ( let i = this.redoStack.length - 1; i >= 0; --i ) {
+            let c = this.redoStack.pop();
+            if ( c.clear ) c.clear();
+        }
+
+    }
+
+
+    /**
+     * Changes the 3D model displayed on a given controller.
+     *
+     * @memberof ToolModule
+     */
+    _changeControllerPreview( controllerID, toolID ) {
+
+        if ( this._controllers === null ||
+            controllerID >= ( this._controllers.filter( () => true ).length ) )
+            return;
+
+
+        let controller = this._controllers[ controllerID ];
+
+        // Removes previous preview.
+        for ( let i = controller.children.length - 1; i >= 0; i-- ) {
+            if ( controller.children[ i ].name === 'preview' ) {
+                controller.remove( controller.children[ i ] );
+                break;
+            }
+        }
+
+        // Adds new preview
+        let preview = this._tools[ toolID ].previews[ controllerID ];
+        if ( preview ) controller.add( preview );
 
     }
 
@@ -426,96 +456,80 @@ class ToolModule {
     _registerBasicItems() {
 
         let itemsTextures = AssetManager.assets.texture.ui.item;
+        let toolTextures = AssetManager.assets.texture.tool;
 
         //
         // PARTICLES
         //
-        this.registerToolItem( 'Particle', 'snow', {
-            uiTexture: AssetManager.assets.texture.ui.item[ 'snow-item' ],
-            data: {
-                brushSize: 3,
-                thickness: 10,
-                initialParticlesPerEmitter: 20,
-                maxParticlesPerEmitter: 512 * 512,
-                bufferSide: 512,
-                maxEmitters: 1000,
-                debugPlane: false,
-                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
-                renderingUniforms: {
-                    pointMaxSize: { type: 'f', value: 200 },
-                    brushSize: { type: 'f', value: 3 } },
-                positionUniforms: {
-                    normVelocity: { type:'f', value: 10.0 },
-                    lifespanEntropy: { type:'f', value: 0.001 }
-                },
-                renderingShader: ParticleShader,
-                positionUpdate: PositionUpdate,
-                velocityUpdate: VelocityUpdate
+        this.registerToolItems( 'Particle', {
+            snow: {
+                uiTexture: itemsTextures.snow,
+                data: {
+
+                    velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
+                    renderingUniforms: {
+                        pointMaxSize: { type: 'f', value: 20 },
+                        brushSize: { type: 'f', value: 3 } }
+                }
+            },
+            spiral: {
+                uiTexture: itemsTextures.spiral,
+                data: {
+                    velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
+                    renderingUniforms: {
+                        pointMaxSize: { type: 'f', value: 20 },
+                        brushSize: { type: 'f', value: 3 },
+                        rotation: { type:'3f', value: [180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0] }
+                    },
+                    positionUniforms: {
+                        normVelocity: { type:'f', value: 10.0 },
+                        lifespanEntropy: { type:'f', value: 0.001 },
+                        a: { type:'f', value: 1.0 },
+                        b: { type:'f', value: 1.0 }
+                    },
+                    renderingShader: ParticleHelix,
+                    positionUpdate: PositionHelix
+                }
+            },
+            confetti: {
+                uiTexture: itemsTextures.confetti,
+                data: {
+                    renderingShader: ParticleShader
+                }
             }
-        } );
-        this.registerToolItem( 'Particle', 'spiral', {
-            uiTexture: AssetManager.assets.texture[ 'spiral-item' ],
-            data: {
-                brushSize: 3,
-                thickness: 10,
-                initialParticlesPerEmitter: 20,
-                maxParticlesPerEmitter: 512 * 512,
-                bufferSide: 512,
-                maxEmitters: 20,
-                debugPlane: false,
-                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
-                renderingUniforms: {
-                    pointMaxSize: { type: 'f', value: 20 },
-                    brushSize: { type: 'f', value: 3 },
-                    rotation: { type:'3f', value: [180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0] }
-                },
-                positionUniforms: {
-                    normVelocity: { type:'f', value: 10.0 },
-                    lifespanEntropy: { type:'f', value: 0.001 },
-                    a: { type:'f', value: 1.0 },
-                    b: { type:'f', value: 1.0 }
-                },
-                renderingShader: ParticleHelix,
-                positionUpdate: PositionHelix,
-                velocityUpdate: VelocityUpdate
-            }
-        } );
-        this.registerToolItem( 'Particle', 'confetti', {
-            uiTexture: AssetManager.assets.texture[ 'confetti-item' ],
-            data: {
-                brushSize: 3,
-                thickness: 10,
-                initialParticlesPerEmitter: 20,
-                maxParticlesPerEmitter: 512 * 512,
-                bufferSide: 512,
-                maxEmitters: 20,
-                debugPlane: false,
-                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                velocityInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                renderingUniforms: {
-                    pointMaxSize: { type: 'f', value: 20 },
-                    brushSize: { type: 'f', value: 3 }
-                },
-                positionUniforms: {
-                    normVelocity: { type:'f', value: 10.0 },
-                    lifespanEntropy: { type:'f', value: 0.001 }
-                },
-                renderingShader: ParticleShader2,
-                positionUpdate: PositionUpdate,
-                velocityUpdate: VelocityUpdate
-            }
-        } );
+        }
+        );
+
+        //
 
         this.registerToolItems( 'Brush', {
-            squareAnim: {
-                uiTexture: itemsTextures[ 'brush-square' ],
-                data: { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 }
+            brushBasic: {
+                uiTexture: itemsTextures[ 'brush-basic' ],
+                data: { 'static': true }
+            },
+            brushUnified: {
+                uiTexture: itemsTextures[ 'brush-unified' ],
+                data: {
+                    'static': true,
+                    'texture': toolTextures.brush1,
+                    'normal': toolTextures.brush1_N
+                }
+            },
+            waveAnim: {
+                uiTexture: itemsTextures[ 'brush-wave' ],
+                data: { shaderPath: 'wave-shader' }
             },
             rainbowAnim: {
                 uiTexture: itemsTextures[ 'brush-rainbow' ],
                 data: { shaderPath: 'rainbow-shader', timeModCondition: 3 }
+            },
+            electricAnim: {
+                uiTexture: itemsTextures[ 'brush-lightning' ],
+                data: { shaderPath: 'electric-shader', thicknessMult: 2.0 }
+            },
+            squareAnim: {
+                uiTexture: itemsTextures[ 'brush-square' ],
+                data: { shaderPath: 'squares-shader', timeMod: 100, timeOffset: 0.5 }
             },
             matrixAnim: {
                 uiTexture: itemsTextures[ 'brush-matrix' ],
@@ -524,10 +538,6 @@ class ToolModule {
             fractalAnim: {
                 uiTexture: itemsTextures[ 'brush-fractal' ],
                 data: { shaderPath: 'fractal-shader' }
-            },
-            electricAnim: {
-                uiTexture: itemsTextures[ 'brush-lightning' ],
-                data: { shaderPath: 'electric-shader', thicknessMult: 2.0 }
             },
             starsAnim: {
                 uiTexture: itemsTextures[ 'brush-stars' ],
@@ -556,10 +566,6 @@ class ToolModule {
             voronoiAnim: {
                 uiTexture: itemsTextures[ 'brush-confettis  ' ],
                 data: { shaderPath: 'voronoi-shader' }
-            },
-            waveAnim: {
-                uiTexture: itemsTextures[ 'brush-wave' ],
-                data: { shaderPath: 'wave-shader' }
             }
         } );
 

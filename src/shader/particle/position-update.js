@@ -47,6 +47,7 @@ module.exports = {
         '   vec4 velocity = texture2D( tVelocitiesMap, a_uv );',
         '   vec4 velocity_centered = velocity - vec4(0.5, 0.5, 0.5, 0.0);',
         '   vec4 position_updated =  vec4((position + velocity_centered * dt * normVelocity).xyz, position.a - lifespanEntropy);',
+        //'   vec4 position_updated =  vec4((position + vec4(0.5, 0.0, 0.0, 0.0) * dt * normVelocity).xyz, position.a - lifespanEntropy);',
         '   if ( position_updated.w <= 0.0 )',
         '       position_updated = initialPosition;',
         '	gl_FragColor =  position_updated;',

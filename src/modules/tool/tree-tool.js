@@ -26,20 +26,23 @@
 */
 
 import AbstractTool from './abstract-tool';
-import AddCommand from './command/add-command';
 import BrushHelper from './helper/brush-helper';
 import { LSystem } from '../../utils/l-system';
 
+const MAX_TREE = 3;
+const INIT_MAT = new THREE.Matrix3();
+INIT_MAT.set(
+    0, -1, 0,
+    1, 0, 0,
+    0, 0, 1
+);
+
 class State {
 
-    constructor( pos, hlu /*, angle, step , orientation, pressure*/ ) {
+    constructor( pos, hlu ) {
 
         this.pos = pos;
         this.hlu = hlu;
-        //this.angle = angle;
-        //this.step = step;
-        //this.orientation = orientation;
-        //this.pressure = pressure;
 
     }
 
@@ -47,43 +50,38 @@ class State {
 
 class Tree {
 
-    constructor ( options, hsv ) {
+    constructor () {
 
+        this.activated = false;
         this.states = [];
-        this.helper = new BrushHelper( options );
-
-        if ( hsv ) {
-            this.helper.setColor( hsv );
-        }
-
-        this.curIdx = 0;
-        this.newMesh = false;
-        this.needPoint = false;
-        this.time = 0;
 
     }
 
-    init( data, lSysID /*angle, step, str, speed */ ) {
+    init( data, lSysID, options, hsv ) {
 
-        let m = new THREE.Matrix3();
-        m.set( 0, -1, 0,
-               1, 0, 0,
-               0, 0, 1 );
+        this.helper = new BrushHelper( options );
+        this.helper.setColor( hsv );
 
         this.pushState(
-            data.position.world, m /*, angle, step, data.orientation, data.pressure */
+            data.position.world, INIT_MAT
         );
 
         this.lSysID = lSysID;
         this.ori = data.orientation.clone();
         this.pres = data.pressure;
 
+        this.curIdx = 0;
+        this.newMesh = false;
+        this.needPoint = false;
+        this.time = 0;
+        this.activated = true;
+
     }
 
-    pushState( pos, hlu /*, angle, step, orientation, pressure*/ ) {
+    pushState( pos, hlu ) {
 
         let state = new State(
-            pos.clone(), hlu.clone() /*, angle, step, orientation.clone(), pressure */
+            pos.clone(), hlu.clone()
         );
         this.states.push( state );
 
@@ -110,7 +108,7 @@ export default class TreeTool extends AbstractTool {
             maxSpread: 20,
             brushThickness: 0.1,
             texture: null,
-            enablePressure: true,
+            enablePressure: false,
             color: 0x45220a,
             materialId: 'material_without_tex'
         } );
@@ -118,15 +116,23 @@ export default class TreeTool extends AbstractTool {
         this.dynamic = true;
 
         this.registerEvent( 'interact', {
-            trigger: this.trigger.bind( this ),
             release: this.release.bind( this )
         } );
 
-        this.registerEvent( 'colorChanged', ( hsv ) => {
-            this._hsv = hsv;
+        this.registerEvent( 'axisChanged', {
+            use: ( data ) => {
+                this.options.brushThickness =
+                data.controller.sizeMesh.scale.x * 0.2;
+            }
         } );
 
-        this._hsv = null;
+        this.registerEvent( 'colorChanged', ( hsv ) => {
+            this._hsv.h = hsv.h;
+            this._hsv.s = hsv.s;
+            this._hsv.v = hsv.v;
+        } );
+
+        this._hsv = {};
 
 
         this.lSystems = {};
@@ -183,7 +189,7 @@ export default class TreeTool extends AbstractTool {
             1
         );
 
-        this._changeTree( 'simpleTree' );
+        this.onItemChanged( 'simpleTree' );
 
         this.interpretations = {
             'F': this.drawForward.bind( this ),
@@ -201,41 +207,30 @@ export default class TreeTool extends AbstractTool {
 
         this.trees = [];
 
-    }
+        for ( let i = 0; i < MAX_TREE; ++i ) {
+            this.trees.push( new Tree() );
+        }
 
-    _changeTree( treeID ) {
-
-        this._lSysID = treeID;
-        this.lSystems[ treeID ].derivate();
-        //this._str = this._lSystem.derivate();
-        //this.angle = this._lSystem.defaultAngle;
-        //this.step = this._lSystem.defaultStep;
-        //this.speed = this._lSystem.defaultSpeed;
+        this.m = new THREE.Matrix3();
 
     }
 
-
-    trigger() {
-
-        if ( this.trees.length >= 3 ) return;
-        this._triggered = true;
-        let tree = new Tree( this.options, this._hsv );
-        this.trees.push( tree );
-        this._addMesh( tree );
-
-    }
 
     release( data ) {
 
-        if ( !this._triggered ) return;
+        let i = 0;
 
-        this._triggered = false;
-        let tree = this.trees[ this.trees.length - 1 ];
+        for ( ; i < MAX_TREE; ++i ) {
+          if ( !this.trees[ i ].activated ) break;
+        }
 
-        if ( !tree ) return;
+        if ( i >= MAX_TREE )
+          return;
 
-        tree.init( data, this._lSysID );
-        //tree.init( data, this.angle, this.step, this._str, this.speed );
+        let tree = this.trees[ i ];
+        tree.init( data, this._lSysID, this.options, this._hsv );
+
+        this._addMesh( tree );
         this._draw( tree );
 
     }
@@ -244,21 +239,23 @@ export default class TreeTool extends AbstractTool {
 
         let toRemove = [];
 
-        for ( let i = 0; i < this.trees.length; ++i ) {
+        for ( let i = 0; i < MAX_TREE; ++i ) {
             if ( this._interpretNext( i, data.delta ) )
                 toRemove.push( i );
         }
 
         for ( let i of toRemove ) {
-          if ( this.trees[ i ].needPoint ) this._draw( this.trees[ i ] );
-          this.trees.splice( i, 1 );
+            if ( this.trees[ i ].needPoint ) this._draw( this.trees[ i ] );
+            this.trees[ i ].activated = false;
+            this.trees[ i ].states.length = 0;
         }
 
     }
 
     onItemChanged( itemID ) {
 
-        this._changeTree( itemID );
+        this._lSysID = itemID;
+        this.lSystems[ itemID ].derivate();
 
     }
 
@@ -266,7 +263,7 @@ export default class TreeTool extends AbstractTool {
 
         let mesh = tree.helper.createMesh();
         this.worldGroup.addTHREEObject( mesh );
-        return new AddCommand( this.worldGroup, mesh );
+        //return new AddCommand( this.worldGroup.object );
 
     }
 
@@ -274,18 +271,16 @@ export default class TreeTool extends AbstractTool {
 
         let tree = this.trees[ treeIdx ];
 
+        if ( !tree.activated ) return false;
         if ( tree.lSysID === undefined ) return false;
-        //if ( !tree || !tree.str ) return false;
 
         tree.time += delta * 100.0;
 
         let speed = this.lSystems[ tree.lSysID ].defaultSpeed;
 
         if ( !( tree.time / speed ) ) return false;
-        //if ( !( tree.time / tree.speed ) ) return false;
 
         tree.time %= speed;
-        //tree.time %= tree.speed;
 
         let i = tree.curIdx;
 
@@ -303,10 +298,6 @@ export default class TreeTool extends AbstractTool {
         state.pos.x += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 0 ];
         state.pos.y += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 1 ];
         state.pos.z += this.lSystems[ tree.lSysID ].defaultStep * state.hlu.elements[ 2 ];
-
-        //state.pos.x += state.step * state.hlu.elements[ 0 ];
-        //state.pos.y += state.step * state.hlu.elements[ 1 ];
-        //state.pos.z += state.step * state.hlu.elements[ 2 ];
 
     }
 
@@ -341,86 +332,77 @@ export default class TreeTool extends AbstractTool {
 
     }
 
-    _updateAngle( tree, rmat ) {
+    _updateAngle( tree ) {
 
         tree.needPoint = true;
-        tree.peekState().hlu.multiply( rmat );
+        tree.peekState().hlu.multiply( this.m );
 
     }
 
     _getRuMatrix( angle ) {
 
-        let m = new THREE.Matrix3();
         let c = Math.cos( angle );
         let s = Math.sin( angle );
 
-        m.set(
+        this.m.set(
             c, s, 0,
             -s, c, 0,
             0, 0, 1
         );
-
-        return m;
 
     }
 
     turnLeft( sign, tree ) {
 
         let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
-        //let a = tree.peekState().angle * sign;
-        let m = this._getRuMatrix( a );
-        this._updateAngle( tree, m );
+        this._getRuMatrix( a );
+        this._updateAngle( tree );
 
     }
 
     turnAround( tree ) {
 
-        let m = this._getRuMatrix( Math.PI );
-        this._updateAngle( tree, m );
+        this._getRuMatrix( Math.PI );
+        this._updateAngle( tree );
 
     }
 
 
     turnDown( sign, tree ) {
 
-        let m = new THREE.Matrix3();
         let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
-        //let a = sign * tree.peekState().angle;
         let c = Math.cos( a );
         let s = Math.sin( a );
 
-        m.set(
+        this.m.set(
             c, 0, -s,
             0, 1, 0,
             s, 0, c
         );
 
-        this._updateAngle( tree, m );
+        this._updateAngle( tree );
     }
 
     rollLeft( sign, tree ) {
 
-        let m = new THREE.Matrix3();
         let a = this.lSystems[ tree.lSysID ].defaultAngle * sign;
-        //let a = sign * tree.peekState().angle;
         let c = Math.cos( a );
         let s = Math.sin( a );
 
-        m.set(
+        this.m.set(
             1, 0, 0,
             0, c, -s,
             0, s, c
         );
 
-        this._updateAngle( tree, m );
+        this._updateAngle( tree );
     }
 
     pushState( tree ) {
 
         let state = tree.peekState();
         tree.pushState(
-            state.pos, state.hlu /*, state.angle, state.step, state.orientation,
-            state.pressure */
+            state.pos, state.hlu
         );
 
     }
