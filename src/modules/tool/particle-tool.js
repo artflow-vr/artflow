@@ -371,18 +371,15 @@ export default class ParticleTool extends AbstractTool {
 
         // Initializing particles
         this._particleEmitters = [];
-        this.initCursorMesh();
 
         // preload a million random numbers
         this._randomIndex = 0;
-        for ( this._randomIndex = 1e5; this._randomIndex > 0; this._randomIndex-- ) {
+        for ( this._randomIndex = 1e5; this._randomIndex > 0; this._randomIndex-- )
             this.rand.push( Math.random() - 0.5 );
-        }
 
         // Bind functions to events
         this.registerEvent( 'interact', {
 
-            use: this.use.bind( this ),
             release: this.release.bind( this )
 
         } );
@@ -411,36 +408,6 @@ export default class ParticleTool extends AbstractTool {
         if ( ++this._randomIndex >= this.rand.length )
             this._randomIndex = 1;
         return this.rand[ this._randomIndex ];
-
-    }
-
-    initCursorMesh() {
-
-        this._cursorMesh = new THREE.Mesh(
-            new THREE.SphereGeometry( this.options.brushSize / 2, 16, 16, 0,
-                Math.PI * 2, 0, Math.PI * 2 ),
-            new THREE.MeshBasicMaterial( {
-                color: 0xfff0000,
-                wireframe: true
-            } )
-        );
-        this._cursorMesh.visible = false;
-        this._cursorMesh.castShadow = false;
-        this._cursorMesh.receiveShadow = false;
-
-    }
-
-    use( data ) {
-
-        this._updateBrush( data.position.world );
-
-    }
-
-    _updateBrush( pointCoords ) {
-
-        this._cursorMesh.position.x = pointCoords.x;
-        this._cursorMesh.position.y = pointCoords.y;
-        this._cursorMesh.position.z = pointCoords.z;
 
     }
 
