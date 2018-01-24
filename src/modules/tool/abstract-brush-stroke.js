@@ -42,7 +42,7 @@ export default class AbstractBrushStroke {
         this.mesh = this._helper.createMesh();
         brushTool.worldGroup.addTHREEObject( this.mesh );
 
-        return new AddCommand( brushTool.worldGroup, this.mesh );
+        return new AddCommand( brushTool.worldGroup.object );
 
     }
 

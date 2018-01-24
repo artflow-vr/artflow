@@ -26,6 +26,7 @@
  */
 
 import AbstractTool from './abstract-tool';
+import AddCommand from './command/add-command';
 import { AssetManager } from '../../utils/asset-manager';
 import BaseShader from '../../shader/particle/base-shader';
 import MainView from '../../view/main-view';
@@ -39,12 +40,11 @@ class PrimitivesRenderer {
     constructor( options ) {
 
         this.options = options;
-        // this._bufferSide = PrimitivesRenderer._getNextPowerTwo( this.options.bufferSide );
         this._bufferSide = this.options.bufferSide;
         this._renderer = MainView._renderer;
         this._t = 0.0;
 
-        // Set up RTTs
+        // Sets up RTTs
         this.initPositionRenderPass();
 
         this._indices = [];
@@ -202,12 +202,14 @@ class PrimitivesRenderer {
         this._positionsTargetTextureMat.uniforms.tVelocitiesMap.value = this._velocityRT2.texture;
         this._positionsTargetTextureMesh.material.uniforms.dt.value = dt;
         this._positionsTargetTextureMesh.material.uniforms.t.value = this._t;
+
         if ( this._renderer.vr.enabled ) {
             this._renderer.vr.enabled = false;
             this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT1, true );
             this._renderer.vr.enabled = true;
         } else
             this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT1, true );
+
         sw = this._positionRT1;
         this._positionRT1 = this._positionRT2;
         this._positionRT2 = sw;
@@ -216,6 +218,23 @@ class PrimitivesRenderer {
         this._velocitiesTargetTextureMat.uniforms.tPositionsMap.value = this._positionRT2.texture;
 
         return this._positionRT2.texture;
+
+    }
+
+    clear() {
+
+        // TODO: This is actually gross. Eveything should be packed
+        // in a better way in order to avoid messing the memory
+        // up if the layout of the particle system changes.
+        this._positionRT1.dispose();
+        this._positionRT2.dispose();
+        this._velocityRT1.dispose();
+        this._velocityRT2.dispose();
+
+        this._positionInitialTex.dispose();
+        this._velocityInitialTex.dispose();
+
+        this._positionsTargetTextureGeo.dispose();
 
     }
 }
@@ -263,12 +282,13 @@ class ParticleEmitter extends THREE.Object3D {
             new THREE.BufferAttribute( new Float32Array( this._particleMaxCount * 2 ), 2 ).setDynamic( true ) );
 
         // material
-        this._particleTexture = AssetManager.assets.texture.tool.particle_raw;
+        let particleTex = AssetManager.assets.texture.tool.particle_raw;
+
         this.particleShaderMat = new THREE.ShaderMaterial( {
             transparent: true,
             depthWrite: false,
             uniforms: {
-                tSprite: { type: 't', value: this._particleTexture },
+                tSprite: { type: 't', value: particleTex },
                 tPositions: { type: 't', value: this._updatedPositions },
                 pointMaxSize: { type: 'f', value: this.options.pointMaxSize },
                 particlesTexWidth: { type: 'f', value: PrimitivesRenderer._getNextPowerTwo(
@@ -331,11 +351,19 @@ class ParticleEmitter extends THREE.Object3D {
 
     }
 
+    clear() {
+
+        this._primitivesRenderer.clear();
+        this.particleShaderGeo.dispose();
+
+    }
+
 }
 
 export default class ParticleTool extends AbstractTool {
 
     constructor( options ) {
+
         super( options );
         this.dynamic = true;
         this.defaultOptions = {
@@ -393,13 +421,26 @@ export default class ParticleTool extends AbstractTool {
 
     _spawnParticleEmitter( data ) {
 
-        if ( this._particleEmitters.length < this._maxEmitters ) {
-            let c = new ParticleEmitter( this._particlesPerEmitter, this );
-            this._particleEmitters.push( c );
-            this.worldGroup.addTHREEObject( c );
-            for ( let i = 0; i < this._particlesPerEmitter; i++ )
-                c.spawnParticle( data.position.world );
-        }
+        if ( this._particleEmitters.length >= this._maxEmitters )
+            return undefined;
+
+        let c = new ParticleEmitter( this._particlesPerEmitter, this );
+        this._particleEmitters.push( c );
+        this.worldGroup.addTHREEObject( c );
+        for ( let i = 0; i < this._particlesPerEmitter; i++ )
+            c.spawnParticle( data.position.world );
+
+        return new AddCommand( this._particleEmitters, {
+            clear: ( pEmitter ) => {
+                pEmitter.clear();
+            },
+            undo: ( pEmitter ) => {
+                pEmitter.particleGeometry.visible = false;
+            },
+            redo: ( pEmitter ) => {
+                pEmitter.particleGeometry.visible = true;
+            }
+        } );
 
     }
 
@@ -420,7 +461,7 @@ export default class ParticleTool extends AbstractTool {
 
     release( data ) {
 
-        this._spawnParticleEmitter( data );
+        return this._spawnParticleEmitter( data );
 
     }
 
@@ -432,4 +473,3 @@ export default class ParticleTool extends AbstractTool {
     }
 
 }
-

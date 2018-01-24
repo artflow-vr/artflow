@@ -366,24 +366,33 @@ class ToolModule {
 
             },
             trigger: ( data ) => {
+
                 let cmd = this._selected[ data.controllerID ].triggerEvent(
                     eventID, data, 'trigger'
                 );
-                if ( cmd ) this.undoStack.push( cmd );
+                this._pushActionToUndo( cmd );
 
-                for ( let i = this.redoStack.length - 1; i >= 0; --i ) {
-                    let c = this.redoStack.pop();
-                    if ( c.clear ) c.clear();
-                }
             },
             release: ( data ) => {
 
-                this._selected[ data.controllerID ].triggerEvent(
+                let cmd = this._selected[ data.controllerID ].triggerEvent(
                     eventID, data, 'release'
                 );
+                this._pushActionToUndo( cmd );
 
             }
         };
+
+    }
+
+    _pushActionToUndo( cmd ) {
+
+        if ( cmd ) this.undoStack.push( cmd );
+
+        for ( let i = this.redoStack.length - 1; i >= 0; --i ) {
+            let c = this.redoStack.pop();
+            if ( c.clear ) c.clear();
+        }
 
     }
 
