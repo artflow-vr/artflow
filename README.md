@@ -26,6 +26,18 @@ The tutorial can be found in the [wiki](https://github.com/artflow-vr/artflow/wi
 ### Dependencies
 In order to use the application locally, you need to have a relatively new version of [Yarn](https://yarnpkg.com/lang/en/) or [npm](https://www.npmjs.com/) installed on your system.
 
+ArtFlow is based upon the following packages:
+* [threejs](https://www.npmjs.com/package/three)
+* [VRUI](https://www.npmjs.com/package/vr-ui)
+
+[VRUI](https://www.npmjs.com/package/vr-ui) is our custom library for creating UI in VR. We are trying to maintain it as much as possible, feel free to contribute!
+
+Installing dependency is as simple as:
+```sh
+$ cd path/to/artflow
+$ yarn install
+```
+
 ### Build
 You can build the application by using the following npm command:
 ```sh
@@ -67,26 +79,101 @@ this.worldGroup.addTHREEObject(myObject);
 The first is used to add objects that will be in the VR room-scale frame. So, basically, if you want to make an object follow the controllers, you will add it to this group.
 The second is a bit more complex. Whenever you move by using the keyboard, or the teleportation, everything inside the worldGroup will be offseted. So, basically, you want to add everything that should have a world position in `worlsGroup`. For instance, the brush shapes, the water planes are all added to the `worldGroup`.
 
-### Registering your tool
+## Run my own code
 
-Next step is to register your tool, by calling the `ToolModule` static method `register()`.
-You can register a tool as follow:
+### Creating my tool
+
+The tool system is quite high level, and you can easily plug your own tool into without going through our code. For now, we do not have a complete tutorial, but you can simply follow this interface to create your own tool:
+
 ```javascript
-let Artflow = require('./artflow.js');
-let ToolModule = Artflow.modules.ToolModule;
 
-let toolDescription = {
-  image: [path_to_image],
-  tool: [your_tool_constructor],
-  options: [tools_options]
-};
+export default class MyTool extends AbstractTool {
 
-ToolModule.register('MyNiceTool', toolDescription);
+    constructor( options ) {
+        super( options );
+        
+        // If you want the `update' to be called.
+        this.dynamic = true;
+
+        // Adds your world objects to the below group.
+        // e.g: drawing, fixed objects, etc...
+        this.worldGroup.addTHREEObject( myObject );
+        
+        // Adds your local objects to the below group.
+        // e.g: markers, controller, etc...
+        this.localGroup.addTHREEObject( myObject );
+
+        ////
+        // Registers events coming from controllers
+        // events: 'interact', 'undo', 'thumbpad'
+        ////
+        this.registerEvent( 'interact', {
+            trigger: /* callback when trigger is down */,
+            use: /* callback when trigger is used */,
+            release: /* callback when trigger is released */
+        } );
+
+        this.registerEvent( 'axisChanged', {
+            trigger: /* callback when finger is down on thumbpad */,
+            use: /* callback when finger moves on thumbpad */,
+            release: /* callback when finger is left up from thumbpad */
+        } );
+    }
+
+    update( data ) {
+      // data:
+      // {
+      //   delta: float,
+      //   controllers: []
+      // }
+
+      // This code is always called if your Tool is dynamic.
+    }
+    
+    onEnter() {
+      // Called when tool is selected.
+    }
+    
+    onExit() {
+      // Called when tool is dropped.
+    }
+
+}
+
 ```
 
-## Three.js Code Reuse
+### Using my created tool
+```javascript
+import ArtflowMain from './main';
+import MyTool from './mytool';
 
-**ArtFlow** is built upon a [Model-view-controller](https://en.wikipedia.org/wiki/Model%E2%80%93view%E2%80%93controller), where views are Three.js *Object3D*, or our custom wrapper over Three.js *Object3D*. Basically, you can reuse every controller in your Three.js projects, such as the teleporter, or the brush, by changing only one or two lines of code.
+let customInit = function() {
+
+  // Put your initialization here.
+   ArtflowMain.modules.ToolModule.register( 'Brush', {
+    uiTexture: /* Icon of the tool in the UI */,
+    preview: /* Puts a 3D model displayed on the controller when selected */,
+    Tool: MyTool
+} );
+
+};
+
+window.onload = function () {
+
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    ArtflowMain.init( w, h, customInit );
+
+    // Registers global events
+    window.addEventListener( 'resize', function () {
+
+        ArtflowMain.resize( window.innerWidth, window.innerHeight );
+
+    }, false );
+
+};
+```
 
 ### TODO
 
