@@ -17,7 +17,7 @@ export default class AbstractBrushStroke {
             maxSpread: 20,
             brushThickness: this.isVR ? 0.2 : 0.5,
             delta: this.isVR ? 0.01 : 0.005,
-            enablePressure: false,
+            enablePressure: true,
             material: mat
         };
 
@@ -42,7 +42,7 @@ export default class AbstractBrushStroke {
         this.mesh = this._helper.createMesh();
         brushTool.worldGroup.addTHREEObject( this.mesh );
 
-        return new AddCommand( brushTool.worldGroup, this.mesh );
+        return new AddCommand( brushTool.worldGroup.object );
 
     }
 

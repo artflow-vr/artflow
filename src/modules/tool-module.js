@@ -38,7 +38,7 @@ import ParticleShader from '../shader/particle/particle-shader';
 import ParticleHelix from '../shader/particle/particle-helix';
 import PositionHelix from '../shader/particle/position-helix';
 
-const BASE_TOOL= 'Particle';
+const BASE_TOOL= 'Brush';
 
 class ToolModule {
 
@@ -234,10 +234,10 @@ class ToolModule {
         this.instanciate( 'Water' );
         this.instanciate( 'Tree' );
 
-        this._selected[ 0 ] = this._instance[ BASE_TOOL ][ 0 ];
-        this._selected[ 1 ] = this._instance[ BASE_TOOL ][ 1 ];
-
-        // TODO: Add onEnterChild & onExitChild event trigger.
+        for ( let i = 0; i < 2; ++i ) {
+            this._selected[ i ] = this._instance[ BASE_TOOL ][ i ];
+            this._selected[ i ]._onEnter();
+        }
 
         /*
             The Code below registers every supported events, such as the
@@ -304,8 +304,8 @@ class ToolModule {
         let instances = null;
         for ( let toolID in this._instance ) {
             instances = this._instance[ toolID ];
-            instances[ 0 ]._update( data );
-            instances[ 1 ]._update( data );
+            instances[ 0 ]._update( data, 0 );
+            instances[ 1 ]._update( data, 1 );
         }
 
     }
@@ -316,6 +316,7 @@ class ToolModule {
         // Adds preview above each controller.
         this._changeControllerPreview( 0, BASE_TOOL );
         this._changeControllerPreview( 1, BASE_TOOL );
+
     }
 
     _onColorChange( color ) {
@@ -331,8 +332,12 @@ class ToolModule {
 
         if ( !evt.pressed ) return;
 
-        this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
-        // TODO: handle onExit.
+        let inst = this._instance[ toolID ][ controllerID ];
+        if ( this._selected[ controllerID ] === inst )
+            return;
+
+        this._selected[ controllerID ]._onExit();
+        this._selected[ controllerID ] = inst;
         this._selected[ controllerID ]._onEnter();
 
         //
@@ -361,24 +366,33 @@ class ToolModule {
 
             },
             trigger: ( data ) => {
+
                 let cmd = this._selected[ data.controllerID ].triggerEvent(
                     eventID, data, 'trigger'
                 );
-                if ( cmd ) this.undoStack.push( cmd );
+                this._pushActionToUndo( cmd );
 
-                for ( let i = this.redoStack.length - 1; i >= 0; --i ) {
-                    let c = this.redoStack.pop();
-                    if ( c.clear ) c.clear();
-                }
             },
             release: ( data ) => {
 
-                this._selected[ data.controllerID ].triggerEvent(
+                let cmd = this._selected[ data.controllerID ].triggerEvent(
                     eventID, data, 'release'
                 );
+                this._pushActionToUndo( cmd );
 
             }
         };
+
+    }
+
+    _pushActionToUndo( cmd ) {
+
+        if ( cmd ) this.undoStack.push( cmd );
+
+        for ( let i = this.redoStack.length - 1; i >= 0; --i ) {
+            let c = this.redoStack.pop();
+            if ( c.clear ) c.clear();
+        }
 
     }
 

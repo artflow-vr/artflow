@@ -53,7 +53,8 @@ const CONTROLLER_TO_ACTION = {
     triggerdown: 'interactDown',
     triggerup: 'interactUp',
     axisChanged: 'axisChanged',
-    menu: 'menu'
+    menu: 'menu',
+    undo: 'undo'
 };
 
 class Control {
@@ -216,12 +217,16 @@ class Control {
         // This callback is in charge of stopping event propagation
         // if the UI intercept input events.
         let triggerCallback = ( ) => {
+
             UI.setPressed( true );
             return !UI.hover;
+
         };
         let releaseCallback = ( ) => {
+
             UI.setPressed( false );
-            return true;
+            return !UI.hover;
+
         };
         // We will put the events on the UI as the most important event.
         // UI events have priority 0, meaning they are executed first and
@@ -414,10 +419,10 @@ class Control {
         // and also because it does not make sense to change the binding.
         document.addEventListener( 'keydown', ( event ) => {
             switch ( event.keyCode ) {
-                case 49: // TODO: To remove (only for debug)
+                case 89: // TODO: To remove (only for debug) // U
                     EventDispatcher.dispatch( 'undo' );
                     break;
-                case 50: // TODO: To remove (only for debug)
+                case 85: // TODO: To remove (only for debug) // Y
                     EventDispatcher.dispatch( 'redo' );
                     break;
                 case 65:

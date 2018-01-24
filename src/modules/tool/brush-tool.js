@@ -123,7 +123,7 @@ export default class BrushTool extends AbstractTool {
 
     trigger() {
 
-        this.registeredStrokes[ this.currentStroke ].trigger( this );
+        return this.registeredStrokes[ this.currentStroke ].trigger( this );
 
     }
 

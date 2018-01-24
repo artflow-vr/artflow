@@ -111,6 +111,18 @@ export default class ViveController extends THREE.Object3D {
                     );
 
                 }
+            },
+            undo: {
+                pressed: false,
+                triggerEvent() {
+                    if ( self.buttons.undo.pressed !== self._gamepad.buttons[ 2 ].pressed ) {
+                        self.buttons.undo.pressed = self._gamepad.buttons[ 2 ].pressed;
+                        if ( self.buttons.undo.pressed )
+                            self.dispatchEvent( {
+                                type: 'undo'
+                            } );
+                    }
+                }
             }
         };
 
@@ -141,7 +153,8 @@ export default class ViveController extends THREE.Object3D {
         this.visible = true;
 
         // Sends trigger / release event for every registered button.
-        for ( let bID in this.buttons ) this.buttons[ bID ].triggerEvent();
+        for ( let bID in this.buttons )
+            this.buttons[ bID ].triggerEvent();
 
         // Makes selected material glow (e.g: half of controller).
         for ( let mat of this.glow.meshes ) {

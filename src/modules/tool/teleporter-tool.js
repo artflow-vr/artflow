@@ -129,10 +129,6 @@ export default class TeleporterTool extends AbstractTool {
             MainView.getCamera().getWorldPosition(), position
         );
 
-        console.log( MainView.getCamera().getWorldPosition() );
-        console.log( position );
-        //console.log( direction );
-
         MainView.getGroup().position.x += direction.x;
         MainView.getGroup().position.z += direction.z;
 
@@ -163,6 +159,8 @@ export default class TeleporterTool extends AbstractTool {
         // Using Newton's second law of motion, we have something of the form:
         // 0.5 * g * t^2 + Vy0 * t + Oy0 = 0.
         let delta = vy * vy - 4 * HALF_GRAVITY_CONST * py;
+        if ( delta <= 0.0 ) return 0.0;
+
         let sqrtDelta = Math.sqrt( delta );
         return ( -vy - sqrtDelta ) / GRAVITY_CONST;
 

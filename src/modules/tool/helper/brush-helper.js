@@ -89,12 +89,12 @@ export default class BrushHelper {
         this._lastPressure = 0.0;
         this._thickness = this.options.brushThickness / 2.0;
 
-        this._computeThickness = () => {
-
-            return this._thickness;
-
-        };
-
+        this._computeThickness = this._computeThicknessWithPressure;
+        if ( !this.options.enablePressure ) {
+            this._computeThickness = () => {
+                return this._thickness;
+            };
+        }
         this._material = this.options.material || DEFAULT_MAT.clone();
         if ( this._material.color )
             this._material.color.setHex( this.options.color );

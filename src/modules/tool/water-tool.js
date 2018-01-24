@@ -31,7 +31,9 @@ import { AssetManager } from '../../utils/asset-manager';
 
 import buildPath from 'utils/path-draw';
 
-const MARKER_SCALE = 0.2;
+const TRIGGER_TIME = 4.0;
+
+const WIREFRAME_SCALE = 0.2;
 const MARKER_SCALE_VR = 0.05;
 
 const MARKER_MATERIAL = new THREE.MeshStandardMaterial( {
@@ -82,9 +84,10 @@ export default class WaterTool extends AbstractTool {
 
         let cubeGeom = AssetManager.assets.model.cube;
         this._wireframe = new THREE.Mesh( cubeGeom, MARKER_MATERIAL.clone() );
-        this._wireframe.scale.set( MARKER_SCALE.x, MARKER_SCALE.y, MARKER_SCALE.z );
+        this._wireframe.scale.set( WIREFRAME_SCALE * 2.0, WIREFRAME_SCALE * 0.4, WIREFRAME_SCALE * 0.4 );
         this._wireframe.material.wireframe = true;
         this._wireframe.material.needsUpdate = true;
+        this._wireframe.visible = false;
 
         // Contains the spline drawn by the user. Whenever the drawing is ready,
         // this will be deleted.
@@ -97,6 +100,12 @@ export default class WaterTool extends AbstractTool {
         this.worldGroup.addTHREEObject( this._waterGroup );
 
         this.localGroup.addTHREEObject( this._wireframe );
+
+        // This boolean will be set to `true' if
+        // the tool is currently selected by the user.
+        // We track this using onEnter and onExit.
+        this._selected = false;
+
         // Contains a reference to the previous marked added. This is used
         // to link them with a visual line.
         this._prevMarker = null;
@@ -105,23 +114,51 @@ export default class WaterTool extends AbstractTool {
         this._lineColorID = 1;
         this._lineAnimTime = 0.0;
 
-        // The BrushHelper is used to draw the planes above the
-        //this._helper = new BrushHelper( null, BrushHelper.UV_MODE.quad );
+        // This variables accumulates time the user spent on the trigger.
+        // It will be used to validate the drawing.
+        this._triggerTime = 0.0;
+        this._triggering = false;
 
         this.registerEvent( 'interact', {
+
+            release: this.release.bind( this ),
             trigger: this.trigger.bind( this )
+
         } );
 
         this.registerEvent( 'axisChanged', {
+
             use: this.useAxisChanged.bind( this )
+
         } );
 
-        this.test = [];
+        this._points = [];
 
     }
 
-    update( data ) {
+    update( data, controllerID ) {
 
+        if ( this._selected ) {
+            // Animates the placeholder according to controller.
+            let localPos = data.controllers[ controllerID ].position.local;
+            let rot = data.controllers[ controllerID ].orientation;
+            this._wireframe.position.set( localPos.x, localPos.y, localPos.z );
+            this._wireframe.quaternion.copy( rot );
+
+            // Updates time the user spent triggering the button.
+            if ( this._triggering ) {
+                this._triggerTime += data.delta;
+                if ( this._triggerTime >= TRIGGER_TIME ) {
+                    this._createPath();
+                    this._triggerTime = 0.0;
+                    this._triggering = false;
+                    this._points.length = 0;
+                    this._prevMarker = null;
+                }
+            }
+        }
+
+        // Updates spline color through time.
         this._splineGroup.traverse( ( child ) => {
 
             if ( child.constructor !== THREE.Line ) return;
@@ -133,6 +170,13 @@ export default class WaterTool extends AbstractTool {
 
         } );
 
+        this._lineAnimTime += data.delta * 0.65;
+        if ( this._lineAnimTime >= 1.0 ) {
+            this._lineColorID = ( this._lineColorID + 1 ) % LINE_COLORS.length;
+            this._lineAnimTime = 0.0;
+        }
+
+        // Updates time unfirom used to move the water texture.
         this._waterGroup.traverse( function ( child ) {
 
             if ( child instanceof THREE.Mesh ) {
@@ -142,26 +186,19 @@ export default class WaterTool extends AbstractTool {
 
         } );
 
-        this._lineAnimTime += data.delta * 0.65;
-        if ( this._lineAnimTime >= 1.0 ) {
-            this._lineColorID = ( this._lineColorID + 1 ) % LINE_COLORS.length;
-            this._lineAnimTime = 0.0;
-        }
+    }
+
+    trigger() {
+
+        this._triggering = true;
 
     }
 
-    use ( data ) {
+    release( data ) {
 
-        let localPos = data.position.local;
+        if ( !this._triggering ) return;
 
-        this._wireframe.orientation.applyQuaternion( data.orientation );
-        this._wireframe.position.set( localPos.x, localPos.y, localPos.z );
-
-    }
-
-    trigger( data ) {
-
-        this.test.push( {
+        this._points.push( {
             orientation: data.orientation.clone(),
             coords: data.position.world.clone()
         } );
@@ -197,43 +234,70 @@ export default class WaterTool extends AbstractTool {
 
         this._prevMarker = mesh;
 
-        if ( this.test.length === 8 ) {
-            let geometry = buildPath( this.test, { uvFactor: 0.5 } );
-            let material = WATER_MATERIAL.clone();
-            let m = new THREE.Mesh( geometry, material );
-            m.frustumCulled = false;
-            m.drawMode = THREE.TrianglesDrawMode; //default
+        this._triggering = false;
 
-            let cubemap = AssetManager.assets.texture.cubemap.cubemap;
-            m.material.uniforms.normalMap.value = AssetManager.assets.texture.tool.water_normal;
-            m.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
-            m.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
-            m.material.uniforms.uSpeed.value = this.options.speed;
-            m.material.uniforms.uCubemap.value = cubemap;
-            m.material.needsUpdate = true;
-            this._waterGroup.add( m );
-
-            this.test = [];
-            this._prevMarker = null;
-
-            for ( let i = this._markerGroup.children.length - 1; i >= 0; i-- ) {
-                this._markerGroup.remove( this._markerGroup.children[ i ] );
-            }
-            for ( let i = this._splineGroup.children.length - 1; i >= 0; i-- ) {
-                this._splineGroup.remove( this._splineGroup.children[ i ] );
-            }
-        }
     }
 
     useAxisChanged( data ) {
 
-        //data.controller.sizeMesh.scale.x * 1.0;
-        let val = data.controller.sizeMesh.scale.x;
         let scale = this._wireframe.scale;
+        let val = data.controller.sizeMesh.scale.x * 0.5;
+
         this._wireframe.scale.set( val, scale.y, scale.z );
 
     }
 
-    release() {}
+    onEnter() {
+
+        this._selected = true;
+        this._wireframe.visible = true;
+
+    }
+
+    onExit() {
+
+        this._selected = false;
+        this._wireframe.visible = false;
+
+    }
+
+    _createPath() {
+
+        if ( this._points.length === 0 ) return;
+
+        // Creates the path geometry from the positions.
+        let geometry = buildPath( this._points, {
+            uvFactor: 0.5,
+            scale: this._wireframe.scale.x
+        } );
+
+        // Creates the mesh associated to the path.
+        let material = WATER_MATERIAL.clone();
+        let mesh = new THREE.Mesh( geometry, material );
+        mesh.frustumCulled = false;
+        mesh.drawMode = THREE.TrianglesDrawMode;
+
+        let cubemap = AssetManager.assets.texture.cubemap.cubemap;
+        mesh.material.uniforms.normalMap.value = AssetManager.assets.texture.tool.water_normal;
+        mesh.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
+        mesh.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
+        mesh.material.uniforms.uSpeed.value = this.options.speed;
+        mesh.material.uniforms.uCubemap.value = cubemap;
+        mesh.material.needsUpdate = true;
+
+        for ( let i = this._markerGroup.children.length - 1; i >= 0; i-- ) {
+            this._markerGroup.remove( this._markerGroup.children[ i ] );
+        }
+        for ( let i = this._splineGroup.children.length - 1; i >= 0; i-- ) {
+            this._splineGroup.remove( this._splineGroup.children[ i ] );
+        }
+
+        this._waterGroup.add( mesh );
+
+        // Reinit attributes for next drawing.
+        this._points.length = 0;
+        this._prevMarker = null;
+
+    }
 
 }
