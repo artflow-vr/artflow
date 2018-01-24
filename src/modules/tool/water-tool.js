@@ -31,6 +31,8 @@ import { AssetManager } from '../../utils/asset-manager';
 
 import buildPath from 'utils/path-draw';
 
+const TRIGGER_TIME = 4.0;
+
 const WIREFRAME_SCALE = 0.2;
 const MARKER_SCALE_VR = 0.05;
 
@@ -112,11 +114,14 @@ export default class WaterTool extends AbstractTool {
         this._lineColorID = 1;
         this._lineAnimTime = 0.0;
 
-        // The BrushHelper is used to draw the planes above the
-        //this._helper = new BrushHelper( null, BrushHelper.UV_MODE.quad );
+        // This variables accumulates time the user spent on the trigger.
+        // It will be used to validate the drawing.
+        this._triggerTime = 0.0;
+        this._triggering = false;
 
         this.registerEvent( 'interact', {
 
+            release: this.release.bind( this ),
             trigger: this.trigger.bind( this )
 
         } );
@@ -133,12 +138,24 @@ export default class WaterTool extends AbstractTool {
 
     update( data, controllerID ) {
 
-        // Animates the placeholder according to controller.
         if ( this._selected ) {
+            // Animates the placeholder according to controller.
             let localPos = data.controllers[ controllerID ].position.local;
             let rot = data.controllers[ controllerID ].orientation;
             this._wireframe.position.set( localPos.x, localPos.y, localPos.z );
             this._wireframe.quaternion.copy( rot );
+
+            // Updates time the user spent triggering the button.
+            if ( this._triggering ) {
+                this._triggerTime += data.delta;
+                if ( this._triggerTime >= TRIGGER_TIME ) {
+                    this._createPath();
+                    this._triggerTime = 0.0;
+                    this._triggering = false;
+                    this._points.length = 0;
+                    this._prevMarker = null;
+                }
+            }
         }
 
         // Updates spline color through time.
@@ -171,7 +188,15 @@ export default class WaterTool extends AbstractTool {
 
     }
 
-    trigger( data ) {
+    trigger() {
+
+        this._triggering = true;
+
+    }
+
+    release( data ) {
+
+        if ( !this._triggering ) return;
 
         this._points.push( {
             orientation: data.orientation.clone(),
@@ -209,35 +234,8 @@ export default class WaterTool extends AbstractTool {
 
         this._prevMarker = mesh;
 
-        if ( this._points.length === 8 ) {
-            let geometry = buildPath( this._points, {
-                uvFactor: 0.5,
-                scale: this._wireframe.scale.x
-            } );
-            let material = WATER_MATERIAL.clone();
-            let m = new THREE.Mesh( geometry, material );
-            m.frustumCulled = false;
-            m.drawMode = THREE.TrianglesDrawMode; //default
+        this._triggering = false;
 
-            let cubemap = AssetManager.assets.texture.cubemap.cubemap;
-            m.material.uniforms.normalMap.value = AssetManager.assets.texture.tool.water_normal;
-            m.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
-            m.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
-            m.material.uniforms.uSpeed.value = this.options.speed;
-            m.material.uniforms.uCubemap.value = cubemap;
-            m.material.needsUpdate = true;
-            this._waterGroup.add( m );
-
-            this._points.length = 0;
-            this._prevMarker = null;
-
-            for ( let i = this._markerGroup.children.length - 1; i >= 0; i-- ) {
-                this._markerGroup.remove( this._markerGroup.children[ i ] );
-            }
-            for ( let i = this._splineGroup.children.length - 1; i >= 0; i-- ) {
-                this._splineGroup.remove( this._splineGroup.children[ i ] );
-            }
-        }
     }
 
     useAxisChanged( data ) {
@@ -260,6 +258,45 @@ export default class WaterTool extends AbstractTool {
 
         this._selected = false;
         this._wireframe.visible = false;
+
+    }
+
+    _createPath() {
+
+        if ( this._points.length === 0 ) return;
+
+        // Creates the path geometry from the positions.
+        let geometry = buildPath( this._points, {
+            uvFactor: 0.5,
+            scale: this._wireframe.scale.x
+        } );
+
+        // Creates the mesh associated to the path.
+        let material = WATER_MATERIAL.clone();
+        let mesh = new THREE.Mesh( geometry, material );
+        mesh.frustumCulled = false;
+        mesh.drawMode = THREE.TrianglesDrawMode;
+
+        let cubemap = AssetManager.assets.texture.cubemap.cubemap;
+        mesh.material.uniforms.normalMap.value = AssetManager.assets.texture.tool.water_normal;
+        mesh.material.uniforms.normalMap.value.wrapS = THREE.RepeatWrapping;
+        mesh.material.uniforms.normalMap.value.wrapT = THREE.RepeatWrapping;
+        mesh.material.uniforms.uSpeed.value = this.options.speed;
+        mesh.material.uniforms.uCubemap.value = cubemap;
+        mesh.material.needsUpdate = true;
+
+        for ( let i = this._markerGroup.children.length - 1; i >= 0; i-- ) {
+            this._markerGroup.remove( this._markerGroup.children[ i ] );
+        }
+        for ( let i = this._splineGroup.children.length - 1; i >= 0; i-- ) {
+            this._splineGroup.remove( this._splineGroup.children[ i ] );
+        }
+
+        this._waterGroup.add( mesh );
+
+        // Reinit attributes for next drawing.
+        this._points.length = 0;
+        this._prevMarker = null;
 
     }
 

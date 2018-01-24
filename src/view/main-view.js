@@ -148,7 +148,7 @@ class Main {
         );
         floor.position.y = -0.5;
         floor.rotateX( -Math.PI / 2 );
-        //this._group.add( floor );
+        this._group.add( floor );
 
         if ( vr ) return;
 
@@ -180,15 +180,6 @@ class Main {
         centerCube.translateY( 0.5 );
         xAxisCube.translateX( 2 );
         zAxisCube.translateZ( 2 );
-
-        /*this._group.add( centerCube );
-        this._group.add( xAxisCube );
-        this._group.add( zAxisCube );*/
-
-        // DEBUG
-        //this._group.add( AssetManager.assets.model.tool.tree_preview );
-        //this._group.add( AssetManager.assets.model.tool.brush_preview );
-        // END DEBUG
 
     }
 
