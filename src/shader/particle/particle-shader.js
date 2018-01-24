@@ -36,11 +36,12 @@ module.exports = {
         'uniform float particlesTexWidth;',
 
         'void main() {',
-        '	vec4 position_v = texture2D( tPositions, vec2(idx.x / particlesTexWidth, idx.y / particlesTexWidth));',
+        '	vec4 position_v = texture2D(tPositions, vec2(idx.x / particlesTexWidth, idx.y / particlesTexWidth));',
         '	vec3 position_offset = position_v.xyz;',
         '	gl_PointSize = position_v.a * pointMaxSize;',
         '	position_offset = (position_offset - 0.5) * brushSize;',
-        '	gl_Position = projectionMatrix * modelViewMatrix * vec4( ( position + position_offset ), 1.0 );',
+        '	vec4 mvPosition = modelViewMatrix * vec4((position + position_offset), 1.0);',
+        '	gl_Position = projectionMatrix * mvPosition;',
         '	a_idx = idx;',
         '}'
 
@@ -50,9 +51,10 @@ module.exports = {
         'uniform sampler2D tSprite;',
         'varying vec2 a_idx;',
         'uniform sampler2D tPositions;',
+        'uniform vec3 pColor;',
 
         'void main() {',
-        '	vec4 tex = texture2D( tSprite, gl_PointCoord );',
+        '	vec4 tex = texture2D( tSprite, gl_PointCoord ) * vec4(pColor, 1.0);',
         '	gl_FragColor = vec4( tex );',
         '}'
 

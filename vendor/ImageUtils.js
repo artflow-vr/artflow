@@ -32,17 +32,11 @@ THREE.ImageUtils.generateDataTexture = function ( width, height, color ) {
 
 THREE.ImageUtils.generateRandomDataTexture = function ( width, height ) {
 
-    let size = width * height;
+    let size = width * height * 4;
     //let data = new Float32Array( 4 * size );
-    let data = new Float32Array( 4 * size );
+    let data = new Float32Array( size );
 
-    for ( let i = 0; i < size; i ++ ) {
-        data[ i * 4 ] 	  = Math.random();
-        data[ i * 4 + 1 ] = Math.random();
-        data[ i * 4 + 2 ] = Math.random();
-        data[ i * 4 + 3 ] = Math.random();
-
-    }
+    for ( let i = 0; i < size; i ++ ) data[ i ] = Math.random();
 
     //let texture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat, THREE.FloatType );
     let texture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat, THREE.FloatType );
@@ -54,16 +48,11 @@ THREE.ImageUtils.generateRandomDataTexture = function ( width, height ) {
 
 THREE.ImageUtils.copyDataTexture = function ( source, width, height ) {
 
-    let size = width * height;
+    let size = width * height * 4;
     //let data = new Float32Array( 4 * size );
-    let data = new Float32Array( 4 * size );
+    let data = new Float32Array( size );
 
-    for ( let i = 0; i < size; i ++ ) {
-        data[ i ] = source.image.data[ i ];
-        data[ i + 1 ] = source.image.data[ i + 1 ];
-        data[ i + 2 ] = source.image.data[ i + 2 ];
-        data[ i + 3 ] = source.image.data[ i + 3 ];
-    }
+    for ( let i = 0; i < size; i ++ ) data[ i ] = source.image.data[ i ];
 
     //let texture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat, THREE.FloatType );
     let texture = new THREE.DataTexture( data, width, height, THREE.RGBAFormat, THREE.FloatType );

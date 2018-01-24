@@ -148,7 +148,7 @@ class Main {
         );
         floor.position.y = -0.5;
         floor.rotateX( -Math.PI / 2 );
-        this._group.add( floor );
+        //this._group.add( floor );
 
         if ( vr ) return;
 

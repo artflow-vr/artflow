@@ -1,29 +1,29 @@
 /**
-* ArtFlow application
-* https://github.com/artflow-vr/artflow
-*
-* MIT License
-*
-* Copyright (c) 2017 artflow
-*
-* Permission is hereby granted, free of charge, to any person obtaining a copy
-* of this software and associated documentation files (the "Software"), to deal
-* in the Software without restriction, including without limitation the rights
-* to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-* copies of the Software, and to permit persons to whom the Software is
-* furnished to do so, subject to the following conditions:
-*
-* The above copyright notice and this permission notice shall be included in all
-* copies or substantial portions of the Software.
-*
-* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-* IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-* FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-* AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-* LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-* OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-* SOFTWARE.
-*/
+ * ArtFlow application
+ * https://github.com/artflow-vr/artflow
+ *
+ * MIT License
+ *
+ * Copyright (c) 2017 artflow
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 
 import * as Tool from './tool/tool';
 import * as Utils from '../utils/utils';
@@ -35,13 +35,10 @@ let AssetManager = Utils.AssetManager;
 let EventDispatcher = Utils.EventDispatcher;
 
 import ParticleShader from '../shader/particle/particle-shader';
-import ParticleShader2 from '../shader/particle/particle-shader2';
 import ParticleHelix from '../shader/particle/particle-helix';
-import PositionUpdate from '../shader/particle/position-update';
 import PositionHelix from '../shader/particle/position-helix';
-import VelocityUpdate from '../shader/particle/velocity-update';
 
-const BASE_TOOL= 'Brush';
+const BASE_TOOL= 'Particle';
 
 class ToolModule {
 
@@ -450,83 +447,44 @@ class ToolModule {
         //
         // PARTICLES
         //
-        this.registerToolItem( 'Particle', 'snow', {
-            uiTexture: AssetManager.assets.texture.ui.item[ 'snow-item' ],
-            data: {
-                brushSize: 3,
-                thickness: 10,
-                initialParticlesPerEmitter: 20,
-                maxParticlesPerEmitter: 512 * 512,
-                bufferSide: 512,
-                maxEmitters: 1000,
-                debugPlane: false,
-                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
-                renderingUniforms: {
-                    pointMaxSize: { type: 'f', value: 200 },
-                    brushSize: { type: 'f', value: 3 } },
-                positionUniforms: {
-                    normVelocity: { type:'f', value: 10.0 },
-                    lifespanEntropy: { type:'f', value: 0.001 }
-                },
-                renderingShader: ParticleShader,
-                positionUpdate: PositionUpdate,
-                velocityUpdate: VelocityUpdate
+        this.registerToolItems( 'Particle', {
+            snow: {
+                uiTexture: itemsTextures.snow,
+                data: {
+
+                    velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
+                    renderingUniforms: {
+                        pointMaxSize: { type: 'f', value: 20 },
+                        brushSize: { type: 'f', value: 3 } }
+                }
+            },
+            spiral: {
+                uiTexture: itemsTextures.spiral,
+                data: {
+                    velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
+                    renderingUniforms: {
+                        pointMaxSize: { type: 'f', value: 20 },
+                        brushSize: { type: 'f', value: 3 },
+                        rotation: { type:'3f', value: [180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0] }
+                    },
+                    positionUniforms: {
+                        normVelocity: { type:'f', value: 10.0 },
+                        lifespanEntropy: { type:'f', value: 0.001 },
+                        a: { type:'f', value: 1.0 },
+                        b: { type:'f', value: 1.0 }
+                    },
+                    renderingShader: ParticleHelix,
+                    positionUpdate: PositionHelix
+                }
+            },
+            confetti: {
+                uiTexture: itemsTextures.confetti,
+                data: {
+                    renderingShader: ParticleShader
+                }
             }
-        } );
-        this.registerToolItem( 'Particle', 'spiral', {
-            uiTexture: AssetManager.assets.texture[ 'spiral-item' ],
-            data: {
-                brushSize: 3,
-                thickness: 10,
-                initialParticlesPerEmitter: 20,
-                maxParticlesPerEmitter: 512 * 512,
-                bufferSide: 512,
-                maxEmitters: 20,
-                debugPlane: false,
-                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 512, 512, new THREE.Color( 0.5, 0.495, 0.5 ) ),
-                renderingUniforms: {
-                    pointMaxSize: { type: 'f', value: 20 },
-                    brushSize: { type: 'f', value: 3 },
-                    rotation: { type:'3f', value: [180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0] }
-                },
-                positionUniforms: {
-                    normVelocity: { type:'f', value: 10.0 },
-                    lifespanEntropy: { type:'f', value: 0.001 },
-                    a: { type:'f', value: 1.0 },
-                    b: { type:'f', value: 1.0 }
-                },
-                renderingShader: ParticleHelix,
-                positionUpdate: PositionHelix,
-                velocityUpdate: VelocityUpdate
-            }
-        } );
-        this.registerToolItem( 'Particle', 'confetti', {
-            uiTexture: AssetManager.assets.texture[ 'confetti-item' ],
-            data: {
-                brushSize: 3,
-                thickness: 10,
-                initialParticlesPerEmitter: 20,
-                maxParticlesPerEmitter: 512 * 512,
-                bufferSide: 512,
-                maxEmitters: 20,
-                debugPlane: false,
-                positionInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                velocityInitialTex: THREE.ImageUtils.generateRandomDataTexture( 512, 512 ),
-                renderingUniforms: {
-                    pointMaxSize: { type: 'f', value: 20 },
-                    brushSize: { type: 'f', value: 3 }
-                },
-                positionUniforms: {
-                    normVelocity: { type:'f', value: 10.0 },
-                    lifespanEntropy: { type:'f', value: 0.001 }
-                },
-                renderingShader: ParticleShader2,
-                positionUpdate: PositionUpdate,
-                velocityUpdate: VelocityUpdate
-            }
-        } );
+        }
+        );
 
         //
 
