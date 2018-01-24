@@ -94,24 +94,7 @@ ToolModule.register('MyNiceTool', toolDescription);
 * [ ] Use pow2 textures. It would be nice to reduce the number of requests, by merging textures together and using different UVs (for instance for the UI).
 * [ ] Add the shake events
 * [ ] Add tool to take screenshot
-* [ ] Add small tutorial showing how to open menu, how to draw, etc...
-* [X] Add icon above controler showing which tool is selected
-* [X] Add cubemap selection
-
-#### Brushes
-* [ ] Fix stroke not working when we do not change the size of the brush
-* [ ] Use color in when possible, even if the stroke is dynamic.
-* [ ] Fix missing stroke in UI (wrongly registered)
-* [X] Remove hardcoded strokes from AbstractBrushTool
-* [X] Remove call to ToolModule from BrushHelper. (The dependecy should come from the UI, or somewhere else).
-* [X] Add pressure
-* [X] Move BrushHelper to BrushTool instead of AbstractBrushTool
-
-#### Particles
-* [ ] Fix particles not working in VR
-* [ ] Use default option. When registering items,80% of the values are the same except for shaders.
 
 #### Water
-* [ ] Reduce speed in VR
 * [ ] Improve plane delimiters
 * [ ] Validate water plane on shake
