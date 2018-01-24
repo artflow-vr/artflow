@@ -120,8 +120,15 @@ export default class WaterTool extends AbstractTool {
 
     }
 
-    update( data ) {
+    update( data, controllerID ) {
 
+        // Animates the placeholder according to controller.
+        let localPos = data.controllers[ controllerID ].position.local;
+        let rot = data.controllers[ controllerID ].orientation;
+        this._wireframe.quaternion.multiply( rot );
+        this._wireframe.position.set( localPos.x, localPos.y, localPos.z );
+
+        // Updates spline color through time.
         this._splineGroup.traverse( ( child ) => {
 
             if ( child.constructor !== THREE.Line ) return;
@@ -133,6 +140,13 @@ export default class WaterTool extends AbstractTool {
 
         } );
 
+        this._lineAnimTime += data.delta * 0.65;
+        if ( this._lineAnimTime >= 1.0 ) {
+            this._lineColorID = ( this._lineColorID + 1 ) % LINE_COLORS.length;
+            this._lineAnimTime = 0.0;
+        }
+
+        // Updates time unfirom used to move the water texture.
         this._waterGroup.traverse( function ( child ) {
 
             if ( child instanceof THREE.Mesh ) {
@@ -141,21 +155,6 @@ export default class WaterTool extends AbstractTool {
             }
 
         } );
-
-        this._lineAnimTime += data.delta * 0.65;
-        if ( this._lineAnimTime >= 1.0 ) {
-            this._lineColorID = ( this._lineColorID + 1 ) % LINE_COLORS.length;
-            this._lineAnimTime = 0.0;
-        }
-
-    }
-
-    use ( data ) {
-
-        let localPos = data.position.local;
-
-        this._wireframe.orientation.applyQuaternion( data.orientation );
-        this._wireframe.position.set( localPos.x, localPos.y, localPos.z );
 
     }
 
@@ -231,6 +230,8 @@ export default class WaterTool extends AbstractTool {
         let val = data.controller.sizeMesh.scale.x;
         let scale = this._wireframe.scale;
         this._wireframe.scale.set( val, scale.y, scale.z );
+
+        console.log( scale );
 
     }
 

@@ -119,12 +119,12 @@ export default class Tool {
 
     }
 
-    _update( delta ) {
+    _update( delta, controllerID ) {
 
         if ( !this.enabled || !this.dynamic || !this.update )
             return;
 
-        this.update( delta );
+        this.update( delta, controllerID );
 
     }
 

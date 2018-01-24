@@ -304,8 +304,8 @@ class ToolModule {
         let instances = null;
         for ( let toolID in this._instance ) {
             instances = this._instance[ toolID ];
-            instances[ 0 ]._update( data );
-            instances[ 1 ]._update( data );
+            instances[ 0 ]._update( data, 0 );
+            instances[ 1 ]._update( data, 1 );
         }
 
     }
