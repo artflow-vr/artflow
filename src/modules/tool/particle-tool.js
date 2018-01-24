@@ -34,11 +34,6 @@ import ParticleShader from '../../shader/particle/particle-shader';
 import PositionUpdate from '../../shader/particle/position-update';
 import VelocityUpdate from '../../shader/particle/velocity-update';
 
-function isFunction( functionToCheck ) {
-    let getType = {};
-    return getType.toString.call( functionToCheck ) === '[object Function]';
-}
-
 class PrimitivesRenderer {
     constructor( options ) {
         this.options = options;
@@ -128,7 +123,7 @@ class PrimitivesRenderer {
         } );
         for ( let elt in this.options.positionUniforms )
             this._positionsTargetTextureMat.uniforms[ elt ] = this.options.positionUniforms[ elt ];
-        
+
         this._positionsTargetTextureMat.needsUpdate = true;
 
         this._velocitiesTargetTextureMat = new THREE.ShaderMaterial( {
@@ -185,8 +180,7 @@ class PrimitivesRenderer {
             this._renderer.vr.enabled = false;
             this._renderer.render( this._velocityRTTScene, this._positionsCamera, this._velocityRT1, true );
             this._renderer.vr.enabled = true;
-        }
-        else
+        } else
             this._renderer.render( this._velocityRTTScene, this._positionsCamera, this._velocityRT1, true );
         let sw = this._velocityRT1;
         this._velocityRT1 = this._velocityRT2;
@@ -200,8 +194,7 @@ class PrimitivesRenderer {
             this._renderer.vr.enabled = false;
             this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT1, true );
             this._renderer.vr.enabled = true;
-        }
-        else
+        } else
             this._renderer.render( this._positionRTTScene, this._positionsCamera, this._positionRT1, true );
         sw = this._positionRT1;
         this._positionRT1 = this._positionRT2;
@@ -322,8 +315,7 @@ export default class ParticleTool extends AbstractTool {
     constructor( options ) {
         super( options );
         this.dynamic = true;
-        this.setOptionsIfUndef(
-            {
+        this.defaultOptions = {
                 brushSize: 3,
                 thickness: 100,
                 initialParticlesPerEmitter: 20 * 20,
@@ -351,9 +343,9 @@ export default class ParticleTool extends AbstractTool {
                 renderingShader: ParticleShader,
                 positionUpdate: PositionUpdate,
                 velocityUpdate: VelocityUpdate,
-                color: new THREE.Color(1.0, 1.0, 1.0)
-            }
-        );
+                color: new THREE.Color( 1.0, 1.0, 1.0 )
+            };
+        this.setOptionsIfUndef( this.defaultOptions );
 
         this._thickness = this.options.thickness;
         this._maxEmitters = this.options.maxEmitters;
@@ -442,6 +434,7 @@ export default class ParticleTool extends AbstractTool {
 
     onItemChanged( id ) {
         this.options = ParticleTool.items[ id.slice( 0 ) ].data;
+        this.setOptionsIfUndef( this.defaultOptions );
     }
 
 }

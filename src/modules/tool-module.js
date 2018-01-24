@@ -35,11 +35,8 @@ let AssetManager = Utils.AssetManager;
 let EventDispatcher = Utils.EventDispatcher;
 
 import ParticleShader from '../shader/particle/particle-shader';
-import ParticleShader2 from '../shader/particle/particle-shader2';
 import ParticleHelix from '../shader/particle/particle-helix';
-import PositionUpdate from '../shader/particle/position-update';
 import PositionHelix from '../shader/particle/position-helix';
-import VelocityUpdate from '../shader/particle/velocity-update';
 
 const BASE_TOOL= 'Particle';
 
@@ -450,50 +447,44 @@ class ToolModule {
         //
         // PARTICLES
         //
-        this.registerToolItem( 'Particle', 'snow', {
-            uiTexture: AssetManager.assets.texture.ui.item[ 'snow-item' ],
-            data: {
-                /*
-                velocityInitialTex: () => {
-                    return THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) );
-                },
-                */
-                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
-                renderingUniforms: {
-                    pointMaxSize: { type: 'f', value: 200 },
-                    brushSize: { type: 'f', value: 3 } },
+        this.registerToolItems( 'Particle', {
+            snow: {
+                uiTexture: itemsTextures.snow,
+                data: {
+
+                    velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
+                    renderingUniforms: {
+                        pointMaxSize: { type: 'f', value: 20 },
+                        brushSize: { type: 'f', value: 3 } }
+                }
+            },
+            spiral: {
+                uiTexture: itemsTextures.spiral,
+                data: {
+                    velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
+                    renderingUniforms: {
+                        pointMaxSize: { type: 'f', value: 20 },
+                        brushSize: { type: 'f', value: 3 },
+                        rotation: { type:'3f', value: [180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0] }
+                    },
+                    positionUniforms: {
+                        normVelocity: { type:'f', value: 10.0 },
+                        lifespanEntropy: { type:'f', value: 0.001 },
+                        a: { type:'f', value: 1.0 },
+                        b: { type:'f', value: 1.0 }
+                    },
+                    renderingShader: ParticleHelix,
+                    positionUpdate: PositionHelix
+                }
+            },
+            confetti: {
+                uiTexture: itemsTextures.confetti,
+                data: {
+                    renderingShader: ParticleShader
+                }
             }
-        } );
-        this.registerToolItem( 'Particle', 'spiral', {
-            uiTexture: AssetManager.assets.texture[ 'spiral-item' ],
-            data: {
-                /*
-                velocityInitialTex: () => {
-                    return THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) );
-                },
-                */
-                velocityInitialTex: THREE.ImageUtils.generateDataTexture( 20, 20, new THREE.Color( 0.5, 0.495, 0.5 ) ),
-                renderingUniforms: {
-                    pointMaxSize: { type: 'f', value: 20 },
-                    brushSize: { type: 'f', value: 3 },
-                    rotation: { type:'3f', value: [180.0 * Math.PI / 180.0, 0 / 180.0, 0 / 180.0] }
-                },
-                positionUniforms: {
-                    normVelocity: { type:'f', value: 10.0 },
-                    lifespanEntropy: { type:'f', value: 0.001 },
-                    a: { type:'f', value: 1.0 },
-                    b: { type:'f', value: 1.0 }
-                },
-                renderingShader: ParticleHelix,
-                positionUpdate: PositionHelix,
-            }
-        } );
-        this.registerToolItem( 'Particle', 'confetti', {
-            uiTexture: AssetManager.assets.texture[ 'confetti-item' ],
-            data: {
-                renderingShader: ParticleShader2
-            }
-        } );
+        }
+        );
 
         //
 

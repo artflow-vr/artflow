@@ -438,7 +438,9 @@ class Manager {
             { file: 'tree/simple.png', id: 'tree-simple' },
             { file: 'tree/tilt.png', id: 'tree-tilt' },
             // BRUSH
-            { file: 'brush/brush_items.spritesheet' }
+            { file: 'brush/brush_items.spritesheet' },
+            // PARTICLE
+            { file: 'particles/particles.spritesheet' }
         ];
 
         const toolModels = [
