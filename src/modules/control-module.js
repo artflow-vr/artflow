@@ -53,7 +53,8 @@ const CONTROLLER_TO_ACTION = {
     triggerdown: 'interactDown',
     triggerup: 'interactUp',
     axisChanged: 'axisChanged',
-    menu: 'menu'
+    menu: 'menu',
+    undo: 'undo'
 };
 
 class Control {

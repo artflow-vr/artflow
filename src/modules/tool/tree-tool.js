@@ -26,7 +26,7 @@
 */
 
 import AbstractTool from './abstract-tool';
-//import AddCommand from './command/add-command';
+import AddCommand from './command/add-command';
 import BrushHelper from './helper/brush-helper';
 import { LSystem } from '../../utils/l-system';
 
@@ -226,10 +226,11 @@ export default class TreeTool extends AbstractTool {
         }
 
         if ( i >= MAX_TREE )
-          return;
+          return undefined;
 
         let tree = this.trees[ i ];
         tree.init( data, this._lSysID, this.options, this._hsv );
+
         this._addMesh( tree );
         this._draw( tree );
 
@@ -240,15 +241,14 @@ export default class TreeTool extends AbstractTool {
         let toRemove = [];
 
         for ( let i = 0; i < MAX_TREE; ++i ) {
-
             if ( this._interpretNext( i, data.delta ) )
                 toRemove.push( i );
         }
 
         for ( let i of toRemove ) {
-          if ( this.trees[ i ].needPoint ) this._draw( this.trees[ i ] );
-          this.trees[ i ].activated = false;
-          this.trees[ i ].states.length = 0;
+            if ( this.trees[ i ].needPoint ) this._draw( this.trees[ i ] );
+            this.trees[ i ].activated = false;
+            this.trees[ i ].states.length = 0;
         }
 
     }
@@ -264,7 +264,7 @@ export default class TreeTool extends AbstractTool {
 
         let mesh = tree.helper.createMesh();
         this.worldGroup.addTHREEObject( mesh );
-        //return new AddCommand( this.worldGroup, mesh );
+        //return new AddCommand( this.worldGroup.object );
 
     }
 
