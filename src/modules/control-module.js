@@ -216,12 +216,16 @@ class Control {
         // This callback is in charge of stopping event propagation
         // if the UI intercept input events.
         let triggerCallback = ( ) => {
+
             UI.setPressed( true );
             return !UI.hover;
+
         };
         let releaseCallback = ( ) => {
+
             UI.setPressed( false );
-            return true;
+            return !UI.hover;
+
         };
         // We will put the events on the UI as the most important event.
         // UI events have priority 0, meaning they are executed first and

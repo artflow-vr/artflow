@@ -31,17 +31,18 @@ const DEFAULT_OPT = {
     uvFactor: 1.0,
     tangentMean: true,
     smoothNormal: true,
-    initLock: new THREE.Vector3( -1, 0, 0 )
+    initLock: new THREE.Vector3( -1, 0, 0 ),
+    scale: 0.2
 };
 
-let createLockPoints = ( point, initQuat, outAxisLock, outA, outB ) => {
+let createLockPoints = ( point, initQuat, outAxisLock, outA, outB, scale ) => {
 
     outAxisLock.x = initQuat.x;
     outAxisLock.y = initQuat.y;
     outAxisLock.z = initQuat.z;
 
     outAxisLock.applyQuaternion( point.orientation );
-    outAxisLock.multiplyScalar( 0.1 );
+    outAxisLock.multiplyScalar( scale * 0.5 );
 
     outA.set( point.coords.x, point.coords.y, point.coords.z );
     outB.set( point.coords.x, point.coords.y, point.coords.z );
@@ -148,7 +149,7 @@ export default ( points, options ) => {
 
             // Initializes the quaternion to the inital value.
             createLockPoints(
-                pointA, opt.initLock, axisLock, vectorA, vectorB
+                pointA, opt.initLock, axisLock, vectorA, vectorB, opt.scale
             );
 
             // We are building a quad having this layout:
@@ -172,7 +173,7 @@ export default ( points, options ) => {
             attrib.uv[ uvCount++ ] = prevUv;
 
             createLockPoints(
-                pointB, opt.initLock, axisLock, vectorA, vectorB2
+                pointB, opt.initLock, axisLock, vectorA, vectorB2, opt.scale
             );
 
             // Push A2 vertex

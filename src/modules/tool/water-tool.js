@@ -31,7 +31,7 @@ import { AssetManager } from '../../utils/asset-manager';
 
 import buildPath from 'utils/path-draw';
 
-const MARKER_SCALE = 0.2;
+const WIREFRAME_SCALE = 0.2;
 const MARKER_SCALE_VR = 0.05;
 
 const MARKER_MATERIAL = new THREE.MeshStandardMaterial( {
@@ -82,9 +82,10 @@ export default class WaterTool extends AbstractTool {
 
         let cubeGeom = AssetManager.assets.model.cube;
         this._wireframe = new THREE.Mesh( cubeGeom, MARKER_MATERIAL.clone() );
-        this._wireframe.scale.set( MARKER_SCALE.x, MARKER_SCALE.y, MARKER_SCALE.z );
+        this._wireframe.scale.set( WIREFRAME_SCALE * 2.0, WIREFRAME_SCALE * 0.4, WIREFRAME_SCALE * 0.4 );
         this._wireframe.material.wireframe = true;
         this._wireframe.material.needsUpdate = true;
+        this._wireframe.visible = false;
 
         // Contains the spline drawn by the user. Whenever the drawing is ready,
         // this will be deleted.
@@ -97,6 +98,12 @@ export default class WaterTool extends AbstractTool {
         this.worldGroup.addTHREEObject( this._waterGroup );
 
         this.localGroup.addTHREEObject( this._wireframe );
+
+        // This boolean will be set to `true' if
+        // the tool is currently selected by the user.
+        // We track this using onEnter and onExit.
+        this._selected = false;
+
         // Contains a reference to the previous marked added. This is used
         // to link them with a visual line.
         this._prevMarker = null;
@@ -109,24 +116,30 @@ export default class WaterTool extends AbstractTool {
         //this._helper = new BrushHelper( null, BrushHelper.UV_MODE.quad );
 
         this.registerEvent( 'interact', {
+
             trigger: this.trigger.bind( this )
+
         } );
 
         this.registerEvent( 'axisChanged', {
+
             use: this.useAxisChanged.bind( this )
+
         } );
 
-        this.test = [];
+        this._points = [];
 
     }
 
     update( data, controllerID ) {
 
         // Animates the placeholder according to controller.
-        let localPos = data.controllers[ controllerID ].position.local;
-        let rot = data.controllers[ controllerID ].orientation;
-        this._wireframe.quaternion.multiply( rot );
-        this._wireframe.position.set( localPos.x, localPos.y, localPos.z );
+        if ( this._selected ) {
+            let localPos = data.controllers[ controllerID ].position.local;
+            let rot = data.controllers[ controllerID ].orientation;
+            this._wireframe.position.set( localPos.x, localPos.y, localPos.z );
+            this._wireframe.quaternion.copy( rot );
+        }
 
         // Updates spline color through time.
         this._splineGroup.traverse( ( child ) => {
@@ -160,7 +173,7 @@ export default class WaterTool extends AbstractTool {
 
     trigger( data ) {
 
-        this.test.push( {
+        this._points.push( {
             orientation: data.orientation.clone(),
             coords: data.position.world.clone()
         } );
@@ -196,8 +209,11 @@ export default class WaterTool extends AbstractTool {
 
         this._prevMarker = mesh;
 
-        if ( this.test.length === 8 ) {
-            let geometry = buildPath( this.test, { uvFactor: 0.5 } );
+        if ( this._points.length === 8 ) {
+            let geometry = buildPath( this._points, {
+                uvFactor: 0.5,
+                scale: this._wireframe.scale.x
+            } );
             let material = WATER_MATERIAL.clone();
             let m = new THREE.Mesh( geometry, material );
             m.frustumCulled = false;
@@ -212,7 +228,7 @@ export default class WaterTool extends AbstractTool {
             m.material.needsUpdate = true;
             this._waterGroup.add( m );
 
-            this.test = [];
+            this._points.length = 0;
             this._prevMarker = null;
 
             for ( let i = this._markerGroup.children.length - 1; i >= 0; i-- ) {
@@ -226,15 +242,25 @@ export default class WaterTool extends AbstractTool {
 
     useAxisChanged( data ) {
 
-        //data.controller.sizeMesh.scale.x * 1.0;
-        let val = data.controller.sizeMesh.scale.x;
         let scale = this._wireframe.scale;
-        this._wireframe.scale.set( val, scale.y, scale.z );
+        let val = data.controller.sizeMesh.scale.x * 0.5;
 
-        console.log( scale );
+        this._wireframe.scale.set( val, scale.y, scale.z );
 
     }
 
-    release() {}
+    onEnter() {
+
+        this._selected = true;
+        this._wireframe.visible = true;
+
+    }
+
+    onExit() {
+
+        this._selected = false;
+        this._wireframe.visible = false;
+
+    }
 
 }

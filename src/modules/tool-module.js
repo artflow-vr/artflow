@@ -234,8 +234,10 @@ class ToolModule {
         this.instanciate( 'Water' );
         this.instanciate( 'Tree' );
 
-        this._selected[ 0 ] = this._instance[ BASE_TOOL ][ 0 ];
-        this._selected[ 1 ] = this._instance[ BASE_TOOL ][ 1 ];
+        for ( let i = 0; i < 2; ++i ) {
+            this._selected[ i ] = this._instance[ BASE_TOOL ][ i ];
+            this._selected[ i ]._onEnter();
+        }
 
         // TODO: Add onEnterChild & onExitChild event trigger.
 
@@ -331,8 +333,12 @@ class ToolModule {
 
         if ( !evt.pressed ) return;
 
-        this._selected[ controllerID ] = this._instance[ toolID ][ controllerID ];
-        // TODO: handle onExit.
+        let inst = this._instance[ toolID ][ controllerID ];
+        if ( this._selected[ controllerID ] === inst )
+            return;
+
+        this._selected[ controllerID ]._onExit();
+        this._selected[ controllerID ] = inst;
         this._selected[ controllerID ]._onEnter();
 
         //
