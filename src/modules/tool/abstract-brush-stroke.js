@@ -17,7 +17,7 @@ export default class AbstractBrushStroke {
             maxSpread: 20,
             brushThickness: this.isVR ? 0.2 : 0.5,
             delta: this.isVR ? 0.01 : 0.005,
-            enablePressure: false,
+            enablePressure: true,
             material: mat
         };
 

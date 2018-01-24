@@ -26,7 +26,6 @@
 */
 
 import AbstractTool from './abstract-tool';
-import AddCommand from './command/add-command';
 import BrushHelper from './helper/brush-helper';
 import { LSystem } from '../../utils/l-system';
 
@@ -109,7 +108,7 @@ export default class TreeTool extends AbstractTool {
             maxSpread: 20,
             brushThickness: 0.1,
             texture: null,
-            enablePressure: true,
+            enablePressure: false,
             color: 0x45220a,
             materialId: 'material_without_tex'
         } );
@@ -226,7 +225,7 @@ export default class TreeTool extends AbstractTool {
         }
 
         if ( i >= MAX_TREE )
-          return undefined;
+          return;
 
         let tree = this.trees[ i ];
         tree.init( data, this._lSysID, this.options, this._hsv );

@@ -229,7 +229,6 @@ class UI {
 
                 // Changes the color of the item to show the user it is
                 // selected.
-                console.log( evt );
                 if ( !evt.pressed ) return;
 
                 if ( this._currSelectedItem )
@@ -451,7 +450,6 @@ class UI {
 
         for ( let k in AssetManager.assets.texture.ui.cubemap ) {
             let tex = AssetManager.assets.texture.ui.cubemap[ k ];
-            console.log( this._ui );
             this._add( k, this._ui.skybox, {
                 background: this._textures.background,
                 button: tex
