@@ -418,10 +418,10 @@ class Control {
         // and also because it does not make sense to change the binding.
         document.addEventListener( 'keydown', ( event ) => {
             switch ( event.keyCode ) {
-                case 49: // TODO: To remove (only for debug)
+                case 89: // TODO: To remove (only for debug) // U
                     EventDispatcher.dispatch( 'undo' );
                     break;
-                case 50: // TODO: To remove (only for debug)
+                case 85: // TODO: To remove (only for debug) // Y
                     EventDispatcher.dispatch( 'redo' );
                     break;
                 case 65:

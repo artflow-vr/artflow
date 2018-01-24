@@ -38,7 +38,7 @@ import ParticleShader from '../shader/particle/particle-shader';
 import ParticleHelix from '../shader/particle/particle-helix';
 import PositionHelix from '../shader/particle/position-helix';
 
-const BASE_TOOL= 'Particle';
+const BASE_TOOL= 'Brush';
 
 class ToolModule {
 
@@ -239,8 +239,6 @@ class ToolModule {
             this._selected[ i ]._onEnter();
         }
 
-        // TODO: Add onEnterChild & onExitChild event trigger.
-
         /*
             The Code below registers every supported events, such as the
             Vive and mouse button, color changes, UI selection...
@@ -318,6 +316,7 @@ class ToolModule {
         // Adds preview above each controller.
         this._changeControllerPreview( 0, BASE_TOOL );
         this._changeControllerPreview( 1, BASE_TOOL );
+
     }
 
     _onColorChange( color ) {
