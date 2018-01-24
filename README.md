@@ -7,7 +7,19 @@
 **ArtFlow** is greatly influenced by [Tilt Brush](https://www.tiltbrush.com/), and [A-Painter](https://github.com/aframevr/a-painter).
 
 [![ArtFlow Video](https://user-images.githubusercontent.com/8783766/31792707-36e8d1b2-b51d-11e7-9dfc-9b411258deb0.png)
-](https://youtu.be/QyUaBjSxGXc)
+](https://www.youtube.com/watch?v=QtjKiANf6GY)
+
+## Tutorial
+
+The tutorial can be found in the [wiki](https://github.com/artflow-vr/artflow/wiki/Artflow-wiki).
+
+## Art Gallery
+
+<div style="text-align:center"><img src="https://raw.githubusercontent.com/DavidPeicho/davidpeicho.github.io/master/images/artflow/27042720_2057850001140247_1423361200_n.png" data-canonical-src="https://raw.githubusercontent.com/DavidPeicho/davidpeicho.github.io/master/images/artflow/27042720_2057850001140247_1423361200_n.png" width="400" /></div>
+
+<div style="text-align:center"><img src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153314_2057840877807826_914434081_n.png" data-canonical-src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153314_2057840877807826_914434081_n.png" width="400" /></div>
+
+<div style="text-align:center"><img src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153027_2057854184473162_1852103997_n.png" data-canonical-src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153027_2057854184473162_1852103997_n.png" width="400" /></div>
 
 ## Local Execution
 
