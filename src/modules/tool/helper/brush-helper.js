@@ -59,13 +59,10 @@ export default class BrushHelper {
 
         // We can choose how the UVs should be computed.
         if ( !uvMode ) {
-            if ( this.options.enablePressure ) {
-                this._computeUV = BrushHelper.UV_MODE.handPressure;
-                this._computeThickness = this._computeThicknessWithPressure;
-            } else
-                this._computeUV = BrushHelper.UV_MODE.hand;
+            this._computeUV = BrushHelper.UV_MODE.hand;
         } else
             this._computeUV = uvMode;
+
         this._computeUV = this._computeUV.bind( this );
 
         this._verticesCount = 0;
