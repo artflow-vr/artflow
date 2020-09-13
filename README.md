@@ -15,11 +15,9 @@ The tutorial can be found in the [wiki](https://github.com/artflow-vr/artflow/wi
 
 ## Art Gallery
 
-<div style="text-align:center"><img src="https://raw.githubusercontent.com/DavidPeicho/davidpeicho.github.io/master/images/artflow/27042720_2057850001140247_1423361200_n.png" data-canonical-src="https://raw.githubusercontent.com/DavidPeicho/davidpeicho.github.io/master/images/artflow/27042720_2057850001140247_1423361200_n.png" width="400" /></div>
-
-<div style="text-align:center"><img src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153314_2057840877807826_914434081_n.png" data-canonical-src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153314_2057840877807826_914434081_n.png" width="400" /></div>
-
-<div style="text-align:center"><img src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153027_2057854184473162_1852103997_n.png" data-canonical-src="https://github.com/DavidPeicho/davidpeicho.github.io/blob/master/images/artflow/27153027_2057854184473162_1852103997_n.png" width="400" /></div>
+![](https://user-images.githubusercontent.com/8783766/93022731-a2257800-f5e2-11ea-91f9-f70798480f7c.png)
+![](https://user-images.githubusercontent.com/8783766/93022735-a6519580-f5e2-11ea-927d-bd1e2a9dcfd7.png)
+![](https://user-images.githubusercontent.com/8783766/93022733-a5206880-f5e2-11ea-85ca-1dc8bb8c3d0b.png)
 
 ## Local Execution
 
@@ -174,14 +172,3 @@ window.onload = function () {
 
 };
 ```
-
-### TODO
-
-#### All
-* [ ] Use pow2 textures. It would be nice to reduce the number of requests, by merging textures together and using different UVs (for instance for the UI).
-* [ ] Add the shake events
-* [ ] Add tool to take screenshot
-
-#### Water
-* [ ] Improve plane delimiters
-* [ ] Validate water plane on shake
